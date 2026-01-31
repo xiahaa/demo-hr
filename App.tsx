@@ -1,10 +1,10 @@
-
 import React, { useState } from 'react';
 import { Landing } from './components/Landing';
 import { LoadingScreen } from './components/LoadingScreen';
 import { CandidateCard } from './components/CandidateCard';
 import { AppStatus, CandidateProfile } from './types';
 import { analyzeCandidate } from './services/analyzer';
+import { MOCK_PROFILE } from './services/mockData';
 
 const App: React.FC = () => {
   const [status, setStatus] = useState<AppStatus>('IDLE');
@@ -14,6 +14,15 @@ const App: React.FC = () => {
   const handleAnalyze = async (githubUrl: string, scholarUrl?: string, linkedinText?: string) => {
     setStatus('ANALYZING');
     setError(null);
+
+    // Mock/Demo Mode
+    if (githubUrl === 'demo') {
+      setTimeout(() => {
+        setProfile(MOCK_PROFILE);
+        setStatus('RESULT');
+      }, 2000); // Simulate network delay
+      return;
+    }
 
     try {
       const result = await analyzeCandidate(githubUrl, scholarUrl, linkedinText);
