@@ -1,0 +1,5 @@
+{
+  "name": "GitTalent AI",
+  "description": "A high-end candidate analysis platform that transforms GitHub profiles into visual bento-style reports with engineering scores, tech stack radar charts, and salary estimates using Gemini AI.",
+  "requestFramePermissions": []
+}
