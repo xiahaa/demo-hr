@@ -69,5 +69,12 @@ export const MOCK_PROFILE: CandidateProfile = {
   weaknesses: [
     "Less experience with low-level systems programming (C/C++)",
     "Mobile development experience is limited to React Native"
+  ],
+  suggestedQuestions: [
+    "Can you walk me through how you optimized the virtual rendering in fast-grid-renderer?",
+    "What trade-offs did you consider when designing the node-cluster-manager for zero-downtime?",
+    "How do you approach performance profiling in large React applications?",
+    "Tell me about your experience with WASM integration and browser performance constraints.",
+    "How do you handle GraphQL N+1 query problems at scale?"
   ]
 };
