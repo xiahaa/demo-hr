@@ -11,8 +11,10 @@ export default defineConfig(({ mode }) => {
       },
       plugins: [react()],
       define: {
-        'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY)
+        'process.env.API_KEY': JSON.stringify(env.DEEPSEEK_API_KEY),
+        'process.env.DEEPSEEK_API_KEY': JSON.stringify(env.DEEPSEEK_API_KEY),
+        'process.env.DEEPSEEK_CHAT_MODEL': JSON.stringify(env.DEEPSEEK_CHAT_MODEL),
+        'process.env.DEEPSEEK_REASONER_MODEL': JSON.stringify(env.DEEPSEEK_REASONER_MODEL)
       },
       resolve: {
         alias: {
