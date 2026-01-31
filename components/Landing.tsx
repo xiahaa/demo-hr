@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 
 interface LandingProps {
@@ -14,6 +13,10 @@ export const Landing: React.FC<LandingProps> = ({ onAnalyze }) => {
     e.preventDefault();
     if (!githubUrl.trim()) return;
     onAnalyze(githubUrl, scholarUrl, linkedinText);
+  };
+
+  const handleDemo = () => {
+    onAnalyze('demo', '', '');
   };
 
   return (
@@ -67,7 +70,16 @@ export const Landing: React.FC<LandingProps> = ({ onAnalyze }) => {
         </div>
       </form>
       
-      <div className="mt-20 flex gap-8 items-center text-gray-600 text-sm font-medium grayscale opacity-50">
+      <div className="mt-8">
+        <button
+          onClick={handleDemo}
+          className="text-sm text-gray-500 hover:text-white transition-colors underline decoration-dotted underline-offset-4"
+        >
+          View Live Demo
+        </button>
+      </div>
+
+      <div className="mt-12 flex gap-8 items-center text-gray-600 text-sm font-medium grayscale opacity-50">
         <span>Used by teams at</span>
         <div className="flex gap-6 items-center">
           <span className="font-bold text-lg">HYPER</span>
