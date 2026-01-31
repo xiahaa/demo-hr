@@ -42,14 +42,15 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
     A: item.score,
     fullMark: 100,
   }));
+  const hasTechStack = radarData.length > 0;
 
   const formatDate = (dateStr: string) => {
     try {
       const date = new Date(dateStr);
-      return date.toLocaleDateString(undefined, { 
-        month: 'short', 
-        day: 'numeric', 
-        year: 'numeric' 
+      return date.toLocaleDateString(undefined, {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
       });
     } catch {
       return 'Recently';
@@ -77,14 +78,14 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
       initial="hidden"
       animate="visible"
     >
-      
+
       {/* 1. Hero Section: User Identity */}
       <motion.div
         variants={itemVariants}
         className="md:col-span-3 bg-white/5 border border-white/10 rounded-3xl p-8 flex flex-col md:flex-row gap-8 items-start glass bento-card"
       >
-        <img 
-          src={profile.avatarUrl} 
+        <img
+          src={profile.avatarUrl}
           alt={profile.username}
           className="w-24 h-24 md:w-32 md:h-32 rounded-2xl object-cover ring-4 ring-indigo-500/20 shadow-xl shadow-black/50"
         />
@@ -151,21 +152,27 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
              Skill Proficiency
            </h3>
         </div>
-        <div className="flex-1 min-h-[300px] w-full -ml-4">
-          <ResponsiveContainer width="100%" height="100%">
-            <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
-              <PolarGrid stroke="#333" />
-              <PolarAngleAxis dataKey="subject" tick={{ fill: '#9ca3af', fontSize: 12, fontWeight: 500 }} />
-              <Radar
-                name="Score"
-                dataKey="A"
-                stroke="#818cf8"
-                strokeWidth={3}
-                fill="#6366f1"
-                fillOpacity={0.3}
-              />
-            </RadarChart>
-          </ResponsiveContainer>
+        <div className="flex-1 min-h-[300px] w-full -ml-4 flex items-center justify-center">
+          {hasTechStack ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
+                <PolarGrid stroke="#333" />
+                <PolarAngleAxis dataKey="subject" tick={{ fill: '#9ca3af', fontSize: 12, fontWeight: 500 }} />
+                <Radar
+                  name="Score"
+                  dataKey="A"
+                  stroke="#818cf8"
+                  strokeWidth={3}
+                  fill="#6366f1"
+                  fillOpacity={0.3}
+                />
+              </RadarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="text-xs text-gray-500 italic px-4 text-center">
+              Not enough signal to infer a reliable skill profile.
+            </div>
+          )}
         </div>
       </motion.div>
 
@@ -180,19 +187,19 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
             Core Contributions
           </h3>
           <div className="flex items-center bg-white/5 p-1 rounded-lg border border-white/10">
-            <button 
+            <button
               onClick={() => setSortKey('stars')}
               className={`px-3 py-1.5 text-[10px] font-bold rounded-md transition-all ${sortKey === 'stars' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'text-gray-500 hover:text-gray-300'}`}
             >
               STARS
             </button>
-            <button 
+            <button
               onClick={() => setSortKey('date')}
               className={`px-3 py-1.5 text-[10px] font-bold rounded-md transition-all ${sortKey === 'date' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'text-gray-500 hover:text-gray-300'}`}
             >
               DATE
             </button>
-            <button 
+            <button
               onClick={() => setSortKey('name')}
               className={`px-3 py-1.5 text-[10px] font-bold rounded-md transition-all ${sortKey === 'name' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'text-gray-500 hover:text-gray-300'}`}
             >
@@ -200,13 +207,13 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
             </button>
           </div>
         </div>
-        
+
         <div className="space-y-3 overflow-y-auto max-h-[300px] pr-2 custom-scrollbar">
           {sortedRepos.map((repo, i) => (
             <motion.a
-              key={repo.name} 
-              href={repo.url} 
-              target="_blank" 
+              key={repo.name}
+              href={repo.url}
+              target="_blank"
               rel="noopener noreferrer"
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
@@ -235,25 +242,13 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
         </div>
       </motion.div>
 
-      {/* 5. Salary Estimate */}
-      <motion.div
-        variants={itemVariants}
-        className="md:col-span-1 bg-white/5 border border-white/10 rounded-3xl p-6 glass bento-card flex flex-col justify-center items-center text-center"
-      >
-        <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-4">MARKET VALUATION</h3>
-        <div className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300">
-          {profile.salaryEstimate.currency}{profile.salaryEstimate.min.toLocaleString()} - {profile.salaryEstimate.max.toLocaleString()}
-        </div>
-        <p className="text-[10px] text-gray-500 mt-3 font-medium">Estimated base salary (Annual)</p>
-      </motion.div>
-
-      {/* 6. Academic Stats */}
-      <motion.div
-        variants={itemVariants}
-        className="md:col-span-1 bg-white/5 border border-white/10 rounded-3xl p-6 glass bento-card flex flex-col justify-center"
-      >
-        <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-6">ACADEMIC FOOTPRINT</h3>
-        {profile.academicStats ? (
+      {/* 5. Academic Stats */}
+      {profile.academicStats ? (
+        <motion.div
+          variants={itemVariants}
+          className="md:col-span-1 bg-white/5 border border-white/10 rounded-3xl p-6 glass bento-card flex flex-col justify-center"
+        >
+          <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-6">ACADEMIC FOOTPRINT</h3>
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-white/5 rounded-xl p-3 border border-white/5">
               <div className="text-2xl font-bold text-white mb-1">{profile.academicStats.citations}</div>
@@ -264,10 +259,8 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
               <div className="text-[9px] text-gray-500 font-bold uppercase tracking-wider">H-INDEX</div>
             </div>
           </div>
-        ) : (
-          <div className="text-xs text-gray-600 italic">No significant academic record found.</div>
-        )}
-      </motion.div>
+        </motion.div>
+      ) : null}
 
       {/* 7. Qualitative SWOT */}
       <motion.div
@@ -302,6 +295,28 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
             </ul>
           </div>
         </div>
+      </motion.div>
+
+      {/* 8. Interview Questions */}
+      <motion.div
+        variants={itemVariants}
+        className="md:col-span-2 bg-white/5 border border-white/10 rounded-3xl p-8 glass bento-card"
+      >
+        <h4 className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
+          RECRUITER TECH QUESTIONS
+        </h4>
+        {profile.suggestedQuestions.length > 0 ? (
+          <ul className="space-y-3">
+            {profile.suggestedQuestions.map((q, i) => (
+              <li key={i} className="text-xs text-gray-300 flex items-start gap-2 leading-relaxed">
+                <span className="text-indigo-400/60 mt-0.5">●</span> {q}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className="text-xs text-gray-500 italic">No targeted questions generated.</div>
+        )}
       </motion.div>
 
     </motion.div>

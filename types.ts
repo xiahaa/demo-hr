@@ -28,6 +28,7 @@ export interface CandidateProfile {
   };
   techStack: TechStackItem[];
   topRepositories: Repository[];
+  suggestedQuestions: string[];
   academicStats: {
     citations: number;
     hIndex: number;

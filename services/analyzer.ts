@@ -59,6 +59,7 @@ function normalizeAiResult(result: Partial<AiAnalysis>, fullName: string): AiAna
     experienceLevel: (result.experienceLevel as AiAnalysis["experienceLevel"]) || "Mid",
     techStack: Array.isArray(result.techStack) ? result.techStack : [],
     salaryEstimate: result.salaryEstimate || { min: 0, max: 0, currency: "USD" },
+    suggestedQuestions: Array.isArray(result.suggestedQuestions) ? result.suggestedQuestions : [],
     strengths: Array.isArray(result.strengths) ? result.strengths : [],
     weaknesses: Array.isArray(result.weaknesses) ? result.weaknesses : [],
     academicStats: result.academicStats || null
@@ -79,6 +80,7 @@ async function runDeepSeekAnalysis(
     "You are a hiring analyst. Return ONLY valid JSON matching the required schema, no prose or markdown.";
   const userPrompt =
     "Analyze this developer profile and return a structured assessment. " +
+    "Include 4-6 suggested technical interview questions. " +
     "Ensure numeric fields are numbers (not strings). Data: " +
     JSON.stringify(context);
 
@@ -158,6 +160,9 @@ export async function analyzeCandidate(
   // 3. Run DeepSeek analysis
   const selectedModel = selectDeepSeekModel(context);
   const aiResult = await runDeepSeekAnalysis(context, context.fullName, selectedModel);
+  if (!scholarUrl) {
+    aiResult.academicStats = null;
+  }
 
   // 4. Merge data for final profile - increased to 6 repos for better sorting experience
   return {
