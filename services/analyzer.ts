@@ -96,16 +96,16 @@ async function runDeepSeekAnalysis(
     throw new Error("Missing DeepSeek API key. Set DEEPSEEK_API_KEY in .env");
   }
 
-  const systemPrompt = `You are a senior technical recruiter and hiring analyst. Your task is to analyze developer profiles and create comprehensive technical assessments.
+  const systemPrompt = `您是资深技术招聘人员和招聘分析师。您的任务是分析开发者档案并创建全面的技术评估。
 
-Return ONLY valid JSON with NO markdown formatting, NO code blocks, NO explanations - just pure JSON.`;
+请仅返回有效的JSON格式，不要markdown格式，不要代码块，不要解释 - 只需要纯JSON。所有内容必须是中文。`;
 
   // Create detailed schema with examples
   const schemaExample = {
-    name: "Full Name",
-    oneLiner: "Brief professional headline (e.g., 'Senior Full-stack Engineer specializing in React and Node.js')",
+    name: "全名",
+    oneLiner: "简洁的职业标题（例如，'专注于React和Node.js的高级全栈工程师'）",
     engineeringScore: 75,
-    experienceLevel: "Senior",
+    experienceLevel: "高级",
     techStack: [
       { name: "React/TypeScript", score: 90 },
       { name: "Node.js", score: 85 },
@@ -113,60 +113,60 @@ Return ONLY valid JSON with NO markdown formatting, NO code blocks, NO explanati
     ],
     salaryEstimate: { min: 120000, max: 160000, currency: "USD" },
     suggestedQuestions: [
-      "Technical question 1?",
-      "Technical question 2?"
+      "技术问题1？",
+      "技术问题2？"
     ],
     strengths: [
-      "Specific strength based on their work",
-      "Another concrete strength"
+      "基于他们工作的具体优势",
+      "另一个具体优势"
     ],
     weaknesses: [
-      "Area that could be explored in interview",
-      "Potential gap to probe"
+      "面试中可以探索的领域",
+      "潜在差距需要探究"
     ],
     academicStats: null
   };
 
-  const userPrompt = `Analyze this GitHub developer profile and create a comprehensive technical assessment.
+  const userPrompt = `分析这个GitHub开发者档案并创建全面的技术评估。所有输出必须是中文。
 
-PROFILE DATA:
+档案数据:
 ${JSON.stringify(context, null, 2)}
 
-BASELINE TECH STACK (from code analysis):
+基准技术栈（来自代码分析）:
 ${JSON.stringify(fallbackTechStack, null, 2)}
 
-INSTRUCTIONS:
-1. **Tech Stack**: You MUST provide 4-8 technologies with scores (0-100). Use the baseline tech stack as a starting point, but refine scores based on:
-   - Repository complexity and quality
-   - Stars/forks indicating community validation
-   - Recent activity showing current expertise
-   - README descriptions revealing depth
-   If baseline is empty, infer from repo names, descriptions, and languages.
+指令:
+1. **技术栈**: 您必须提供4-8项技术及其评分(0-100)。以基准技术栈为基础，但基于以下因素优化评分：
+   - 仓库复杂性和质量
+   - 星标/复刻数表明的社区验证
+   - 近期活动显示当前专业技能
+   - README描述揭示的深度
+   如果基准为空，从仓库名称、描述和语言推断。
 
-2. **Engineering Score** (0-100): Consider:
-   - Code complexity (starred repos, forks, issues)
-   - Consistency (regular commits, maintained projects)
-   - Impact (followers, popular repos)
-   - Documentation quality
+2. **工程评分**(0-100): 考虑：
+   - 代码复杂度（标星仓库、复刻、问题）
+   - 一致性（定期提交、维护项目）
+   - 影响力（关注者、热门仓库）
+   - 文档质量
 
-3. **Experience Level**: Junior (0-2 yrs), Mid (2-5 yrs), Senior (5-10 yrs), Staff (10+ yrs), Principal (15+ yrs, leadership)
+3. **经验等级**: 初级(0-2年), 中级(2-5年), 高级(5-10年), 资深(10年以上), 首席(15年以上，有领导力)
 
-4. **One-Liner**: Concise, recruiter-friendly headline highlighting their core expertise
+4. **一句话简介**: 简洁、招聘友好的标题，突出他们的核心专业技能
 
-5. **Salary Estimate**: Be realistic based on experience level, location indicators, and tech stack. USD is fine unless location clearly indicates otherwise.
+5. **薪资估算**: 基于经验等级、地点指标和技术栈给出现实估算。除非地点明确表明，否则使用USD。
 
-6. **Suggested Questions**: Provide 4-6 specific technical interview questions based on their tech stack and project types
+6. **建议问题**: 基于他们的技术栈和项目类型提供4-6个具体的面试技术问题
 
-7. **Strengths**: 3-5 specific, evidence-based strengths from their profile
+7. **优势**: 3-5个基于档案的具体、证据支撑的优势
 
-8. **Weaknesses**: 2-4 areas to probe (NOT deficiencies, but gaps to explore)
+8. **弱点**: 2-4个需要探索的领域（不是缺陷，而是可以探索的差距）
 
-9. **Academic Stats**: Only fill if scholarUrl is provided, otherwise set to null
+9. **学术统计**: 仅在提供scholarUrl时填写，否则设为null
 
-CRITICAL: Return EXACTLY this JSON structure:
+重要: 返回完全符合此JSON结构的输出:
 ${JSON.stringify(schemaExample, null, 2)}
 
-Ensure ALL numeric fields are numbers (not strings). The techStack array MUST have at least 4 items unless truly no signal exists.`;
+确保所有数字字段都是数字（不是字符串）。techStack数组必须至少有4项，除非确实没有信号。`;
 
   const response = await fetch("https://api.deepseek.com/v1/chat/completions", {
     method: "POST",

@@ -53,7 +53,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
         year: 'numeric'
       });
     } catch {
-      return 'Recently';
+      return '最近';
     }
   };
 
@@ -106,7 +106,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
             </div>
             <div className="flex items-center gap-2 text-gray-400">
               <Mail className="w-4 h-4 text-indigo-400" />
-              {profile.email || 'Email Private'}
+              {profile.email || '邮箱私密'}
             </div>
             <a
               href={`https://github.com/${profile.username}`}
@@ -126,7 +126,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
         variants={itemVariants}
         className="md:col-span-1 bg-gradient-to-br from-indigo-600 to-purple-700 rounded-3xl p-8 flex flex-col items-center justify-center text-center bento-card shadow-2xl shadow-indigo-500/20 border border-white/10"
       >
-        <span className="text-indigo-100 text-xs font-bold uppercase tracking-widest mb-6 opacity-80">ENG SCORE</span>
+        <span className="text-indigo-100 text-xs font-bold uppercase tracking-widest mb-6 opacity-80">工程评分</span>
         <div className="relative">
           <svg className="w-32 h-32 transform -rotate-90">
             <circle cx="64" cy="64" r="58" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-white/20"/>
@@ -137,7 +137,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
           </div>
         </div>
         <p className="mt-6 text-indigo-100/70 text-xs font-medium px-4 leading-relaxed">
-          Based on code quality, consistency, and complexity analysis.
+          基于代码质量、一致性和复杂性分析。
         </p>
       </motion.div>
 
@@ -149,7 +149,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
         <div className="flex items-center justify-between mb-4">
            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
              <Code className="w-4 h-4" />
-             Skill Proficiency
+             技能熟练度
            </h3>
         </div>
         <div className="flex-1 min-h-[300px] w-full -ml-4 flex items-center justify-center">
@@ -170,7 +170,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
             </ResponsiveContainer>
           ) : (
             <div className="text-xs text-gray-500 italic px-4 text-center">
-              Not enough signal to infer a reliable skill profile.
+              信号不足，无法推断可靠的技能概况。
             </div>
           )}
         </div>
@@ -184,26 +184,26 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
             <Github className="w-4 h-4" />
-            Core Contributions
+            核心贡献
           </h3>
           <div className="flex items-center bg-white/5 p-1 rounded-lg border border-white/10">
             <button
               onClick={() => setSortKey('stars')}
               className={`px-3 py-1.5 text-[10px] font-bold rounded-md transition-all ${sortKey === 'stars' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'text-gray-500 hover:text-gray-300'}`}
             >
-              STARS
+              星标
             </button>
             <button
               onClick={() => setSortKey('date')}
               className={`px-3 py-1.5 text-[10px] font-bold rounded-md transition-all ${sortKey === 'date' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'text-gray-500 hover:text-gray-300'}`}
             >
-              DATE
+              日期
             </button>
             <button
               onClick={() => setSortKey('name')}
               className={`px-3 py-1.5 text-[10px] font-bold rounded-md transition-all ${sortKey === 'name' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'text-gray-500 hover:text-gray-300'}`}
             >
-              NAME
+              名称
             </button>
           </div>
         </div>
@@ -232,10 +232,10 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
                   </span>
                 </div>
               </div>
-              <p className="text-xs text-gray-400 line-clamp-1 leading-relaxed mb-3">{repo.description || "No description provided."}</p>
+              <p className="text-xs text-gray-400 line-clamp-1 leading-relaxed mb-3">{repo.description || "未提供描述。"}</p>
               <div className="flex items-center gap-1.5 text-[9px] text-gray-600 font-medium uppercase tracking-tighter">
                 <Calendar className="w-3 h-3" />
-                Last Updated {formatDate(repo.updatedAt)}
+                最后更新 {formatDate(repo.updatedAt)}
               </div>
             </motion.a>
           ))}
@@ -248,15 +248,15 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
           variants={itemVariants}
           className="md:col-span-1 bg-white/5 border border-white/10 rounded-3xl p-6 glass bento-card flex flex-col justify-center"
         >
-          <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-6">ACADEMIC FOOTPRINT</h3>
+          <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-6">学术足迹</h3>
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-white/5 rounded-xl p-3 border border-white/5">
               <div className="text-2xl font-bold text-white mb-1">{profile.academicStats.citations}</div>
-              <div className="text-[9px] text-gray-500 font-bold uppercase tracking-wider">CITATIONS</div>
+              <div className="text-[9px] text-gray-500 font-bold uppercase tracking-wider">引用</div>
             </div>
             <div className="bg-white/5 rounded-xl p-3 border border-white/5">
               <div className="text-2xl font-bold text-white mb-1">{profile.academicStats.hIndex}</div>
-              <div className="text-[9px] text-gray-500 font-bold uppercase tracking-wider">H-INDEX</div>
+              <div className="text-[9px] text-gray-500 font-bold uppercase tracking-wider">H指数</div>
             </div>
           </div>
         </motion.div>
@@ -271,7 +271,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
           <div>
             <h4 className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-4 flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              KEY STRENGTHS
+              关键优势
             </h4>
             <ul className="space-y-3">
               {profile.strengths.map((s, i) => (
@@ -284,7 +284,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
           <div>
             <h4 className="text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-4 flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-              AREAS TO PROBE
+              需探索领域
             </h4>
             <ul className="space-y-3">
               {profile.weaknesses.map((w, i) => (
@@ -304,7 +304,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
       >
         <h4 className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-4 flex items-center gap-2">
           <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
-          RECRUITER TECH QUESTIONS
+          招聘技术问题
         </h4>
         {profile.suggestedQuestions.length > 0 ? (
           <ul className="space-y-3">
@@ -315,7 +315,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
             ))}
           </ul>
         ) : (
-          <div className="text-xs text-gray-500 italic">No targeted questions generated.</div>
+          <div className="text-xs text-gray-500 italic">未生成针对性问题。</div>
         )}
       </motion.div>
 

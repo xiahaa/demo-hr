@@ -2,13 +2,13 @@
 import React, { useEffect, useState } from 'react';
 
 const STEPS = [
-  "Fetching GitHub profile data...",
-  "Cloning and scanning top repositories...",
-  "Extracting technology stack distribution...",
-  "Running academic impact analysis...",
-  "Calculating engineering quality score...",
-  "Estimating market compensation...",
-  "Synthesizing bento grid visualization..."
+  "正在获取GitHub档案数据...",
+  "正在克隆和扫描顶级仓库...",
+  "正在提取技术栈分布...",
+  "正在运行学术影响力分析...",
+  "正在计算工程质量评分...",
+  "正在估算市场薪酬...",
+  "正在合成网格可视化..."
 ];
 
 export const LoadingScreen: React.FC = () => {
@@ -29,17 +29,17 @@ export const LoadingScreen: React.FC = () => {
           <div className="w-12 h-12 bg-indigo-500/20 rounded-full animate-pulse"></div>
         </div>
       </div>
-      
+
       <div className="text-center space-y-3">
-        <h2 className="text-2xl font-bold text-white">Generating Insight</h2>
+        <h2 className="text-2xl font-bold text-white">生成洞察</h2>
         <p className="text-indigo-400 font-mono text-sm tracking-tight animate-pulse h-6">
           {STEPS[stepIndex]}
         </p>
       </div>
 
       <div className="mt-12 w-64 h-1 bg-white/5 rounded-full overflow-hidden">
-        <div 
-          className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-500 ease-out" 
+        <div
+          className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-500 ease-out"
           style={{ width: `${((stepIndex + 1) / STEPS.length) * 100}%` }}
         ></div>
       </div>

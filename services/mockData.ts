@@ -4,7 +4,7 @@ export const MOCK_PROFILE: CandidateProfile = {
   name: "Sarah Chen",
   username: "schen_dev",
   avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah",
-  oneLiner: "Full-stack architect specializing in distributed systems and high-performance React applications.",
+  oneLiner: "专注于分布式系统和高性能React应用的的全栈架构师。",
   location: "San Francisco, CA",
   email: "sarah.chen@example.com",
   engineeringScore: 94,
@@ -25,7 +25,7 @@ export const MOCK_PROFILE: CandidateProfile = {
   topRepositories: [
     {
       name: "fast-grid-renderer",
-      description: "A high-performance virtualization library for React tables handling 1M+ rows.",
+      description: "用于处理100万+行数据的React表格的高性能虚拟化库。",
       stars: 4200,
       language: "TypeScript",
       url: "https://github.com/example/fast-grid-renderer",
@@ -33,7 +33,7 @@ export const MOCK_PROFILE: CandidateProfile = {
     },
     {
       name: "node-cluster-manager",
-      description: "Zero-downtime reload manager for Node.js clusters.",
+      description: "Node.js集群的零停机重载管理器。",
       stars: 1800,
       language: "JavaScript",
       url: "https://github.com/example/node-cluster-manager",
@@ -41,7 +41,7 @@ export const MOCK_PROFILE: CandidateProfile = {
     },
     {
       name: "rust-wasm-bridge",
-      description: "Experimental bridge for high-compute tasks in the browser using WASM.",
+      description: "使用WASM在浏览器中进行高计算任务的实验性桥梁。",
       stars: 950,
       language: "Rust",
       url: "https://github.com/example/rust-wasm-bridge",
@@ -49,7 +49,7 @@ export const MOCK_PROFILE: CandidateProfile = {
     },
     {
       name: "graphql-query-optimizer",
-      description: "AST-based query complexity analyzer and optimizer for Apollo Server.",
+      description: "基于AST的Apollo Server查询复杂度分析器和优化器。",
       stars: 640,
       language: "TypeScript",
       url: "https://github.com/example/graphql-query-optimizer",
@@ -62,19 +62,19 @@ export const MOCK_PROFILE: CandidateProfile = {
     publications: 3
   },
   strengths: [
-    "Deep understanding of React internals and performance optimization",
-    "Strong architectural patterns for distributed Node.js services",
-    "Active open-source maintainer with high code quality standards"
+    "深入理解React内部机制和性能优化",
+    "分布式Node.js服务的强大架构模式",
+    "积极的开源维护者，具有高代码质量标准"
   ],
   weaknesses: [
-    "Less experience with low-level systems programming (C/C++)",
-    "Mobile development experience is limited to React Native"
+    "底层系统编程经验较少（C/C++）",
+    "移动开发经验仅限于React Native"
   ],
   suggestedQuestions: [
-    "Can you walk me through how you optimized the virtual rendering in fast-grid-renderer?",
-    "What trade-offs did you consider when designing the node-cluster-manager for zero-downtime?",
-    "How do you approach performance profiling in large React applications?",
-    "Tell me about your experience with WASM integration and browser performance constraints.",
-    "How do you handle GraphQL N+1 query problems at scale?"
+    "您能详细说明在fast-grid-renderer中如何优化虚拟渲染吗？",
+    "在设计node-cluster-manager实现零停机时，您考虑了哪些权衡？",
+    "您如何处理大型React应用程序的性能分析？",
+    "请谈谈您在WASM集成和浏览器性能限制方面的经验。",
+    "您如何处理大规模GraphQL N+1查询问题？"
   ]
 };

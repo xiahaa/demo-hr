@@ -30,7 +30,7 @@ const App: React.FC = () => {
       setStatus('RESULT');
     } catch (err: any) {
       console.error(err);
-      setError(err.message || 'An unexpected error occurred during analysis.');
+      setError(err.message || '分析过程中发生意外错误。');
       setStatus('ERROR');
     }
   };
@@ -44,17 +44,17 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#030712] text-gray-100 selection:bg-indigo-500/30">
       {status === 'IDLE' && <Landing onAnalyze={handleAnalyze} />}
-      
+
       {status === 'ANALYZING' && <LoadingScreen />}
 
       {status === 'RESULT' && profile && (
         <div className="max-w-6xl mx-auto px-4 py-12">
-          <button 
+          <button
             onClick={reset}
             className="mb-8 flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors group"
           >
             <span className="group-hover:-translate-x-1 transition-transform">←</span>
-            New Analysis
+            新分析
           </button>
           <CandidateCard profile={profile} />
         </div>
@@ -63,13 +63,13 @@ const App: React.FC = () => {
       {status === 'ERROR' && (
         <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center">
           <div className="bg-red-500/10 border border-red-500/20 p-8 rounded-2xl max-w-md">
-            <h2 className="text-xl font-bold text-red-400 mb-2">Analysis Failed</h2>
+            <h2 className="text-xl font-bold text-red-400 mb-2">分析失败</h2>
             <p className="text-gray-400 mb-6">{error}</p>
-            <button 
+            <button
               onClick={reset}
               className="bg-white text-black px-6 py-2 rounded-full font-medium hover:bg-gray-200 transition-colors"
             >
-              Try Again
+              重试
             </button>
           </div>
         </div>
