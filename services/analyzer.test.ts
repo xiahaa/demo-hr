@@ -25,8 +25,8 @@ describe('parseGitHubUsername', () => {
     expect(parseGitHubUsername('a'.repeat(40))).toBe('');
   });
 
-  // Current implementation limitation: it fails to extract username if just the username is provided
-  // without a path structure, returning empty string.
+  // Current implementation limitation: plain usernames without URL structure (e.g. "torvalds")
+  // are interpreted as hostnames by the URL constructor, resulting in an empty string.
   it('should return empty for simple username input (current limitation)', () => {
      expect(parseGitHubUsername('torvalds')).toBe('');
   });
