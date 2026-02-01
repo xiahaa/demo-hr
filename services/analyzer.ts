@@ -45,7 +45,7 @@ export function parseGitHubUsername(githubUrl: string): string {
     const parts = url.pathname.split("/").filter(Boolean);
     username = parts[0] || "";
   } catch {
-    // fallback for non-URL inputs like "user"
+    // fallback for malformed URL inputs or unexpected formats that new URL() cannot parse
     username = trimmed.split("/").filter(Boolean)[0] || "";
   }
 
