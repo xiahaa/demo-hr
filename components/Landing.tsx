@@ -39,6 +39,7 @@ export const Landing: React.FC<LandingProps> = ({ onAnalyze }) => {
           <input
             type="text"
             required
+            aria-label="GitHub 个人资料链接"
             placeholder="GitHub URL（例如 github.com/torvalds）"
             className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-5 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all text-lg placeholder:text-gray-600"
             value={githubUrl}
@@ -46,7 +47,9 @@ export const Landing: React.FC<LandingProps> = ({ onAnalyze }) => {
           />
           <button
             type="submit"
-            className="absolute right-3 top-3 bottom-3 bg-indigo-600 hover:bg-indigo-500 text-white px-8 rounded-xl font-bold transition-all shadow-lg shadow-indigo-600/20"
+            disabled={!githubUrl.trim()}
+            aria-label="分析个人资料"
+            className="absolute right-3 top-3 bottom-3 bg-indigo-600 hover:bg-indigo-500 text-white px-8 rounded-xl font-bold transition-all shadow-lg shadow-indigo-600/20 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             分析
           </button>
@@ -55,6 +58,7 @@ export const Landing: React.FC<LandingProps> = ({ onAnalyze }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <input
             type="text"
+            aria-label="Google Scholar 链接"
             placeholder="Google Scholar URL（可选）"
             className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-1 focus:ring-indigo-500/30 focus:border-indigo-500 transition-all text-sm placeholder:text-gray-600"
             value={scholarUrl}
@@ -62,6 +66,7 @@ export const Landing: React.FC<LandingProps> = ({ onAnalyze }) => {
           />
           <input
             type="text"
+            aria-label="LinkedIn 内容"
             placeholder="LinkedIn 内容 / 原始文本（可选）"
             className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-1 focus:ring-indigo-500/30 focus:border-indigo-500 transition-all text-sm placeholder:text-gray-600"
             value={linkedinText}
