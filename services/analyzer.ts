@@ -33,19 +33,27 @@ function selectDeepSeekModel(context: Record<string, unknown>): string {
   return complexityScore >= 6 ? reasonerModel : chatModel;
 }
 
-function parseGitHubUsername(githubUrl: string): string {
+export function parseGitHubUsername(githubUrl: string): string {
   const trimmed = githubUrl.trim();
   if (!trimmed) return "";
+
+  let username = "";
 
   try {
     const normalized = trimmed.startsWith("http") ? trimmed : `https://${trimmed}`;
     const url = new URL(normalized);
     const parts = url.pathname.split("/").filter(Boolean);
-    return parts[0] || "";
+    username = parts[0] || "";
   } catch {
-    // fallback for non-URL inputs like "user"
-    return trimmed.split("/").filter(Boolean)[0] || "";
+    // fallback for malformed URL inputs or unexpected formats that new URL() cannot parse
+    username = trimmed.split("/").filter(Boolean)[0] || "";
   }
+
+  // Security Validation: GitHub usernames are alphanumeric with single hyphens, max 39 chars.
+  // Cannot begin or end with hyphen.
+  const validUsernameRegex = /^[a-zA-Z0-9](?:[a-zA-Z0-9]|-(?=[a-zA-Z0-9])){0,38}$/;
+
+  return validUsernameRegex.test(username) ? username : "";
 }
 
 function extractJsonObject(text: string): Record<string, unknown> {
