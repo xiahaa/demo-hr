@@ -28,6 +28,6 @@ describe('parseGitHubUsername', () => {
   // Current implementation limitation: plain usernames without URL structure (e.g. "torvalds")
   // are interpreted as hostnames by the URL constructor, resulting in an empty string.
   it('should return empty for simple username input (current limitation)', () => {
-     expect(parseGitHubUsername('torvalds')).toBe('');
+    expect(parseGitHubUsername('torvalds')).toBe('');
   });
 });
