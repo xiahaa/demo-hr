@@ -1,10 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { Landing } from './components/Landing';
 import { LoadingScreen } from './components/LoadingScreen';
-import { CandidateCard } from './components/CandidateCard';
 import { AppStatus, CandidateProfile } from './types';
 import { analyzeCandidate } from './services/analyzer';
 import { MOCK_PROFILE } from './services/mockData';
+
+// Lazy load CandidateCard to reduce initial bundle size
+// Includes heavy dependencies like Recharts and Framer Motion
+const CandidateCard = React.lazy(() =>
+  import('./components/CandidateCard').then(module => ({ default: module.CandidateCard }))
+);
 
 const App: React.FC = () => {
   const [status, setStatus] = useState<AppStatus>('IDLE');
@@ -56,7 +61,9 @@ const App: React.FC = () => {
             <span className="group-hover:-translate-x-1 transition-transform">←</span>
             新分析
           </button>
-          <CandidateCard profile={profile} />
+          <Suspense fallback={<LoadingScreen />}>
+            <CandidateCard profile={profile} />
+          </Suspense>
         </div>
       )}
 
