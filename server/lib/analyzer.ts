@@ -1,5 +1,5 @@
 
-import { CandidateProfile, TechStackItem } from "../../types.js";
+import { CandidateProfile, TechStackItem } from "../types.js";
 import {
   fetchGitHubProfile,
   fetchGitHubRepos,

@@ -4,7 +4,6 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "outDir": "../dist/server",
-    "rootDir": "..",
     "lib": ["ES2022"],
     "skipLibCheck": true,
     "types": ["node"],
@@ -12,6 +11,6 @@
     "allowJs": true,
     "noEmit": false
   },
-  "include": ["**/*.ts", "../types.ts"],
-  "exclude": ["node_modules", "../node_modules"]
+  "include": ["./**/*.ts"],
+  "exclude": ["node_modules"]
 }
