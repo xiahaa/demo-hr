@@ -1,7 +1,7 @@
 import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
-import db from './db';
+import db, { closeDatabase } from './db';
 import { analyzeCandidate, parseGitHubUsername } from './lib/analyzer';
 
 // Load environment variables
@@ -73,6 +73,17 @@ app.post('/api/analyze', async (c) => {
 
 const port = 3001;
 console.log(`Server is running on port ${port}`);
+
+// Graceful shutdown handlers
+const shutdown = (signal: string) => {
+  console.log(`${signal} received, closing database connection...`);
+  closeDatabase();
+  console.log('Database connection closed, exiting...');
+  process.exit(0);
+};
+
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));
 
 serve({
   fetch: app.fetch,

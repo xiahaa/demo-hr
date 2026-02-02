@@ -18,4 +18,9 @@ db.exec(`
   );
 `);
 
+// Graceful shutdown handler
+export function closeDatabase() {
+  db.close();
+}
+
 export default db;
