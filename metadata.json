@@ -1,5 +1,5 @@
 {
-  "name": "探才宝 AI",
-  "description": "高端候选人分析平台，将GitHub档案转化为可视化的工程评分、技术栈雷达图和薪资估算报告。",
+  "name": "码鉴 AI",
+  "description": "AI驱动的代码人才评估平台，深度分析GitHub档案，生成工程评分、技术栈雷达图和市场价值洞察。",
   "requestFramePermissions": []
 }
