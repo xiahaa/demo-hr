@@ -9,7 +9,7 @@ function getGitHubHeaders(): HeadersInit {
   
   const token = process.env.GITHUB_TOKEN;
   if (token) {
-    headers['Authorization'] = `token ${token}`;
+    headers['Authorization'] = `Bearer ${token}`;
   }
   
   return headers;
