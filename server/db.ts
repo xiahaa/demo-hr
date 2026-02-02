@@ -19,9 +19,16 @@ db.exec(`
 `);
 
 // Graceful shutdown handler
+let isDatabaseClosed = false;
 export function closeDatabase() {
+  if (isDatabaseClosed) {
+    console.log('Database already closed');
+    return;
+  }
   try {
     db.close();
+    isDatabaseClosed = true;
+    console.log('Database closed successfully');
   } catch (error) {
     console.error('Error closing database:', error);
   }

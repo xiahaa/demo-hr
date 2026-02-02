@@ -103,7 +103,7 @@ const shutdown = (signal: string) => {
       console.log('Server closed');
     }
     closeDatabase();
-    console.log('Database connection closed, exiting...');
+    console.log('Shutdown complete, exiting...');
     clearTimeout(forceExitTimeout);
     process.exit(0);
   });
