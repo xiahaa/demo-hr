@@ -135,7 +135,7 @@ Contributions are welcome! Please feel free to submit pull requests or open issu
 
 ## 📄 License / 许可证
 
-This project is private and proprietary.
+See the repository for license details.
 
 ## 🙏 Acknowledgments / 致谢
 
