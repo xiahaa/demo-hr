@@ -1,14 +1,11 @@
 import { CandidateProfile } from "../types";
 
-// Get API base URL from environment variable, fallback to '/api' for development (where proxy works)
-const API_BASE_URL = process.env.API_BASE_URL || '/api';
-
 export async function analyzeCandidate(
   githubUrl: string,
   scholarUrl?: string,
   linkedinText?: string
 ): Promise<CandidateProfile> {
-  const response = await fetch(`${API_BASE_URL}/analyze`, {
+  const response = await fetch('/api/analyze', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
