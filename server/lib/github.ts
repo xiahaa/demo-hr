@@ -68,7 +68,7 @@ export async function searchForEmail(username: string) {
   try {
     const eventsResponse = await fetch(`https://api.github.com/users/${username}/events/public`);
     if (!eventsResponse.ok) return null;
-    const events = await eventsResponse.json();
+    const events = await eventsResponse.json() as any[];
 
     for (const event of events) {
       if (event.type === 'PushEvent') {

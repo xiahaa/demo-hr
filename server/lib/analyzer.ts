@@ -1,12 +1,12 @@
 
-import { CandidateProfile, TechStackItem } from "../../types";
+import { CandidateProfile, TechStackItem } from "../../types.js";
 import {
   fetchGitHubProfile,
   fetchGitHubRepos,
   searchForEmail as findEmail,
   aggregateLanguageStats,
   calculateTechStackFromLanguages
-} from "./github";
+} from "./github.js";
 
 type AiAnalysis = Omit<CandidateProfile, "username" | "avatarUrl" | "location" | "email" | "topRepositories">;
 
@@ -195,7 +195,7 @@ ${JSON.stringify(schemaExample, null, 2)}
     throw new Error(`DeepSeek API error: ${response.status} ${errorText}`);
   }
 
-  const data = await response.json();
+  const data = await response.json() as any;
   const content = data?.choices?.[0]?.message?.content || "";
   const parsed = extractJsonObject(content);
   return normalizeAiResult(parsed as Partial<AiAnalysis>, fullName);
@@ -221,23 +221,24 @@ export async function analyzeCandidate(
   }
 
   // 2. Aggregate language statistics for better tech stack inference
-  const { languageStats, repoCount } = await aggregateLanguageStats(username, reposData || []);
+  const { languageStats, repoCount } = await aggregateLanguageStats(username, (reposData || []) as any[]);
   const fallbackTechStack = calculateTechStackFromLanguages(languageStats, repoCount);
 
   // 3. Prepare enhanced context for LLM
-  const sortedRepos = (reposData || [])
+  const sortedRepos = ((reposData || []) as any[])
     .sort((a: any, b: any) => b.stargazers_count - a.stargazers_count)
     .slice(0, 20); // Top 20 by stars for quality signal
 
+  const profileDataAny = profileData as any;
   const context = {
     username,
-    fullName: profileData.name || username,
-    bio: profileData.bio || '',
-    company: profileData.company || '',
-    blog: profileData.blog || '',
-    followers: profileData.followers || 0,
-    following: profileData.following || 0,
-    publicRepos: profileData.public_repos || 0,
+    fullName: profileDataAny.name || username,
+    bio: profileDataAny.bio || '',
+    company: profileDataAny.company || '',
+    blog: profileDataAny.blog || '',
+    followers: profileDataAny.followers || 0,
+    following: profileDataAny.following || 0,
+    publicRepos: profileDataAny.public_repos || 0,
     repos: sortedRepos.map((r: any) => ({
       name: r.name,
       description: r.description,
@@ -274,9 +275,9 @@ export async function analyzeCandidate(
   return {
     ...aiResult,
     username,
-    avatarUrl: profileData.avatar_url,
-    location: profileData.location || 'Remote / Unknown',
-    email: email || profileData.email || null,
+    avatarUrl: profileDataAny.avatar_url,
+    location: profileDataAny.location || 'Remote / Unknown',
+    email: email || profileDataAny.email || null,
     topRepositories: sortedRepos.slice(0, 6).map((r: any) => ({
       name: r.name,
       description: r.description,

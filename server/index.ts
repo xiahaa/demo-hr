@@ -1,8 +1,8 @@
 import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
-import db from './db';
-import { analyzeCandidate, parseGitHubUsername } from './lib/analyzer';
+import db from './db.js';
+import { analyzeCandidate, parseGitHubUsername } from './lib/analyzer.js';
 
 // Load environment variables
 try {
@@ -24,22 +24,22 @@ app.use(
     origin: (origin) => {
       // Allow non-browser or same-origin requests without an Origin header
       if (!origin) {
-        return true;
+        return null;
       }
 
       // If explicit origins are configured, only allow those
       if (allowedOrigins.length > 0) {
-        return allowedOrigins.includes(origin);
+        return allowedOrigins.includes(origin) ? origin : null;
       }
 
       // Fallback: in non-production, allow localhost for development convenience
       const isProd = process.env.NODE_ENV === 'production';
       if (!isProd && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
-        return true;
+        return origin;
       }
 
       // Otherwise, disallow
-      return false;
+      return null;
     },
   }),
 );
