@@ -304,7 +304,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
       >
         <h4 className="text-xs font-bold text-[#2D5BFF] uppercase tracking-widest mb-4 flex items-center gap-2">
           <span className="w-1.5 h-1.5 rounded-full bg-[#2D5BFF]" />
-          招聘技术问题
+          招聘面试官建议面试问题
         </h4>
         {profile.suggestedQuestions.length > 0 ? (
           <ul className="space-y-3">
