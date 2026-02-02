@@ -1,7 +1,25 @@
+/**
+ * Get GitHub API headers with optional authentication
+ */
+function getGitHubHeaders(): HeadersInit {
+  const headers: HeadersInit = {
+    'Accept': 'application/vnd.github.v3+json',
+    'User-Agent': 'GitTalent-AI'
+  };
+  
+  const token = process.env.GITHUB_TOKEN;
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  
+  return headers;
+}
 
 export async function fetchGitHubProfile(username: string) {
   try {
-    const response = await fetch(`https://api.github.com/users/${username}`);
+    const response = await fetch(`https://api.github.com/users/${username}`, {
+      headers: getGitHubHeaders()
+    });
     if (!response.ok) throw new Error('GitHub profile not found');
     return await response.json();
   } catch (err) {
@@ -13,7 +31,9 @@ export async function fetchGitHubProfile(username: string) {
 export async function fetchGitHubRepos(username: string) {
   try {
     // Fetch more repos (up to 100) to get better language statistics
-    const response = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=100`);
+    const response = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=100`, {
+      headers: getGitHubHeaders()
+    });
     if (!response.ok) return [];
     return await response.json();
   } catch (err) {
@@ -27,7 +47,9 @@ export async function fetchGitHubRepos(username: string) {
  */
 export async function fetchRepoLanguages(username: string, repoName: string) {
   try {
-    const response = await fetch(`https://api.github.com/repos/${username}/${repoName}/languages`);
+    const response = await fetch(`https://api.github.com/repos/${username}/${repoName}/languages`, {
+      headers: getGitHubHeaders()
+    });
     if (!response.ok) return null;
     return await response.json();
   } catch (err) {
@@ -66,7 +88,9 @@ export async function aggregateLanguageStats(username: string, repos: any[]) {
  */
 export async function searchForEmail(username: string) {
   try {
-    const eventsResponse = await fetch(`https://api.github.com/users/${username}/events/public`);
+    const eventsResponse = await fetch(`https://api.github.com/users/${username}/events/public`, {
+      headers: getGitHubHeaders()
+    });
     if (!eventsResponse.ok) return null;
     const events = await eventsResponse.json() as any[];
 

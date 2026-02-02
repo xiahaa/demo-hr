@@ -1,8 +1,9 @@
 import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
-import db from './db.js';
-import { analyzeCandidate, parseGitHubUsername } from './lib/analyzer.js';
+import { createHash } from 'crypto';
+import db from './db';
+import { analyzeCandidate, parseGitHubUsername } from './lib/analyzer';
 
 // Load environment variables
 try {
@@ -13,36 +14,8 @@ try {
 
 const app = new Hono();
 
-const rawCorsOrigins = process.env.CORS_ORIGINS;
-const allowedOrigins = rawCorsOrigins
-  ? rawCorsOrigins.split(',').map((o) => o.trim()).filter((o) => o.length > 0)
-  : [];
+app.use('/*', cors());
 
-app.use(
-  '/*',
-  cors({
-    origin: (origin) => {
-      // Allow non-browser or same-origin requests without an Origin header
-      if (!origin) {
-        return null;
-      }
-
-      // If explicit origins are configured, only allow those
-      if (allowedOrigins.length > 0) {
-        return allowedOrigins.includes(origin) ? origin : null;
-      }
-
-      // Fallback: in non-production, allow localhost for development convenience
-      const isProd = process.env.NODE_ENV === 'production';
-      if (!isProd && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
-        return origin;
-      }
-
-      // Otherwise, disallow
-      return null;
-    },
-  }),
-);
 app.post('/api/analyze', async (c) => {
   try {
     const body = await c.req.json();
@@ -54,7 +27,7 @@ app.post('/api/analyze', async (c) => {
 
     const username = parseGitHubUsername(githubUrl);
     if (!username) {
-      return c.json({ error: 'Invalid GitHub URL' }, 400);
+        return c.json({ error: 'Invalid GitHub URL' }, 400);
     }
 
     // Get IP
@@ -67,15 +40,24 @@ app.post('/api/analyze', async (c) => {
       console.error('Failed to log IP:', e);
     }
 
+    // Create cache key that includes optional parameters
+    // Use hash to avoid separator collisions and keep key consistent
+    const cacheKeyData = JSON.stringify({
+      username,
+      scholarUrl: scholarUrl || null,
+      linkedinText: linkedinText || null
+    });
+    const cacheKey = createHash('sha256').update(cacheKeyData).digest('hex');
+
     // Check Cache (7 days)
     const cached = db.prepare(`
       SELECT data FROM cached_profiles
-      WHERE username = ?
+      WHERE cache_key = ?
       AND updated_at > datetime('now', '-7 days')
-    `).get(username) as { data: string } | undefined;
+    `).get(cacheKey) as { data: string } | undefined;
 
     if (cached) {
-      console.log(`Cache hit for ${username}`);
+      console.log(`Cache hit for ${username} (scholar: ${!!scholarUrl}, linkedin: ${!!linkedinText})`);
       return c.json(JSON.parse(cached.data));
     }
 
@@ -84,13 +66,13 @@ app.post('/api/analyze', async (c) => {
 
     // Save to Cache
     const stmt = db.prepare(`
-      INSERT INTO cached_profiles (username, data, updated_at)
-      VALUES (?, ?, CURRENT_TIMESTAMP)
-      ON CONFLICT(username) DO UPDATE SET
+      INSERT INTO cached_profiles (username, cache_key, data, updated_at)
+      VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+      ON CONFLICT(cache_key) DO UPDATE SET
         data = excluded.data,
         updated_at = CURRENT_TIMESTAMP
     `);
-    stmt.run(username, JSON.stringify(result));
+    stmt.run(username, cacheKey, JSON.stringify(result));
 
     return c.json(result);
   } catch (err: any) {
