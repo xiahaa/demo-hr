@@ -61,6 +61,12 @@ export const MOCK_PROFILE: CandidateProfile = {
     hIndex: 4,
     publications: 3
   },
+  recommendedPositions: [
+    "高级全栈工程师",
+    "前端架构师",
+    "技术负责人",
+    "性能优化专家"
+  ],
   strengths: [
     "深入理解React内部机制和性能优化",
     "分布式Node.js服务的强大架构模式",

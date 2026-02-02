@@ -319,6 +319,31 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
         )}
       </motion.div>
 
+      {/* 9. Recommended Positions */}
+      <motion.div
+        variants={itemVariants}
+        className="md:col-span-2 bg-white/5 border border-white/10 rounded-3xl p-8 glass bento-card"
+      >
+        <h4 className="text-xs font-bold text-[#00C896] uppercase tracking-widest mb-4 flex items-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#00C896]" />
+          推荐岗位
+        </h4>
+        {profile.recommendedPositions && profile.recommendedPositions.length > 0 ? (
+          <div className="flex flex-wrap gap-3">
+            {profile.recommendedPositions.map((position, i) => (
+              <span 
+                key={i} 
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#00C896]/20 to-[#2D5BFF]/20 border border-[#00C896]/30 text-gray-200 text-sm font-medium hover:from-[#00C896]/30 hover:to-[#2D5BFF]/30 transition-all"
+              >
+                {position}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <div className="text-sm text-gray-500 italic">未生成岗位推荐。</div>
+        )}
+      </motion.div>
+
     </motion.div>
   );
 };
