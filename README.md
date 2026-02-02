@@ -16,7 +16,23 @@ View your app in AI Studio: https://ai.studio/apps/drive/1MwPW1pXAWDxWKyJ8bBEzt3
 1. Install dependencies:
    `npm install`
 2. Set the `DEEPSEEK_API_KEY` in `.env` to your DeepSeek API key
-3. Optional: set `DEEPSEEK_CHAT_MODEL` for quick reasoning and `DEEPSEEK_REASONER_MODEL` for deep analysis.
-   The app auto-selects the model based on profile complexity to manage token usage.
-3. Run the app:
+   - Optional: set `DEEPSEEK_CHAT_MODEL` for quick reasoning and `DEEPSEEK_REASONER_MODEL` for deep analysis.
+     The app auto-selects the model based on profile complexity to manage token usage.
+3. Start the backend server:
+   `npm run server`
+4. In a separate terminal, start the frontend development server:
    `npm run dev`
+
+## Preview/Production Mode
+
+For production or preview mode (`npm run preview` or `npm start`), the Vite proxy is not available. You need to:
+
+1. Set the `API_BASE_URL` environment variable to point to your backend server (e.g., `http://localhost:3001/api`)
+2. Start the backend server: `npm run server`
+3. Build and preview the frontend:
+   ```bash
+   npm run build
+   API_BASE_URL=http://localhost:3001/api npm run preview
+   ```
+
+If `API_BASE_URL` is not set, the frontend defaults to `/api` which works in development mode with the Vite proxy.
