@@ -47,7 +47,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#030712] text-gray-100 selection:bg-indigo-500/30">
+    <div className="min-h-screen bg-[#1A1A2E] text-gray-100 selection:bg-[#2D5BFF]/30">
       {status === 'IDLE' && <Landing onAnalyze={handleAnalyze} />}
 
       {status === 'ANALYZING' && <LoadingScreen />}

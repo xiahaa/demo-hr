@@ -1,5 +1,5 @@
 {
-  "name": "GitTalent AI",
-  "description": "A high-end candidate analysis platform that transforms GitHub profiles into visual bento-style reports with engineering scores, tech stack radar charts, and salary estimates using Gemini AI.",
+  "name": "码鉴 AI",
+  "description": "AI驱动的代码人才评估平台，深度分析GitHub档案，生成工程评分、技术栈雷达图和市场价值洞察。",
   "requestFramePermissions": []
 }
