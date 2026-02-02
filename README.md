@@ -16,11 +16,11 @@ View your app in AI Studio: https://ai.studio/apps/drive/1MwPW1pXAWDxWKyJ8bBEzt3
 1. Install dependencies:
    `npm install`
 2. Set the `DEEPSEEK_API_KEY` in `.env` to your DeepSeek API key
-3. Optional: set `DEEPSEEK_CHAT_MODEL` for quick reasoning and `DEEPSEEK_REASONER_MODEL` for deep analysis.
-   The app auto-selects the model based on profile complexity to manage token usage.
-4. Start the backend server:
+   - Optional: set `DEEPSEEK_CHAT_MODEL` for quick reasoning and `DEEPSEEK_REASONER_MODEL` for deep analysis.
+     The app auto-selects the model based on profile complexity to manage token usage.
+3. Start the backend server:
    `npm run server`
-5. In a separate terminal, start the frontend development server:
+4. In a separate terminal, start the frontend development server:
    `npm run dev`
 
 ## Preview/Production Mode
