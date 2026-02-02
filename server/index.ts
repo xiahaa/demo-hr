@@ -74,18 +74,21 @@ app.post('/api/analyze', async (c) => {
 const port = 3001;
 console.log(`Server is running on port ${port}`);
 
+const server = serve({
+  fetch: app.fetch,
+  port
+});
+
 // Graceful shutdown handlers
 const shutdown = (signal: string) => {
-  console.log(`${signal} received, closing database connection...`);
-  closeDatabase();
-  console.log('Database connection closed, exiting...');
-  process.exit(0);
+  console.log(`${signal} received, closing server and database connection...`);
+  server.close(() => {
+    console.log('Server closed');
+    closeDatabase();
+    console.log('Database connection closed, exiting...');
+    process.exit(0);
+  });
 };
 
 process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('SIGINT', () => shutdown('SIGINT'));
-
-serve({
-  fetch: app.fetch,
-  port
-});

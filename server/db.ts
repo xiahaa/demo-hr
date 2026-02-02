@@ -20,7 +20,11 @@ db.exec(`
 
 // Graceful shutdown handler
 export function closeDatabase() {
-  db.close();
+  try {
+    db.close();
+  } catch (error) {
+    console.error('Error closing database:', error);
+  }
 }
 
 export default db;
