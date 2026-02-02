@@ -25,11 +25,12 @@ export const Landing: React.FC<LandingProps> = ({ onAnalyze }) => {
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#2D5BFF]/10 border border-[#2D5BFF]/20 text-[#2D5BFF] text-xs font-semibold mb-6 tracking-wider uppercase">
           🔍 AI驱动的代码人才评估 🧠
         </div>
-        <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 bg-gradient-to-b from-white to-gray-500 bg-clip-text text-transparent">
-          码鉴 AI<span className="text-[#00C896]"> {}</span>
+        <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 bg-gradient-to-b from-white to-gray-500 bg-clip-text text-transparent flex items-center justify-center gap-4">
+          <img src="/logo.png" alt="知码 Logo" className="w-16 h-16 md:w-20 md:h-20" />
+          知码<span className="text-[#00C896]"> {}</span>
         </h1>
         <p className="text-xl text-gray-400">
-          粘贴 GitHub 个人资料 URL，让码鉴 AI 在几秒钟内深度分析代码能力、
+          粘贴 GitHub 个人资料 URL，让知码在几秒钟内深度分析代码能力、
           技术栈分布和工程师价值。
         </p>
       </div>
