@@ -13,8 +13,36 @@ try {
 
 const app = new Hono();
 
-app.use('/*', cors());
+const rawCorsOrigins = process.env.CORS_ORIGINS;
+const allowedOrigins = rawCorsOrigins
+  ? rawCorsOrigins.split(',').map((o) => o.trim()).filter((o) => o.length > 0)
+  : [];
 
+app.use(
+  '/*',
+  cors({
+    origin: (origin) => {
+      // Allow non-browser or same-origin requests without an Origin header
+      if (!origin) {
+        return true;
+      }
+
+      // If explicit origins are configured, only allow those
+      if (allowedOrigins.length > 0) {
+        return allowedOrigins.includes(origin);
+      }
+
+      // Fallback: in non-production, allow localhost for development convenience
+      const isProd = process.env.NODE_ENV === 'production';
+      if (!isProd && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+        return true;
+      }
+
+      // Otherwise, disallow
+      return false;
+    },
+  }),
+);
 app.post('/api/analyze', async (c) => {
   try {
     const body = await c.req.json();
