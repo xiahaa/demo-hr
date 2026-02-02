@@ -1,6 +1,13 @@
 import Database from 'better-sqlite3';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 
-const db = new Database('gittalent.db');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Use environment variable or default to a predictable location in the server directory
+const dbPath = process.env.DATABASE_PATH || join(__dirname, 'gittalent.db');
+const db = new Database(dbPath);
 
 // Initialize tables
 db.exec(`
