@@ -28,7 +28,7 @@ export const Landing: React.FC<LandingProps> = ({ onAnalyze }) => {
         <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 bg-gradient-to-b from-white to-gray-500 bg-clip-text text-transparent">
           码鉴 AI<span className="text-[#00C896]"> {}</span>
         </h1>
-        <p className="text-lg text-gray-400">
+        <p className="text-xl text-gray-400">
           粘贴 GitHub 个人资料 URL，让码鉴 AI 在几秒钟内深度分析代码能力、
           技术栈分布和工程师价值。
         </p>
@@ -41,7 +41,7 @@ export const Landing: React.FC<LandingProps> = ({ onAnalyze }) => {
             required
             aria-label="GitHub 个人资料链接"
             placeholder="GitHub URL（例如 github.com/torvalds）"
-            className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-5 focus:outline-none focus:ring-2 focus:ring-[#2D5BFF]/50 focus:border-[#2D5BFF] transition-all text-lg placeholder:text-gray-600"
+            className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-5 focus:outline-none focus:ring-2 focus:ring-[#2D5BFF]/50 focus:border-[#2D5BFF] transition-all text-xl placeholder:text-gray-600"
             value={githubUrl}
             onChange={(e) => setGithubUrl(e.target.value)}
           />
@@ -60,7 +60,7 @@ export const Landing: React.FC<LandingProps> = ({ onAnalyze }) => {
             type="text"
             aria-label="Google Scholar 链接"
             placeholder="Google Scholar URL（可选）"
-            className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#2D5BFF]/30 focus:border-[#2D5BFF] transition-all text-sm placeholder:text-gray-600"
+            className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#2D5BFF]/30 focus:border-[#2D5BFF] transition-all text-base placeholder:text-gray-600"
             value={scholarUrl}
             onChange={(e) => setScholarUrl(e.target.value)}
           />
@@ -68,7 +68,7 @@ export const Landing: React.FC<LandingProps> = ({ onAnalyze }) => {
             type="text"
             aria-label="LinkedIn 内容"
             placeholder="LinkedIn 内容 / 原始文本（可选）"
-            className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#2D5BFF]/30 focus:border-[#2D5BFF] transition-all text-sm placeholder:text-gray-600"
+            className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#2D5BFF]/30 focus:border-[#2D5BFF] transition-all text-base placeholder:text-gray-600"
             value={linkedinText}
             onChange={(e) => setLinkedinText(e.target.value)}
           />
@@ -78,13 +78,13 @@ export const Landing: React.FC<LandingProps> = ({ onAnalyze }) => {
       <div className="mt-8">
         <button
           onClick={handleDemo}
-          className="text-sm text-gray-500 hover:text-white transition-colors underline decoration-dotted underline-offset-4"
+          className="text-base text-gray-500 hover:text-white transition-colors underline decoration-dotted underline-offset-4"
         >
           查看实时演示
         </button>
       </div>
 
-      <div className="mt-12 flex gap-8 items-center text-gray-600 text-sm font-medium grayscale opacity-50">
+      <div className="mt-12 flex gap-8 items-center text-gray-600 text-base font-medium grayscale opacity-50">
         <span>被以下团队使用</span>
         <div className="flex gap-6 items-center">
           <span className="font-bold text-lg">Tencent</span>

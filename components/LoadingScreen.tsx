@@ -32,7 +32,7 @@ export const LoadingScreen: React.FC = () => {
 
       <div className="text-center space-y-3">
         <h2 className="text-2xl font-bold text-white">生成洞察</h2>
-        <p className="text-[#2D5BFF] font-mono text-sm tracking-tight animate-pulse h-6">
+        <p className="text-[#2D5BFF] font-mono text-base tracking-tight animate-pulse h-6">
           {STEPS[stepIndex]}
         </p>
       </div>
