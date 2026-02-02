@@ -84,7 +84,41 @@ app.post('/api/analyze', async (c) => {
 const port = 3001;
 console.log(`Server is running on port ${port}`);
 
-serve({
+const server = serve({
   fetch: app.fetch,
   port
 });
+
+// Graceful shutdown handlers
+const SHUTDOWN_TIMEOUT_MS = 10000;
+let isShuttingDown = false;
+const shutdown = (signal: string) => {
+  if (isShuttingDown) {
+    console.log(`${signal} received but shutdown already in progress`);
+    return;
+  }
+  isShuttingDown = true;
+  
+  console.log(`${signal} received, closing server and database connection...`);
+  
+  // Set a timeout to force exit if graceful shutdown takes too long
+  const forceExitTimeout = setTimeout(() => {
+    console.error('Graceful shutdown timed out, forcing exit...');
+    process.exit(1);
+  }, SHUTDOWN_TIMEOUT_MS);
+  
+  server.close((err) => {
+    if (err) {
+      console.error('Error closing server:', err);
+    } else {
+      console.log('Server closed');
+    }
+    closeDatabase();
+    console.log('Shutdown complete, exiting...');
+    clearTimeout(forceExitTimeout);
+    process.exit(0);
+  });
+};
+
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));
