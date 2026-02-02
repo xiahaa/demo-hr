@@ -18,6 +18,12 @@ export default defineConfig(({ mode }) => {
       preview: {
         port: process.env.PORT ? parseInt(process.env.PORT) : 3000,
         host: '0.0.0.0',
+        proxy: {
+          '/api': {
+            target: 'http://localhost:3001',
+            changeOrigin: true,
+          }
+        }
       },
       plugins: [react()],
       define: {
