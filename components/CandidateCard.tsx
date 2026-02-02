@@ -154,7 +154,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
       {/* 3. Tech Stack Bar Chart */}
       <motion.div
         variants={itemVariants}
-        className="md:col-span-4 bg-white/5 border border-white/10 rounded-3xl p-6 glass bento-card flex flex-col"
+        className="md:col-span-4 bg-white/5 border border-white/10 rounded-3xl p-6 glass bento-card"
       >
         <div className="flex items-center justify-between mb-4">
            <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
@@ -162,13 +162,13 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
              技能熟练度
            </h3>
         </div>
-        <div className="flex-1 min-h-[300px] w-full flex items-center justify-center">
+        <div className="w-full h-[350px] flex items-center justify-center">
           {hasTechStack ? (
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={barData} layout="vertical" margin={{ top: 5, right: 30, left: 100, bottom: 5 }}>
+            <ResponsiveContainer width="100%" height={350}>
+              <BarChart data={barData} layout="vertical" margin={{ top: 5, right: 30, left: 120, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#333" />
                 <XAxis type="number" domain={[0, 100]} stroke="#9ca3af" />
-                <YAxis type="category" dataKey="name" stroke="#9ca3af" tick={{ fill: '#9ca3af', fontSize: 14, fontWeight: 500 }} />
+                <YAxis type="category" dataKey="name" stroke="#9ca3af" tick={{ fill: '#9ca3af', fontSize: 14, fontWeight: 500 }} width={110} />
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151', borderRadius: '8px' }}
                   labelStyle={{ color: '#fff' }}
