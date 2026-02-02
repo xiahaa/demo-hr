@@ -21,6 +21,24 @@ app.post('/api/analyze', async (c) => {
     const body = await c.req.json();
     const { githubUrl, scholarUrl, linkedinText } = body;
 
+    // Validate githubUrl type and length
+    if (typeof githubUrl !== 'string' || githubUrl.length === 0 || githubUrl.length > 2048) {
+      return c.json({ error: 'GitHub URL must be a non-empty string of reasonable length' }, 400);
+    }
+
+    // Validate scholarUrl type and length when provided
+    if (scholarUrl !== undefined && scholarUrl !== null) {
+      if (typeof scholarUrl !== 'string' || scholarUrl.length > 2048) {
+        return c.json({ error: 'Scholar URL must be a string of reasonable length when provided' }, 400);
+      }
+    }
+
+    // Validate linkedinText type and length when provided
+    if (linkedinText !== undefined && linkedinText !== null) {
+      if (typeof linkedinText !== 'string' || linkedinText.length > 20000) {
+        return c.json({ error: 'LinkedIn text must be a string of reasonable length when provided' }, 400);
+      }
+    }
     if (!githubUrl) {
       return c.json({ error: 'GitHub URL is required' }, 400);
     }
