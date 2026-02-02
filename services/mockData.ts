@@ -4,7 +4,7 @@ export const MOCK_PROFILE: CandidateProfile = {
   name: "Sarah Chen",
   username: "schen_dev",
   avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah",
-  oneLiner: "专注于分布式系统和高性能React应用的的全栈架构师。",
+  oneLiner: "专注于分布式系统和高性能React应用的全栈架构师。",
   location: "San Francisco, CA",
   email: "sarah.chen@example.com",
   website: "https://sarahchen.dev",
