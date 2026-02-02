@@ -54,7 +54,7 @@ app.post('/api/analyze', async (c) => {
 
     const username = parseGitHubUsername(githubUrl);
     if (!username) {
-        return c.json({ error: 'Invalid GitHub URL' }, 400);
+      return c.json({ error: 'Invalid GitHub URL' }, 400);
     }
 
     // Get IP
