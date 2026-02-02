@@ -92,7 +92,7 @@ export async function searchForEmail(username: string) {
       headers: getGitHubHeaders()
     });
     if (!eventsResponse.ok) return null;
-    const events = await eventsResponse.json();
+    const events = await eventsResponse.json() as any[];
 
     for (const event of events) {
       if (event.type === 'PushEvent') {

@@ -22,16 +22,31 @@ View your app in AI Studio: https://ai.studio/apps/drive/1MwPW1pXAWDxWKyJ8bBEzt3
 5. Run the app:
    `npm run dev`
 
-## Preview/Production Mode
+## Backend Server
 
-For production or preview mode (`npm run preview` or `npm start`), the Vite proxy is not available. You need to:
+The backend server provides API endpoints for candidate analysis with IP logging and caching.
 
-1. Set the `API_BASE_URL` environment variable to point to your backend server (e.g., `http://localhost:3001/api`)
-2. Start the backend server: `npm run server`
-3. Build and preview the frontend:
-   ```bash
-   npm run build
-   API_BASE_URL=http://localhost:3001/api npm run preview
-   ```
+### Development
 
-If `API_BASE_URL` is not set, the frontend defaults to `/api` which works in development mode with the Vite proxy.
+Run the server in development mode with hot-reload:
+```bash
+npm run server:dev
+```
+
+### Production Build
+
+Build and run the server for production:
+```bash
+# Build TypeScript to JavaScript
+npm run server:build
+
+# Start the compiled server
+npm run server:start
+```
+
+Or build both frontend and backend:
+```bash
+npm run build:all
+```
+
+The TypeScript server code is compiled to JavaScript in `dist/server/` for production deployment.
