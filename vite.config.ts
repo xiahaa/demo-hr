@@ -24,7 +24,8 @@ export default defineConfig(({ mode }) => {
         'process.env.API_KEY': JSON.stringify(env.DEEPSEEK_API_KEY),
         'process.env.DEEPSEEK_API_KEY': JSON.stringify(env.DEEPSEEK_API_KEY),
         'process.env.DEEPSEEK_CHAT_MODEL': JSON.stringify(env.DEEPSEEK_CHAT_MODEL),
-        'process.env.DEEPSEEK_REASONER_MODEL': JSON.stringify(env.DEEPSEEK_REASONER_MODEL)
+        'process.env.DEEPSEEK_REASONER_MODEL': JSON.stringify(env.DEEPSEEK_REASONER_MODEL),
+        'process.env.API_BASE_URL': JSON.stringify(env.API_BASE_URL || '')
       },
       resolve: {
         alias: {
