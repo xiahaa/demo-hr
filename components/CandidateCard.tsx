@@ -92,14 +92,14 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
         <div className="flex-1 w-full">
           <div className="flex flex-wrap items-center gap-3 mb-2">
             <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-white">{profile.name}</h1>
-            <span className="px-3 py-1 rounded-full bg-[#2D5BFF]/20 border border-[#2D5BFF]/30 text-[#2D5BFF] text-[10px] font-bold uppercase tracking-widest">
+            <span className="px-3 py-1 rounded-full bg-[#2D5BFF]/20 border border-[#2D5BFF]/30 text-[#2D5BFF] text-xs font-bold uppercase tracking-widest">
               {profile.experienceLevel}
             </span>
           </div>
           <p className="text-gray-300 text-lg mb-6 font-medium leading-relaxed max-w-xl">
             {profile.oneLiner}
           </p>
-          <div className="flex flex-wrap gap-6 text-sm font-medium">
+          <div className="flex flex-wrap gap-6 text-base font-medium">
             <div className="flex items-center gap-2 text-gray-400">
               <MapPin className="w-4 h-4 text-[#2D5BFF]" />
               {profile.location}
@@ -126,7 +126,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
         variants={itemVariants}
         className="md:col-span-1 bg-gradient-to-br from-[#2D5BFF] to-[#00C896] rounded-3xl p-8 flex flex-col items-center justify-center text-center bento-card shadow-2xl shadow-[#2D5BFF]/20 border border-white/10"
       >
-        <span className="text-white/90 text-xs font-bold uppercase tracking-widest mb-6 opacity-80">工程评分</span>
+        <span className="text-white/90 text-sm font-bold uppercase tracking-widest mb-6 opacity-80">工程评分</span>
         <div className="relative">
           <svg className="w-32 h-32 transform -rotate-90">
             <circle cx="64" cy="64" r="58" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-white/20"/>
@@ -136,7 +136,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
             <span className="text-4xl font-black text-white">{profile.engineeringScore}</span>
           </div>
         </div>
-        <p className="mt-6 text-white/70 text-xs font-medium px-4 leading-relaxed">
+        <p className="mt-6 text-white/70 text-sm font-medium px-4 leading-relaxed">
           基于代码质量、一致性和复杂性分析。
         </p>
       </motion.div>
@@ -147,7 +147,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
         className="md:col-span-2 bg-white/5 border border-white/10 rounded-3xl p-6 glass bento-card flex flex-col"
       >
         <div className="flex items-center justify-between mb-4">
-           <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
+           <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
              <Code className="w-4 h-4" />
              技能熟练度
            </h3>
@@ -157,7 +157,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
                 <PolarGrid stroke="#333" />
-                <PolarAngleAxis dataKey="subject" tick={{ fill: '#9ca3af', fontSize: 12, fontWeight: 500 }} />
+                <PolarAngleAxis dataKey="subject" tick={{ fill: '#9ca3af', fontSize: 14, fontWeight: 500 }} />
                 <Radar
                   name="Score"
                   dataKey="A"
@@ -169,7 +169,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
               </RadarChart>
             </ResponsiveContainer>
           ) : (
-            <div className="text-xs text-gray-500 italic px-4 text-center">
+            <div className="text-sm text-gray-500 italic px-4 text-center">
               信号不足，无法推断可靠的技能概况。
             </div>
           )}
@@ -182,26 +182,26 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
         className="md:col-span-2 bg-white/5 border border-white/10 rounded-3xl p-6 glass bento-card flex flex-col"
       >
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
+          <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
             <Github className="w-4 h-4" />
             核心贡献
           </h3>
           <div className="flex items-center bg-white/5 p-1 rounded-lg border border-white/10">
             <button
               onClick={() => setSortKey('stars')}
-              className={`px-3 py-1.5 text-[10px] font-bold rounded-md transition-all ${sortKey === 'stars' ? 'bg-[#2D5BFF] text-white shadow-lg shadow-[#2D5BFF]/20' : 'text-gray-500 hover:text-gray-300'}`}
+              className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${sortKey === 'stars' ? 'bg-[#2D5BFF] text-white shadow-lg shadow-[#2D5BFF]/20' : 'text-gray-500 hover:text-gray-300'}`}
             >
               星标
             </button>
             <button
               onClick={() => setSortKey('date')}
-              className={`px-3 py-1.5 text-[10px] font-bold rounded-md transition-all ${sortKey === 'date' ? 'bg-[#2D5BFF] text-white shadow-lg shadow-[#2D5BFF]/20' : 'text-gray-500 hover:text-gray-300'}`}
+              className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${sortKey === 'date' ? 'bg-[#2D5BFF] text-white shadow-lg shadow-[#2D5BFF]/20' : 'text-gray-500 hover:text-gray-300'}`}
             >
               日期
             </button>
             <button
               onClick={() => setSortKey('name')}
-              className={`px-3 py-1.5 text-[10px] font-bold rounded-md transition-all ${sortKey === 'name' ? 'bg-[#2D5BFF] text-white shadow-lg shadow-[#2D5BFF]/20' : 'text-gray-500 hover:text-gray-300'}`}
+              className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${sortKey === 'name' ? 'bg-[#2D5BFF] text-white shadow-lg shadow-[#2D5BFF]/20' : 'text-gray-500 hover:text-gray-300'}`}
             >
               名称
             </button>
@@ -226,14 +226,14 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
                   <ExternalLink className="w-3 h-3 text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
-                  <span className="text-[10px] font-mono text-gray-500 uppercase px-2 py-0.5 rounded bg-white/5">{repo.language}</span>
-                  <span className="flex items-center gap-1 text-[10px] font-bold text-[#FF6B35]">
+                  <span className="text-xs font-mono text-gray-500 uppercase px-2 py-0.5 rounded bg-white/5">{repo.language}</span>
+                  <span className="flex items-center gap-1 text-xs font-bold text-[#FF6B35]">
                     <Star className="w-3 h-3 fill-current" /> {repo.stars}
                   </span>
                 </div>
               </div>
-              <p className="text-xs text-gray-400 line-clamp-1 leading-relaxed mb-3">{repo.description || "未提供描述。"}</p>
-              <div className="flex items-center gap-1.5 text-[9px] text-gray-600 font-medium uppercase tracking-tighter">
+              <p className="text-sm text-gray-400 line-clamp-1 leading-relaxed mb-3">{repo.description || "未提供描述。"}</p>
+              <div className="flex items-center gap-1.5 text-xs text-gray-600 font-medium uppercase tracking-tighter">
                 <Calendar className="w-3 h-3" />
                 最后更新 {formatDate(repo.updatedAt)}
               </div>
@@ -248,15 +248,15 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
           variants={itemVariants}
           className="md:col-span-1 bg-white/5 border border-white/10 rounded-3xl p-6 glass bento-card flex flex-col justify-center"
         >
-          <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-6">学术足迹</h3>
+          <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-6">学术足迹</h3>
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-white/5 rounded-xl p-3 border border-white/5">
               <div className="text-2xl font-bold text-white mb-1">{profile.academicStats.citations}</div>
-              <div className="text-[9px] text-gray-500 font-bold uppercase tracking-wider">引用</div>
+              <div className="text-xs text-gray-500 font-bold uppercase tracking-wider">引用</div>
             </div>
             <div className="bg-white/5 rounded-xl p-3 border border-white/5">
               <div className="text-2xl font-bold text-white mb-1">{profile.academicStats.hIndex}</div>
-              <div className="text-[9px] text-gray-500 font-bold uppercase tracking-wider">H指数</div>
+              <div className="text-xs text-gray-500 font-bold uppercase tracking-wider">H指数</div>
             </div>
           </div>
         </motion.div>
@@ -269,26 +269,26 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
       >
         <div className="grid grid-cols-2 gap-8">
           <div>
-            <h4 className="text-[10px] font-bold text-[#00C896] uppercase tracking-widest mb-4 flex items-center gap-2">
+            <h4 className="text-xs font-bold text-[#00C896] uppercase tracking-widest mb-4 flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-[#00C896]" />
               关键优势
             </h4>
             <ul className="space-y-3">
               {profile.strengths.map((s, i) => (
-                <li key={i} className="text-xs text-gray-300 flex items-start gap-2 leading-relaxed">
+                <li key={i} className="text-sm text-gray-300 flex items-start gap-2 leading-relaxed">
                   <span className="text-[#00C896]/50 mt-0.5">●</span> {s}
                 </li>
               ))}
             </ul>
           </div>
           <div>
-            <h4 className="text-[10px] font-bold text-[#FF6B35] uppercase tracking-widest mb-4 flex items-center gap-2">
+            <h4 className="text-xs font-bold text-[#FF6B35] uppercase tracking-widest mb-4 flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-[#FF6B35]" />
               需探索领域
             </h4>
             <ul className="space-y-3">
               {profile.weaknesses.map((w, i) => (
-                <li key={i} className="text-xs text-gray-300 flex items-start gap-2 leading-relaxed">
+                <li key={i} className="text-sm text-gray-300 flex items-start gap-2 leading-relaxed">
                   <span className="text-[#FF6B35]/50 mt-0.5">●</span> {w}
                 </li>
               ))}
@@ -302,20 +302,20 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
         variants={itemVariants}
         className="md:col-span-2 bg-white/5 border border-white/10 rounded-3xl p-8 glass bento-card"
       >
-        <h4 className="text-[10px] font-bold text-[#2D5BFF] uppercase tracking-widest mb-4 flex items-center gap-2">
+        <h4 className="text-xs font-bold text-[#2D5BFF] uppercase tracking-widest mb-4 flex items-center gap-2">
           <span className="w-1.5 h-1.5 rounded-full bg-[#2D5BFF]" />
           招聘技术问题
         </h4>
         {profile.suggestedQuestions.length > 0 ? (
           <ul className="space-y-3">
             {profile.suggestedQuestions.map((q, i) => (
-              <li key={i} className="text-xs text-gray-300 flex items-start gap-2 leading-relaxed">
+              <li key={i} className="text-sm text-gray-300 flex items-start gap-2 leading-relaxed">
                 <span className="text-[#2D5BFF]/60 mt-0.5">●</span> {q}
               </li>
             ))}
           </ul>
         ) : (
-          <div className="text-xs text-gray-500 italic">未生成针对性问题。</div>
+          <div className="text-sm text-gray-500 italic">未生成针对性问题。</div>
         )}
       </motion.div>
 
