@@ -292,6 +292,7 @@ export async function analyzeCandidate(
     avatarUrl: profileData.avatar_url,
     location: profileData.location || 'Remote / Unknown',
     email: email || profileData.email || null,
+    website: profileData.blog || null,
     topRepositories: sortedRepos.slice(0, 6).map((r: any) => ({
       name: r.name,
       description: r.description,

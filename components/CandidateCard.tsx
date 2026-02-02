@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { CandidateProfile } from '../types';
-import { RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { motion } from 'framer-motion';
-import { MapPin, Mail, Github, Star, ExternalLink, Calendar, Code } from 'lucide-react';
+import { MapPin, Mail, Github, Star, ExternalLink, Calendar, Code, Globe } from 'lucide-react';
 
 interface CandidateCardProps {
   profile: CandidateProfile;
@@ -37,12 +37,11 @@ const itemVariants = {
 export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
   const [sortKey, setSortKey] = useState<SortKey>('stars');
 
-  const radarData = profile.techStack.map(item => ({
-    subject: item.name,
-    A: item.score,
-    fullMark: 100,
+  const barData = profile.techStack.map(item => ({
+    name: item.name,
+    score: item.score,
   }));
-  const hasTechStack = radarData.length > 0;
+  const hasTechStack = barData.length > 0;
 
   const formatDate = (dateStr: string) => {
     try {
@@ -99,24 +98,35 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
           <p className="text-gray-300 text-lg mb-6 font-medium leading-relaxed max-w-xl">
             {profile.oneLiner}
           </p>
-          <div className="flex flex-wrap gap-6 text-base font-medium">
-            <div className="flex items-center gap-2 text-gray-400">
-              <MapPin className="w-4 h-4 text-[#2D5BFF]" />
-              {profile.location}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+            <div className="flex items-center gap-2 px-3 py-2 bg-white/5 rounded-lg border border-white/10">
+              <MapPin className="w-5 h-5 text-[#2D5BFF] shrink-0" />
+              <span className="text-gray-200 font-medium">{profile.location}</span>
             </div>
-            <div className="flex items-center gap-2 text-gray-400">
-              <Mail className="w-4 h-4 text-[#2D5BFF]" />
-              {profile.email || '邮箱私密'}
+            <div className="flex items-center gap-2 px-3 py-2 bg-white/5 rounded-lg border border-white/10">
+              <Mail className="w-5 h-5 text-[#2D5BFF] shrink-0" />
+              <span className="text-gray-200 font-medium truncate">{profile.email || '邮箱私密'}</span>
             </div>
             <a
               href={`https://github.com/${profile.username}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+              className="flex items-center gap-2 px-3 py-2 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 hover:border-[#2D5BFF]/30 transition-all"
             >
-              <Github className="w-4 h-4 text-[#2D5BFF]" />
-              github.com/{profile.username}
+              <Github className="w-5 h-5 text-[#2D5BFF] shrink-0" />
+              <span className="text-gray-200 font-medium truncate">github.com/{profile.username}</span>
             </a>
+            {profile.website && (
+              <a
+                href={profile.website}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-3 py-2 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 hover:border-[#2D5BFF]/30 transition-all"
+              >
+                <Globe className="w-5 h-5 text-[#2D5BFF] shrink-0" />
+                <span className="text-gray-200 font-medium truncate">{profile.website.replace(/^https?:\/\//, '')}</span>
+              </a>
+            )}
           </div>
         </div>
       </motion.div>
@@ -141,10 +151,10 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
         </p>
       </motion.div>
 
-      {/* 3. Tech Stack Radar Chart */}
+      {/* 3. Tech Stack Bar Chart */}
       <motion.div
         variants={itemVariants}
-        className="md:col-span-2 bg-white/5 border border-white/10 rounded-3xl p-6 glass bento-card flex flex-col"
+        className="md:col-span-4 bg-white/5 border border-white/10 rounded-3xl p-6 glass bento-card flex flex-col"
       >
         <div className="flex items-center justify-between mb-4">
            <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
@@ -152,21 +162,24 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
              技能熟练度
            </h3>
         </div>
-        <div className="flex-1 min-h-[300px] w-full -ml-4 flex items-center justify-center">
+        <div className="flex-1 min-h-[300px] w-full flex items-center justify-center">
           {hasTechStack ? (
             <ResponsiveContainer width="100%" height="100%">
-              <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
-                <PolarGrid stroke="#333" />
-                <PolarAngleAxis dataKey="subject" tick={{ fill: '#9ca3af', fontSize: 14, fontWeight: 500 }} />
-                <Radar
-                  name="Score"
-                  dataKey="A"
-                  stroke="#2D5BFF"
-                  strokeWidth={3}
-                  fill="#2D5BFF"
-                  fillOpacity={0.3}
+              <BarChart data={barData} layout="vertical" margin={{ top: 5, right: 30, left: 100, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+                <XAxis type="number" domain={[0, 100]} stroke="#9ca3af" />
+                <YAxis type="category" dataKey="name" stroke="#9ca3af" tick={{ fill: '#9ca3af', fontSize: 14, fontWeight: 500 }} />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151', borderRadius: '8px' }}
+                  labelStyle={{ color: '#fff' }}
+                  itemStyle={{ color: '#2D5BFF' }}
                 />
-              </RadarChart>
+                <Bar dataKey="score" radius={[0, 8, 8, 0]}>
+                  {barData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill="#2D5BFF" />
+                  ))}
+                </Bar>
+              </BarChart>
             </ResponsiveContainer>
           ) : (
             <div className="text-sm text-gray-500 italic px-4 text-center">
@@ -174,6 +187,24 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
             </div>
           )}
         </div>
+      </motion.div>
+
+      {/* 3.5 Key Strengths - Below Tech Stack */}
+      <motion.div
+        variants={itemVariants}
+        className="md:col-span-4 bg-white/5 border border-white/10 rounded-3xl p-8 glass bento-card"
+      >
+        <h4 className="text-xs font-bold text-[#00C896] uppercase tracking-widest mb-4 flex items-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#00C896]" />
+          关键优势
+        </h4>
+        <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {profile.strengths.map((s, i) => (
+            <li key={i} className="text-sm text-gray-300 flex items-start gap-2 leading-relaxed">
+              <span className="text-[#00C896]/50 mt-0.5">●</span> {s}
+            </li>
+          ))}
+        </ul>
       </motion.div>
 
       {/* 4. Top Repositories */}
@@ -208,7 +239,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
           </div>
         </div>
 
-        <div className="space-y-3 overflow-y-auto max-h-[300px] pr-2 custom-scrollbar">
+        <div className="space-y-4 overflow-y-auto max-h-[400px] pr-2 custom-scrollbar">
           {sortedRepos.map((repo, i) => (
             <motion.a
               key={repo.name}
@@ -232,7 +263,19 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
                   </span>
                 </div>
               </div>
+              {repo.summary && (
+                <p className="text-sm text-white font-medium mb-2 leading-relaxed">{repo.summary}</p>
+              )}
               <p className="text-sm text-gray-400 line-clamp-1 leading-relaxed mb-3">{repo.description || "未提供描述。"}</p>
+              {repo.useCases && repo.useCases.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {repo.useCases.map((useCase, idx) => (
+                    <span key={idx} className="text-xs px-2 py-1 rounded-md bg-[#2D5BFF]/10 text-[#2D5BFF] border border-[#2D5BFF]/20">
+                      {useCase}
+                    </span>
+                  ))}
+                </div>
+              )}
               <div className="flex items-center gap-1.5 text-xs text-gray-600 font-medium uppercase tracking-tighter">
                 <Calendar className="w-3 h-3" />
                 最后更新 {formatDate(repo.updatedAt)}
@@ -262,39 +305,22 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
         </motion.div>
       ) : null}
 
-      {/* 7. Qualitative SWOT */}
+      {/* 7. Weaknesses/Areas to Explore */}
       <motion.div
         variants={itemVariants}
         className="md:col-span-2 bg-white/5 border border-white/10 rounded-3xl p-8 glass bento-card"
       >
-        <div className="grid grid-cols-2 gap-8">
-          <div>
-            <h4 className="text-xs font-bold text-[#00C896] uppercase tracking-widest mb-4 flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#00C896]" />
-              关键优势
-            </h4>
-            <ul className="space-y-3">
-              {profile.strengths.map((s, i) => (
-                <li key={i} className="text-sm text-gray-300 flex items-start gap-2 leading-relaxed">
-                  <span className="text-[#00C896]/50 mt-0.5">●</span> {s}
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <h4 className="text-xs font-bold text-[#FF6B35] uppercase tracking-widest mb-4 flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#FF6B35]" />
-              需探索领域
-            </h4>
-            <ul className="space-y-3">
-              {profile.weaknesses.map((w, i) => (
-                <li key={i} className="text-sm text-gray-300 flex items-start gap-2 leading-relaxed">
-                  <span className="text-[#FF6B35]/50 mt-0.5">●</span> {w}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
+        <h4 className="text-xs font-bold text-[#FF6B35] uppercase tracking-widest mb-4 flex items-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#FF6B35]" />
+          需探索领域
+        </h4>
+        <ul className="space-y-3">
+          {profile.weaknesses.map((w, i) => (
+            <li key={i} className="text-sm text-gray-300 flex items-start gap-2 leading-relaxed">
+              <span className="text-[#FF6B35]/50 mt-0.5">●</span> {w}
+            </li>
+          ))}
+        </ul>
       </motion.div>
 
       {/* 8. Interview Questions */}
