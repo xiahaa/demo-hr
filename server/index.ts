@@ -80,12 +80,31 @@ const server = serve({
 });
 
 // Graceful shutdown handlers
+let isShuttingDown = false;
 const shutdown = (signal: string) => {
+  if (isShuttingDown) {
+    console.log(`${signal} received but shutdown already in progress`);
+    return;
+  }
+  isShuttingDown = true;
+  
   console.log(`${signal} received, closing server and database connection...`);
-  server.close(() => {
-    console.log('Server closed');
+  
+  // Set a timeout to force exit if graceful shutdown takes too long
+  const forceExitTimeout = setTimeout(() => {
+    console.error('Graceful shutdown timed out, forcing exit...');
+    process.exit(1);
+  }, 10000); // 10 second timeout
+  
+  server.close((err) => {
+    if (err) {
+      console.error('Error closing server:', err);
+    } else {
+      console.log('Server closed');
+    }
     closeDatabase();
     console.log('Database connection closed, exiting...');
+    clearTimeout(forceExitTimeout);
     process.exit(0);
   });
 };
