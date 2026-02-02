@@ -29,7 +29,7 @@ npm run dev
 
 ## Key Changes at a Glance
 
-### 1. Data Collection (`services/github.ts`)
+### 1. Data Collection (`server/lib/github.ts`)
 
 ```diff
 - Fetches 10 repos
@@ -73,8 +73,8 @@ Example:
 
 | File | Lines Changed | Purpose |
 |------|---------------|---------|
-| `services/github.ts` | +95 new | Language statistics & baseline calculation |
-| `services/analyzer.ts` | +120 modified | Enhanced prompting & fallback logic |
+| `server/lib/github.ts` | +95 new | Language statistics & baseline calculation |
+| `server/lib/analyzer.ts` | +120 modified | Enhanced prompting & fallback logic |
 | `services/mockData.ts` | +6 new | Added missing suggestedQuestions |
 
 ## New Documentation
@@ -165,7 +165,7 @@ Example:
 **A:** The fallback mechanism uses code-based calculation. You'll only see "insufficient signal" if the user truly has no code (rare).
 
 ### Q: Can I customize the scoring algorithm?
-**A:** Yes! Edit `calculateTechStackFromLanguages()` in `services/github.ts`. Current weights: 70% volume, 30% diversity.
+**A:** Yes! Edit `calculateTechStackFromLanguages()` in `server/lib/github.ts`. Current weights: 70% volume, 30% diversity.
 
 ### Q: What about rate limiting?
 **A:** We add 100ms delay between language API calls. For production, add authentication:
@@ -266,7 +266,7 @@ Before deploying:
 | Detailed analysis | `ANALYSIS_SUMMARY.md` |
 | Implementation details | `IMPROVEMENTS.md` |
 | Testing instructions | `TESTING_GUIDE.md` |
-| Code changes | `services/github.ts`, `services/analyzer.ts` |
+| Code changes | `server/lib/github.ts`, `server/lib/analyzer.ts` |
 
 ---
 
