@@ -32,12 +32,23 @@ export const LoadingScreen: React.FC = () => {
 
       <div className="text-center space-y-3">
         <h2 className="text-2xl font-bold text-white">生成洞察</h2>
-        <p className="text-[#2D5BFF] font-mono text-base tracking-tight animate-pulse h-6">
+        <p
+          role="status"
+          aria-live="polite"
+          className="text-[#2D5BFF] font-mono text-base tracking-tight animate-pulse h-6"
+        >
           {STEPS[stepIndex]}
         </p>
       </div>
 
-      <div className="mt-12 w-64 h-1 bg-white/5 rounded-full overflow-hidden">
+      <div
+        role="progressbar"
+        aria-label="分析进度"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(((stepIndex + 1) / STEPS.length) * 100)}
+        className="mt-12 w-64 h-1 bg-white/5 rounded-full overflow-hidden"
+      >
         <div
           className="h-full bg-gradient-to-r from-[#2D5BFF] to-[#00C896] transition-all duration-500 ease-out"
           style={{ width: `${((stepIndex + 1) / STEPS.length) * 100}%` }}
