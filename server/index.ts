@@ -1,6 +1,7 @@
 import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
+import { createHash } from 'crypto';
 import db from './db';
 import { analyzeCandidate, parseGitHubUsername } from './lib/analyzer';
 
@@ -40,12 +41,13 @@ app.post('/api/analyze', async (c) => {
     }
 
     // Create cache key that includes optional parameters
-    const cacheKeyParts = [
+    // Use hash to avoid separator collisions and keep key consistent
+    const cacheKeyData = JSON.stringify({
       username,
-      scholarUrl || '',
-      linkedinText || ''
-    ];
-    const cacheKey = cacheKeyParts.join('::');
+      scholarUrl: scholarUrl || null,
+      linkedinText: linkedinText || null
+    });
+    const cacheKey = createHash('sha256').update(cacheKeyData).digest('hex');
 
     // Check Cache (7 days)
     const cached = db.prepare(`
@@ -55,7 +57,7 @@ app.post('/api/analyze', async (c) => {
     `).get(cacheKey) as { data: string } | undefined;
 
     if (cached) {
-      console.log(`Cache hit for ${username} with key: ${cacheKey}`);
+      console.log(`Cache hit for ${username} (scholar: ${!!scholarUrl}, linkedin: ${!!linkedinText})`);
       return c.json(JSON.parse(cached.data));
     }
 

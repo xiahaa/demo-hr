@@ -13,25 +13,31 @@ db.exec(`
 `);
 
 // Handle cached_profiles table with schema migration
-try {
-  // Try to create new schema
+interface TableColumn {
+  name: string;
+  type: string;
+}
+
+const tableInfo = db.prepare("PRAGMA table_info(cached_profiles)").all() as TableColumn[];
+
+if (tableInfo.length === 0) {
+  // Table doesn't exist, create it with new schema
   db.exec(`
-    CREATE TABLE IF NOT EXISTS cached_profiles (
+    CREATE TABLE cached_profiles (
       cache_key TEXT PRIMARY KEY,
       username TEXT,
       data TEXT,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
   `);
-} catch (e) {
-  // Table might exist with old schema, migrate it
-  const tableInfo = db.prepare("PRAGMA table_info(cached_profiles)").all() as any[];
-  const hasCacheKey = tableInfo.some((col: any) => col.name === 'cache_key');
+} else {
+  // Table exists, check if it has the new schema
+  const hasCacheKey = tableInfo.some((col) => col.name === 'cache_key');
   
   if (!hasCacheKey) {
     console.log('Migrating cached_profiles table to new schema...');
     db.exec(`
-      DROP TABLE IF EXISTS cached_profiles;
+      DROP TABLE cached_profiles;
       CREATE TABLE cached_profiles (
         cache_key TEXT PRIMARY KEY,
         username TEXT,
