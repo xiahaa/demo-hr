@@ -29,7 +29,7 @@ export const Landing: React.FC<LandingProps> = ({ onAnalyze }) => {
           揭示工程学的深度。
         </h1>
         <p className="text-lg text-gray-400">
-          粘贴 GitHub 个人资料 URL，让 GitTalent AI 在几秒钟内可视化技术卓越性、
+          粘贴 GitHub 个人资料 URL，让探才宝 AI 在几秒钟内可视化技术卓越性、
           学术影响力和市场价值。
         </p>
       </div>
