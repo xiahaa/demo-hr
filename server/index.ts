@@ -80,6 +80,7 @@ const server = serve({
 });
 
 // Graceful shutdown handlers
+const SHUTDOWN_TIMEOUT_MS = 10000;
 let isShuttingDown = false;
 const shutdown = (signal: string) => {
   if (isShuttingDown) {
@@ -94,7 +95,7 @@ const shutdown = (signal: string) => {
   const forceExitTimeout = setTimeout(() => {
     console.error('Graceful shutdown timed out, forcing exit...');
     process.exit(1);
-  }, 10000); // 10 second timeout
+  }, SHUTDOWN_TIMEOUT_MS);
   
   server.close((err) => {
     if (err) {
