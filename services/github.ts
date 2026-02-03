@@ -45,17 +45,21 @@ export async function aggregateLanguageStats(username: string, repos: any[]) {
 
   // Process top repositories to get language data
   const topRepos = repos.slice(0, 30); // Analyze top 30 repos
+  const BATCH_SIZE = 5;
 
-  for (const repo of topRepos) {
-    const languages = await fetchRepoLanguages(username, repo.name);
-    if (languages) {
-      for (const [lang, bytes] of Object.entries(languages)) {
-        languageStats[lang] = (languageStats[lang] || 0) + (bytes as number);
-        repoCount[lang] = (repoCount[lang] || 0) + 1;
+  for (let i = 0; i < topRepos.length; i += BATCH_SIZE) {
+    const batch = topRepos.slice(i, i + BATCH_SIZE);
+
+    // Process batch concurrently
+    await Promise.all(batch.map(async (repo) => {
+      const languages = await fetchRepoLanguages(username, repo.name);
+      if (languages) {
+        for (const [lang, bytes] of Object.entries(languages)) {
+          languageStats[lang] = (languageStats[lang] || 0) + (bytes as number);
+          repoCount[lang] = (repoCount[lang] || 0) + 1;
+        }
       }
-    }
-    // Small delay to avoid rate limiting
-    await new Promise(resolve => setTimeout(resolve, 100));
+    }));
   }
 
   return { languageStats, repoCount };
