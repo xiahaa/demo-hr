@@ -164,19 +164,21 @@ export function extractTechnologies(html: string, textContent: string): string[]
  * Extract plain text from HTML content
  */
 export function extractTextContent(html: string): string {
-  // Remove script and style tags
-  let text = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, ' ');
-  text = text.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, ' ');
+  // Remove script and style tags completely (handles all edge cases including whitespace in closing tags)
+  // Using [\s\S]*? to match any character including newlines, and \s* to handle whitespace before >
+  let text = html.replace(/<script[\s\S]*?<\/script[\s\S]*?>/gi, ' ');
+  text = text.replace(/<style[\s\S]*?<\/style[\s\S]*?>/gi, ' ');
   
   // Remove HTML tags
   text = text.replace(/<[^>]+>/g, ' ');
   
-  // Decode HTML entities (basic ones)
+  // Decode HTML entities (basic ones) - do this AFTER removing tags to avoid double-escaping
+  // Order matters: decode &amp; last to avoid issues with other entities
   text = text.replace(/&nbsp;/g, ' ');
-  text = text.replace(/&amp;/g, '&');
   text = text.replace(/&lt;/g, '<');
   text = text.replace(/&gt;/g, '>');
   text = text.replace(/&quot;/g, '"');
+  text = text.replace(/&amp;/g, '&'); // Do &amp; last
   
   // Clean up whitespace
   text = text.replace(/\s+/g, ' ').trim();
