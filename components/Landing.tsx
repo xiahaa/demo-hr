@@ -1,22 +1,23 @@
 import React, { useState } from 'react';
 
 interface LandingProps {
-  onAnalyze: (githubUrl: string, scholarUrl?: string, linkedinText?: string) => void;
+  onAnalyze: (githubUrl: string, scholarUrl?: string, linkedinText?: string, personalWebsiteUrl?: string) => void;
 }
 
 export const Landing: React.FC<LandingProps> = ({ onAnalyze }) => {
   const [githubUrl, setGithubUrl] = useState('');
   const [scholarUrl, setScholarUrl] = useState('');
   const [linkedinText, setLinkedinText] = useState('');
+  const [personalWebsiteUrl, setPersonalWebsiteUrl] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!githubUrl.trim()) return;
-    onAnalyze(githubUrl, scholarUrl, linkedinText);
+    onAnalyze(githubUrl, scholarUrl, linkedinText, personalWebsiteUrl);
   };
 
   const handleDemo = () => {
-    onAnalyze('demo', '', '');
+    onAnalyze('demo', '', '', '');
   };
 
   return (
@@ -75,6 +76,20 @@ export const Landing: React.FC<LandingProps> = ({ onAnalyze }) => {
             value={linkedinText}
             onChange={(e) => setLinkedinText(e.target.value)}
           />
+        </div>
+
+        <div className="w-full">
+          <input
+            type="text"
+            aria-label="个人网站链接"
+            placeholder="个人网站 URL（可选，不包括 GitHub/LinkedIn/Scholar）"
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#2D5BFF]/30 focus:border-[#2D5BFF] transition-all text-base placeholder:text-gray-600"
+            value={personalWebsiteUrl}
+            onChange={(e) => setPersonalWebsiteUrl(e.target.value)}
+          />
+          <p className="text-xs text-gray-500 mt-2 px-2">
+            注意：仅抓取允许爬取的网站（遵守 robots.txt 规范）
+          </p>
         </div>
       </form>
 

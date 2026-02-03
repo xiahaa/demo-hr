@@ -15,6 +15,16 @@ export interface Repository {
   updatedAt: string;
 }
 
+export interface PersonalWebsiteData {
+  url: string;
+  title: string | null;
+  description: string | null;
+  technologies: string[];
+  skills: string[];
+  canScrape: boolean;
+  scrapingDisallowed?: boolean;
+}
+
 export interface CandidateProfile {
   name: string;
   username: string;
@@ -22,7 +32,8 @@ export interface CandidateProfile {
   oneLiner: string;
   location: string;
   email: string | null;
-  website?: string | null; // Personal website or blog
+  website?: string | null; // Personal website or blog (from GitHub profile)
+  personalWebsiteData?: PersonalWebsiteData | null; // Scraped data from personal website
   engineeringScore: number; // 0-100
   salaryEstimate: {
     min: number;

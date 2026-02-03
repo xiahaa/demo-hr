@@ -1,5 +1,5 @@
 
-import { CandidateProfile, TechStackItem } from "../types";
+import { CandidateProfile, TechStackItem, PersonalWebsiteData } from "../types";
 import {
   fetchGitHubProfile,
   fetchGitHubRepos,
@@ -7,8 +7,9 @@ import {
   aggregateLanguageStats,
   calculateTechStackFromLanguages
 } from "./github";
+import { fetchPersonalWebsite } from "./website";
 
-type AiAnalysis = Omit<CandidateProfile, "username" | "avatarUrl" | "location" | "email" | "topRepositories">;
+type AiAnalysis = Omit<CandidateProfile, "username" | "avatarUrl" | "location" | "email" | "topRepositories" | "personalWebsiteData">;
 
 function selectDeepSeekModel(context: Record<string, unknown>): string {
   const chatModel = process.env.DEEPSEEK_CHAT_MODEL || "deepseek-chat";
@@ -22,6 +23,7 @@ function selectDeepSeekModel(context: Record<string, unknown>): string {
   const linkedinLength = ((context.additionalContext as string) || "").length;
   const publicRepos = Number(context.publicRepos || 0);
   const hasScholar = Boolean(context.scholar && context.scholar !== "None");
+  const hasPersonalWebsite = Boolean(context.personalWebsite);
 
   let complexityScore = 0;
   complexityScore += Math.min(repos.length, 10);
@@ -29,6 +31,7 @@ function selectDeepSeekModel(context: Record<string, unknown>): string {
   complexityScore += linkedinLength > 2000 ? 3 : linkedinLength > 800 ? 2 : linkedinLength > 0 ? 1 : 0;
   complexityScore += publicRepos > 50 ? 2 : publicRepos > 10 ? 1 : 0;
   complexityScore += hasScholar ? 1 : 0;
+  complexityScore += hasPersonalWebsite ? 1 : 0;
 
   return complexityScore >= 6 ? reasonerModel : chatModel;
 }
@@ -173,13 +176,15 @@ ${JSON.stringify(fallbackTechStack, null, 2)}
    - 星标/复刻数表明的社区验证
    - 近期活动显示当前专业技能
    - README描述揭示的深度
-   如果基准为空，从仓库名称、描述和语言推断。
+   - 个人网站中提到的技术（如果提供）
+   如果基准为空，从仓库名称、描述、语言和个人网站推断。
 
 2. **工程评分**(0-100): 考虑：
    - 代码复杂度（标星仓库、复刻、问题）
    - 一致性（定期提交、维护项目）
    - 影响力（关注者、热门仓库）
    - 文档质量
+   - 个人网站的专业性和内容（如果提供）
 
 3. **经验等级**: 初级(0-2年), 中级(2-5年), 高级(5-10年), 资深(10年以上), 首席(15年以上，有领导力)
 
@@ -195,7 +200,7 @@ ${JSON.stringify(fallbackTechStack, null, 2)}
    - 项目类型和专业领域
    - 领导力和影响力指标
 
-8. **优势**: 3-5个基于档案的具体、证据支撑的优势
+8. **优势**: 3-5个基于档案的具体、证据支撑的优势（结合个人网站信息，如果有）
 
 9. **弱点**: 2-4个需要探索的领域（不是缺陷，而是可以探索的差距）
 
@@ -237,16 +242,18 @@ ${JSON.stringify(schemaExample, null, 2)}
 export async function analyzeCandidate(
   githubUrl: string,
   scholarUrl?: string,
-  linkedinText?: string
+  linkedinText?: string,
+  personalWebsiteUrl?: string
 ): Promise<CandidateProfile> {
   const username = parseGitHubUsername(githubUrl);
   if (!username) throw new Error('Invalid GitHub URL');
 
-  // 1. Fetch real raw data
-  const [profileData, reposData, email] = await Promise.all([
+  // 1. Fetch real raw data (including personal website)
+  const [profileData, reposData, email, personalWebsiteData] = await Promise.all([
     fetchGitHubProfile(username),
     fetchGitHubRepos(username),
-    findEmail(username)
+    findEmail(username),
+    personalWebsiteUrl ? fetchPersonalWebsite(personalWebsiteUrl) : Promise.resolve(null)
   ]);
 
   if (!profileData) {
@@ -286,7 +293,14 @@ export async function analyzeCandidate(
     languageStatistics: languageStats,
     repoCountByLanguage: repoCount,
     additionalContext: sanitizeInputText(linkedinText || '', 10000),
-    scholar: validateScholarUrl(scholarUrl || '') || 'None'
+    scholar: validateScholarUrl(scholarUrl || '') || 'None',
+    personalWebsite: personalWebsiteData && personalWebsiteData.canScrape ? {
+      title: personalWebsiteData.title,
+      description: personalWebsiteData.description,
+      technologies: personalWebsiteData.technologies,
+      skills: personalWebsiteData.skills,
+      content: personalWebsiteData.content
+    } : null
   };
 
   // 4. Run DeepSeek analysis with fallback tech stack
@@ -311,6 +325,15 @@ export async function analyzeCandidate(
     location: profileData.location || 'Remote / Unknown',
     email: email || profileData.email || null,
     website: profileData.blog || null,
+    personalWebsiteData: personalWebsiteData ? {
+      url: personalWebsiteData.url,
+      title: personalWebsiteData.title,
+      description: personalWebsiteData.description,
+      technologies: personalWebsiteData.technologies,
+      skills: personalWebsiteData.skills,
+      canScrape: personalWebsiteData.canScrape,
+      scrapingDisallowed: personalWebsiteData.scrapingDisallowed
+    } : null,
     topRepositories: sortedRepos.slice(0, 6).map((r: any) => ({
       name: r.name,
       description: r.description,
