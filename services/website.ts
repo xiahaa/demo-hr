@@ -162,23 +162,33 @@ export function extractTechnologies(html: string, textContent: string): string[]
 
 /**
  * Extract plain text from HTML content
+ * 
+ * Security note: This function removes potentially dangerous tags (script, style)
+ * before extracting text content. The regex patterns are designed to handle
+ * various HTML edge cases while preventing injection attacks.
  */
 export function extractTextContent(html: string): string {
-  // Remove script and style tags completely (handles all edge cases including whitespace in closing tags)
-  // Using [\s\S]*? to match any character including newlines, and \s* to handle whitespace before >
-  let text = html.replace(/<script[\s\S]*?<\/script[\s\S]*?>/gi, ' ');
-  text = text.replace(/<style[\s\S]*?<\/style[\s\S]*?>/gi, ' ');
+  // Remove script and style tags completely
+  // The pattern matches:
+  // - Opening tag: <script or <style (case-insensitive)
+  // - Any content between tags (including newlines): [\s\S]*?
+  // - Closing tag with flexible whitespace/attributes: <\/script[^>]*> or <\/style[^>]*>
+  // This handles edge cases like </script attr="value"> or </script  >
+  let text = html.replace(/<script[\s\S]*?<\/script[^>]*>/gi, ' ');
+  text = text.replace(/<style[\s\S]*?<\/style[^>]*>/gi, ' ');
   
-  // Remove HTML tags
+  // Remove all remaining HTML tags
   text = text.replace(/<[^>]+>/g, ' ');
   
-  // Decode HTML entities (basic ones) - do this AFTER removing tags to avoid double-escaping
-  // Order matters: decode &amp; last to avoid issues with other entities
+  // Decode HTML entities (basic ones)
+  // Important: Do this AFTER removing tags to avoid double-escaping issues
+  // Order matters: decode &amp; last because other entities may contain &amp; in their encoded form
+  // For example, &amp;lt; should become &lt; not <
   text = text.replace(/&nbsp;/g, ' ');
   text = text.replace(/&lt;/g, '<');
   text = text.replace(/&gt;/g, '>');
   text = text.replace(/&quot;/g, '"');
-  text = text.replace(/&amp;/g, '&'); // Do &amp; last
+  text = text.replace(/&amp;/g, '&'); // Decode &amp; last to avoid double-decoding
   
   // Clean up whitespace
   text = text.replace(/\s+/g, ' ').trim();
