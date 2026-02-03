@@ -105,6 +105,7 @@ function normalizeAiResult(result: Partial<AiAnalysis>, fullName: string): AiAna
     techStack: validatedTechStack,
     salaryEstimate: result.salaryEstimate || { min: 0, max: 0, currency: "USD" },
     suggestedQuestions: Array.isArray(result.suggestedQuestions) ? result.suggestedQuestions : [],
+    recommendedPositions: Array.isArray(result.recommendedPositions) ? result.recommendedPositions : [],
     strengths: Array.isArray(result.strengths) ? result.strengths : [],
     weaknesses: Array.isArray(result.weaknesses) ? result.weaknesses : [],
     academicStats: result.academicStats || null
@@ -141,6 +142,11 @@ async function runDeepSeekAnalysis(
     suggestedQuestions: [
       "技术问题1？",
       "技术问题2？"
+    ],
+    recommendedPositions: [
+      "高级全栈工程师",
+      "前端架构师",
+      "技术负责人"
     ],
     strengths: [
       "基于他们工作的具体优势",
@@ -183,11 +189,17 @@ ${JSON.stringify(fallbackTechStack, null, 2)}
 
 6. **建议问题**: 基于他们的技术栈和项目类型提供4-6个具体的面试技术问题
 
-7. **优势**: 3-5个基于档案的具体、证据支撑的优势
+7. **推荐岗位**: 基于候选人的技术栈、经验等级和项目类型，提供3-5个最适合的岗位名称。考虑：
+   - 技术栈匹配度
+   - 经验等级和职业发展路径
+   - 项目类型和专业领域
+   - 领导力和影响力指标
 
-8. **弱点**: 2-4个需要探索的领域（不是缺陷，而是可以探索的差距）
+8. **优势**: 3-5个基于档案的具体、证据支撑的优势
 
-9. **学术统计**: 仅在提供scholarUrl时填写，否则设为null
+9. **弱点**: 2-4个需要探索的领域（不是缺陷，而是可以探索的差距）
+
+10. **学术统计**: 仅在提供scholarUrl时填写，否则设为null
 
 重要: 返回完全符合此JSON结构的输出:
 ${JSON.stringify(schemaExample, null, 2)}
@@ -298,6 +310,7 @@ export async function analyzeCandidate(
     avatarUrl: profileData.avatar_url,
     location: profileData.location || 'Remote / Unknown',
     email: email || profileData.email || null,
+    website: profileData.blog || null,
     topRepositories: sortedRepos.slice(0, 6).map((r: any) => ({
       name: r.name,
       description: r.description,

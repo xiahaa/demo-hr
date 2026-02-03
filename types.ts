@@ -7,6 +7,8 @@ export interface TechStackItem {
 export interface Repository {
   name: string;
   description: string;
+  summary?: string; // One-sentence project summary
+  useCases?: string[]; // Common application scenarios
   stars: number;
   language: string;
   url: string;
@@ -20,6 +22,7 @@ export interface CandidateProfile {
   oneLiner: string;
   location: string;
   email: string | null;
+  website?: string | null; // Personal website or blog
   engineeringScore: number; // 0-100
   salaryEstimate: {
     min: number;
@@ -29,6 +32,7 @@ export interface CandidateProfile {
   techStack: TechStackItem[];
   topRepositories: Repository[];
   suggestedQuestions: string[];
+  recommendedPositions: string[];
   academicStats: {
     citations: number;
     hIndex: number;
