@@ -33,6 +33,24 @@ function selectDeepSeekModel(context: Record<string, unknown>): string {
   return complexityScore >= 6 ? reasonerModel : chatModel;
 }
 
+export function validateScholarUrl(url: string): string | undefined {
+  if (!url || !url.trim()) return undefined;
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+      return url;
+    }
+  } catch {
+    // invalid url
+  }
+  return undefined;
+}
+
+export function sanitizeInputText(text: string, maxLength: number): string {
+  if (!text) return '';
+  return text.slice(0, maxLength);
+}
+
 export function parseGitHubUsername(githubUrl: string): string {
   const trimmed = githubUrl.trim();
   if (!trimmed) return "";
@@ -255,8 +273,8 @@ export async function analyzeCandidate(
     })),
     languageStatistics: languageStats,
     repoCountByLanguage: repoCount,
-    additionalContext: linkedinText || '',
-    scholar: scholarUrl || 'None'
+    additionalContext: sanitizeInputText(linkedinText || '', 10000),
+    scholar: validateScholarUrl(scholarUrl || '') || 'None'
   };
 
   // 4. Run DeepSeek analysis with fallback tech stack
