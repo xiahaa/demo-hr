@@ -172,8 +172,9 @@ export function extractTextContent(html: string): string {
   // The pattern matches:
   // - Opening tag: <script or <style (case-insensitive)
   // - Any content between tags (including newlines): [\s\S]*?
-  // - Closing tag with flexible whitespace/attributes: <\/script[^>]*> or <\/style[^>]*>
-  // This handles edge cases like </script attr="value"> or </script  >
+  // - Closing tag with flexible matching: <\/script[^>]*> or <\/style[^>]*>
+  // Note: [^>]* handles malformed HTML like </script attr> which shouldn't have attributes
+  // but may exist in the wild due to HTML generation errors or attacks
   let text = html.replace(/<script[\s\S]*?<\/script[^>]*>/gi, ' ');
   text = text.replace(/<style[\s\S]*?<\/style[^>]*>/gi, ' ');
   
@@ -182,13 +183,14 @@ export function extractTextContent(html: string): string {
   
   // Decode HTML entities (basic ones)
   // Important: Do this AFTER removing tags to avoid double-escaping issues
-  // Order matters: decode &amp; last because other entities may contain &amp; in their encoded form
-  // For example, &amp;lt; should become &lt; not <
+  // Order matters: decode &amp; last to prevent corrupting already-decoded entities
+  // Example: &amp;amp; should become &amp; then & (not & then & which would be wrong)
+  // If we decoded &amp; first, then &amp;lt; would incorrectly remain as &lt; instead of becoming <
   text = text.replace(/&nbsp;/g, ' ');
   text = text.replace(/&lt;/g, '<');
   text = text.replace(/&gt;/g, '>');
   text = text.replace(/&quot;/g, '"');
-  text = text.replace(/&amp;/g, '&'); // Decode &amp; last to avoid double-decoding
+  text = text.replace(/&amp;/g, '&'); // Decode &amp; last to prevent corruption of other entities
   
   // Clean up whitespace
   text = text.replace(/\s+/g, ' ').trim();

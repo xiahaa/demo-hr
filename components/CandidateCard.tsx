@@ -380,10 +380,10 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
               href={profile.personalWebsiteData.url}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="访问个人网站（在新窗口中打开）"
               className="inline-flex items-center gap-2 text-xs text-[#2D5BFF] hover:text-[#00C896] transition-colors"
             >
               访问网站 <ExternalLink className="w-3 h-3" aria-hidden="true" />
+              <span className="sr-only">（在新窗口中打开）</span>
             </a>
           </div>
         </motion.div>
@@ -403,10 +403,10 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
               href={profile.personalWebsiteData.url} 
               target="_blank" 
               rel="noopener noreferrer" 
-              aria-label={`访问 ${profile.personalWebsiteData.url}（在新窗口中打开）`}
               className="text-yellow-400 hover:underline"
             >
               {profile.personalWebsiteData.url}
+              <span className="sr-only">（在新窗口中打开）</span>
             </a> 的 robots.txt 不允许爬取内容。
           </p>
         </motion.div>
