@@ -326,7 +326,96 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
         </ul>
       </motion.div>
 
-      {/* 8. Interview Questions */}
+      {/* 8. Personal Website Data (if available) */}
+      {profile.personalWebsiteData && profile.personalWebsiteData.canScrape && (
+        <motion.div
+          variants={itemVariants}
+          className="md:col-span-2 bg-white/5 border border-white/10 rounded-3xl p-8 glass bento-card"
+        >
+          <h4 className="text-xs font-bold text-[#00C896] uppercase tracking-widest mb-4 flex items-center gap-2">
+            <Globe className="w-4 h-4" />
+            个人网站信息
+          </h4>
+          <div className="space-y-4">
+            {profile.personalWebsiteData.title && (
+              <div>
+                <span className="text-xs text-gray-500 font-semibold uppercase tracking-wide">网站标题</span>
+                <p className="text-sm text-gray-300 mt-1">{profile.personalWebsiteData.title}</p>
+              </div>
+            )}
+            {profile.personalWebsiteData.description && (
+              <div>
+                <span className="text-xs text-gray-500 font-semibold uppercase tracking-wide">网站描述</span>
+                <p className="text-sm text-gray-300 mt-1">{profile.personalWebsiteData.description}</p>
+              </div>
+            )}
+            {profile.personalWebsiteData.technologies && profile.personalWebsiteData.technologies.length > 0 && (
+              <div>
+                <span className="text-xs text-gray-500 font-semibold uppercase tracking-wide">提到的技术</span>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {profile.personalWebsiteData.technologies.map((tech, i) => (
+                    <span 
+                      key={i}
+                      className="px-3 py-1 rounded-lg bg-[#2D5BFF]/20 border border-[#2D5BFF]/30 text-gray-200 text-xs font-medium"
+                    >
+                      {tech}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            {profile.personalWebsiteData.skills && profile.personalWebsiteData.skills.length > 0 && (
+              <div>
+                <span className="text-xs text-gray-500 font-semibold uppercase tracking-wide">技能关键词</span>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {profile.personalWebsiteData.skills.slice(0, 8).map((skill, i) => (
+                    <span 
+                      key={i}
+                      className="px-3 py-1 rounded-lg bg-[#00C896]/20 border border-[#00C896]/30 text-gray-200 text-xs"
+                    >
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            <a
+              href={profile.personalWebsiteData.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-xs text-[#2D5BFF] hover:text-[#00C896] transition-colors"
+            >
+              访问网站 <ExternalLink className="w-3 h-3" aria-hidden="true" />
+              <span className="sr-only">（在新窗口中打开）</span>
+            </a>
+          </div>
+        </motion.div>
+      )}
+      
+      {profile.personalWebsiteData && profile.personalWebsiteData.scrapingDisallowed && (
+        <motion.div
+          variants={itemVariants}
+          className="md:col-span-2 bg-yellow-500/10 border border-yellow-500/20 rounded-3xl p-6 glass bento-card"
+        >
+          <h4 className="text-xs font-bold text-yellow-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+            <Globe className="w-4 h-4" />
+            个人网站
+          </h4>
+          <p className="text-sm text-gray-400">
+            网站 <a 
+              href={profile.personalWebsiteData.url} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="text-yellow-400 hover:underline"
+            >
+              {profile.personalWebsiteData.url}
+              <span className="sr-only">（在新窗口中打开）</span>
+            </a> 的 robots.txt 不允许爬取内容。
+          </p>
+        </motion.div>
+      )}
+
+      {/* 9. Interview Questions */}
       <motion.div
         variants={itemVariants}
         className="md:col-span-2 bg-white/5 border border-white/10 rounded-3xl p-8 glass bento-card"
@@ -348,7 +437,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
         )}
       </motion.div>
 
-      {/* 9. Recommended Positions */}
+      {/* 10. Recommended Positions */}
       <motion.div
         variants={itemVariants}
         className="md:col-span-2 bg-white/5 border border-white/10 rounded-3xl p-8 glass bento-card"

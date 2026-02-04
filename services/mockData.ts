@@ -8,6 +8,14 @@ export const MOCK_PROFILE: CandidateProfile = {
   location: "San Francisco, CA",
   email: "sarah.chen@example.com",
   website: "https://sarahchen.dev",
+  personalWebsiteData: {
+    url: "https://sarahchen.dev",
+    title: "Sarah Chen - Full Stack Architect",
+    description: "Personal website and blog about distributed systems, React performance, and web development",
+    technologies: ["React", "TypeScript", "Node.js", "Rust", "GraphQL", "Docker"],
+    skills: ["Full-stack Development", "Performance Optimization", "Distributed Systems", "Open Source Contribution"],
+    canScrape: true
+  },
   engineeringScore: 94,
   experienceLevel: "Senior",
   salaryEstimate: {
