@@ -84,17 +84,29 @@ function selectDeepSeekModel(context: Record<string, unknown>): string {
   return complexityScore >= 6 ? reasonerModel : chatModel;
 }
 
-export function validateScholarUrl(url: string): string | undefined {
+export function sanitizeUrl(url: string): string | undefined {
   if (!url || !url.trim()) return undefined;
+  const trimmed = url.trim();
+
+  let parsed: URL;
   try {
-    const parsed = new URL(url);
-    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
-      return url;
-    }
+    parsed = new URL(trimmed);
   } catch {
-    // invalid url
+    try {
+      parsed = new URL(`https://${trimmed}`);
+    } catch {
+      return undefined;
+    }
+  }
+
+  if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+    return parsed.href;
   }
   return undefined;
+}
+
+export function validateScholarUrl(url: string): string | undefined {
+  return sanitizeUrl(url);
 }
 
 export function sanitizeInputText(text: string, maxLength: number): string {
@@ -345,7 +357,7 @@ export async function analyzeCandidate(
     languageStatistics: languageStats,
     repoCountByLanguage: repoCount,
     additionalContext: sanitizeInputText(linkedinText || '', 10000),
-    scholar: validateScholarUrl(scholarUrl || '') || 'None'
+    scholar: sanitizeUrl(scholarUrl || '') || 'None'
   };
 
   // 4. Run DeepSeek analysis with fallback tech stack
@@ -369,7 +381,7 @@ export async function analyzeCandidate(
     avatarUrl: profileData.avatar_url,
     location: profileData.location || 'Remote / Unknown',
     email: email || profileData.email || null,
-    website: profileData.blog || null,
+    website: sanitizeUrl(profileData.blog || '') || null,
     topRepositories: sortedRepos.slice(0, 6).map((r: any) => ({
       name: r.name,
       description: r.description,

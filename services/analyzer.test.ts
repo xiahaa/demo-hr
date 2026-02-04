@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { parseGitHubUsername, validateScholarUrl, sanitizeInputText, getCacheKey, analyzeCandidate } from './analyzer';
+import { parseGitHubUsername, validateScholarUrl, sanitizeInputText, getCacheKey, analyzeCandidate, sanitizeUrl } from './analyzer';
 import * as github from './github';
 
 // Mock github services
@@ -67,14 +67,36 @@ describe('parseGitHubUsername', () => {
   });
 });
 
+describe('sanitizeUrl', () => {
+  it('should accept valid http/https URLs', () => {
+    expect(sanitizeUrl('https://example.com')).toBe('https://example.com/');
+    expect(sanitizeUrl('http://example.com')).toBe('http://example.com/');
+  });
+
+  it('should add https protocol to urls without protocol', () => {
+    expect(sanitizeUrl('example.com')).toBe('https://example.com/');
+    expect(sanitizeUrl('www.google.com')).toBe('https://www.google.com/');
+  });
+
+  it('should reject dangerous schemes', () => {
+    expect(sanitizeUrl('javascript:alert(1)')).toBeUndefined();
+    expect(sanitizeUrl('data:text/html,alert(1)')).toBeUndefined();
+    expect(sanitizeUrl('vbscript:msgbox')).toBeUndefined();
+    expect(sanitizeUrl('file:///etc/passwd')).toBeUndefined();
+  });
+});
+
 describe('validateScholarUrl', () => {
   it('should accept valid http/https URLs', () => {
     expect(validateScholarUrl('https://scholar.google.com/citations?user=123')).toBe('https://scholar.google.com/citations?user=123');
     expect(validateScholarUrl('http://scholar.google.com/citations?user=123')).toBe('http://scholar.google.com/citations?user=123');
   });
 
+  it('should normalize URLs without protocol', () => {
+    expect(validateScholarUrl('scholar.google.com')).toBe('https://scholar.google.com/');
+  });
+
   it('should reject invalid URLs', () => {
-    expect(validateScholarUrl('not-a-url')).toBeUndefined();
     expect(validateScholarUrl('ftp://scholar.google.com')).toBeUndefined();
     expect(validateScholarUrl('')).toBeUndefined();
   });
