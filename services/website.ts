@@ -231,6 +231,55 @@ export function extractSkills(textContent: string): string[] {
 }
 
 /**
+ * Check if a hostname is a private IP address or local domain
+ * Prevents SSRF attacks on local networks
+ */
+export function isPrivateHostname(hostname: string): boolean {
+  // Check for localhost and local domains
+  if (hostname === 'localhost' || hostname.endsWith('.local') || hostname.endsWith('.localhost')) {
+    return true;
+  }
+
+  // IPv6 check for localhost
+  if (hostname === '[::1]' || hostname === '::1') {
+    return true;
+  }
+
+  // IPv4 check
+  // Matches 1.2.3.4 format
+  const ipv4Regex = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
+  const match = hostname.match(ipv4Regex);
+
+  if (match) {
+    const parts = match.slice(1).map(Number);
+    // Check for valid byte range 0-255
+    if (parts.some(p => p < 0 || p > 255)) return false;
+
+    const [a, b] = parts;
+
+    // 127.0.0.0/8 (Loopback)
+    if (a === 127) return true;
+
+    // 10.0.0.0/8 (Private)
+    if (a === 10) return true;
+
+    // 192.168.0.0/16 (Private)
+    if (a === 192 && b === 168) return true;
+
+    // 172.16.0.0/12 (Private)
+    if (a === 172 && b >= 16 && b <= 31) return true;
+
+    // 169.254.0.0/16 (Link-local)
+    if (a === 169 && b === 254) return true;
+
+    // 0.0.0.0/8 (Current network)
+    if (a === 0) return true;
+  }
+
+  return false;
+}
+
+/**
  * Validate and sanitize a personal website URL
  */
 export function validatePersonalWebsiteUrl(url: string): string | null {
@@ -260,6 +309,13 @@ export function validatePersonalWebsiteUrl(url: string): string | null {
       return null;
     }
 
+    const hostname = parsed.hostname.toLowerCase();
+
+    // Security: Block private IP addresses and localhost to prevent SSRF
+    if (isPrivateHostname(hostname)) {
+      return null;
+    }
+
     // Block known platforms that are already handled elsewhere
     const blockedDomains = [
       'github.com',
@@ -272,7 +328,6 @@ export function validatePersonalWebsiteUrl(url: string): string | null {
       'instagram.com'
     ];
 
-    const hostname = parsed.hostname.toLowerCase();
     for (const blocked of blockedDomains) {
       if (hostname === blocked || hostname.endsWith('.' + blocked)) {
         return null;

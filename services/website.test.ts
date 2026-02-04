@@ -182,6 +182,17 @@ describe('validatePersonalWebsiteUrl', () => {
     expect(validatePersonalWebsiteUrl('')).toBeNull();
     expect(validatePersonalWebsiteUrl('   ')).toBeNull();
   });
+
+  it('should reject private IP addresses and localhost', () => {
+    expect(validatePersonalWebsiteUrl('http://localhost')).toBeNull();
+    expect(validatePersonalWebsiteUrl('http://localhost:8080')).toBeNull();
+    expect(validatePersonalWebsiteUrl('http://127.0.0.1')).toBeNull();
+    expect(validatePersonalWebsiteUrl('http://192.168.1.1')).toBeNull();
+    expect(validatePersonalWebsiteUrl('http://10.0.0.1')).toBeNull();
+    expect(validatePersonalWebsiteUrl('http://172.16.0.1')).toBeNull();
+    expect(validatePersonalWebsiteUrl('http://[::1]')).toBeNull();
+    expect(validatePersonalWebsiteUrl('http://my-macbook.local')).toBeNull();
+  });
 });
 
 describe('checkRobotsTxt', () => {
