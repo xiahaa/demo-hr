@@ -220,18 +220,21 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
           <div className="flex items-center bg-white/5 p-1 rounded-lg border border-white/10">
             <button
               onClick={() => setSortKey('stars')}
+              aria-pressed={sortKey === 'stars'}
               className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${sortKey === 'stars' ? 'bg-[#2D5BFF] text-white shadow-lg shadow-[#2D5BFF]/20' : 'text-gray-500 hover:text-gray-300'}`}
             >
               星标
             </button>
             <button
               onClick={() => setSortKey('date')}
+              aria-pressed={sortKey === 'date'}
               className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${sortKey === 'date' ? 'bg-[#2D5BFF] text-white shadow-lg shadow-[#2D5BFF]/20' : 'text-gray-500 hover:text-gray-300'}`}
             >
               日期
             </button>
             <button
               onClick={() => setSortKey('name')}
+              aria-pressed={sortKey === 'name'}
               className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${sortKey === 'name' ? 'bg-[#2D5BFF] text-white shadow-lg shadow-[#2D5BFF]/20' : 'text-gray-500 hover:text-gray-300'}`}
             >
               名称

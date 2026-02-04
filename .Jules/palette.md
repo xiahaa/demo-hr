@@ -5,3 +5,7 @@
 ## 2025-02-19 - [Async Feedback Accessibility]
 **Learning:** Visual loading indicators (spinners, progress bars) are invisible to screen readers unless explicitly marked. A simple `aria-live="polite"` region turns a silent wait into an informed process.
 **Action:** Always wrap dynamic status text in `role="status"` or `aria-live="polite"` and ensure progress bars have `role="progressbar"` with value attributes.
+
+## 2026-02-03 - [Toggle Button State Accessibility]
+**Learning:** Visual toggle states (e.g., changing background color on active sort buttons) are invisible to screen readers. `aria-pressed` provides the necessary semantic state for toggle buttons or filter groups where one item is active.
+**Action:** Always add `aria-pressed={isActive}` to buttons that toggle state or act as exclusive filters.

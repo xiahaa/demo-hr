@@ -10,6 +10,57 @@ import {
 
 type AiAnalysis = Omit<CandidateProfile, "username" | "avatarUrl" | "location" | "email" | "topRepositories">;
 
+const CACHE_PREFIX = 'gittalent_v1_';
+const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+
+export function getCacheKey(username: string, scholarUrl?: string, linkedinText?: string): string {
+  // Simple hash for text content
+  const hashText = (text: string) => {
+    let hash = 0;
+    for (let i = 0; i < text.length; i++) {
+      const char = text.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash;
+    }
+    return hash;
+  };
+
+  const scholarHash = scholarUrl ? hashText(scholarUrl) : '0';
+  const linkedinHash = linkedinText ? hashText(linkedinText) : '0';
+  return `${CACHE_PREFIX}${username}_${scholarHash}_${linkedinHash}`;
+}
+
+function getCachedProfile(key: string): CandidateProfile | null {
+  try {
+    if (typeof localStorage === 'undefined') return null;
+    const cached = localStorage.getItem(key);
+    if (!cached) return null;
+
+    const { timestamp, data } = JSON.parse(cached);
+    if (Date.now() - timestamp > CACHE_TTL) {
+      localStorage.removeItem(key);
+      return null;
+    }
+
+    return data as CandidateProfile;
+  } catch (err) {
+    console.warn('Error reading from cache:', err);
+    return null;
+  }
+}
+
+function saveCachedProfile(key: string, data: CandidateProfile) {
+  try {
+    if (typeof localStorage === 'undefined') return;
+    localStorage.setItem(key, JSON.stringify({
+      timestamp: Date.now(),
+      data
+    }));
+  } catch (err) {
+    console.warn('Error saving to cache:', err);
+  }
+}
+
 function selectDeepSeekModel(context: Record<string, unknown>): string {
   const chatModel = process.env.DEEPSEEK_CHAT_MODEL || "deepseek-chat";
   const reasonerModel = process.env.DEEPSEEK_REASONER_MODEL || "deepseek-reasoner";
@@ -254,6 +305,14 @@ export async function analyzeCandidate(
   const username = parseGitHubUsername(githubUrl);
   if (!username) throw new Error('Invalid GitHub URL');
 
+  // Check cache
+  const cacheKey = getCacheKey(username, scholarUrl, linkedinText);
+  const cached = getCachedProfile(cacheKey);
+  if (cached) {
+    console.log('Returning cached profile for:', username);
+    return cached;
+  }
+
   // 1. Fetch real raw data
   const [profileData, reposData, email] = await Promise.all([
     fetchGitHubProfile(username),
@@ -316,7 +375,7 @@ export async function analyzeCandidate(
   }
 
   // 6. Merge data for final profile
-  return {
+  const finalProfile = {
     ...aiResult,
     username,
     avatarUrl: profileData.avatar_url,
@@ -332,4 +391,9 @@ export async function analyzeCandidate(
       updatedAt: r.updated_at
     }))
   };
+
+  // Save to cache
+  saveCachedProfile(cacheKey, finalProfile);
+
+  return finalProfile;
 }
