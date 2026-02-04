@@ -53,7 +53,7 @@ export const Landing: React.FC<LandingProps> = ({ onAnalyze }) => {
             type="submit"
             disabled={!githubUrl.trim()}
             aria-label="分析个人资料"
-            className="absolute right-3 top-3 bottom-3 bg-[#2D5BFF] hover:bg-[#2D5BFF]/90 text-white px-8 rounded-xl font-bold transition-all shadow-lg shadow-[#2D5BFF]/20 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="absolute right-3 top-3 bottom-3 bg-[#2D5BFF] hover:bg-[#2D5BFF]/90 text-white px-8 rounded-xl font-bold transition-all shadow-lg shadow-[#2D5BFF]/20 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#2D5BFF]"
           >
             分析
           </button>
@@ -96,7 +96,7 @@ export const Landing: React.FC<LandingProps> = ({ onAnalyze }) => {
       <div className="mt-8">
         <button
           onClick={handleDemo}
-          className="text-base text-gray-500 hover:text-white transition-colors underline decoration-dotted underline-offset-4"
+          className="text-base text-gray-500 hover:text-white transition-colors underline decoration-dotted underline-offset-4 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D5BFF] p-1"
         >
           查看实时演示
         </button>
