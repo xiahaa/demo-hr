@@ -56,7 +56,7 @@ const App: React.FC = () => {
         <div className="max-w-6xl mx-auto px-4 py-12">
           <button
             onClick={reset}
-            className="mb-8 flex items-center gap-2 text-base text-gray-400 hover:text-white transition-colors group"
+            className="mb-8 flex items-center gap-2 text-base text-gray-400 hover:text-white transition-colors group rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D5BFF]"
           >
             <span className="group-hover:-translate-x-1 transition-transform">←</span>
             新分析
@@ -74,7 +74,7 @@ const App: React.FC = () => {
             <p className="text-base text-gray-400 mb-6">{error}</p>
             <button
               onClick={reset}
-              className="bg-white text-black px-6 py-2 rounded-full font-medium hover:bg-gray-200 transition-colors"
+              className="bg-white text-black px-6 py-2 rounded-full font-medium hover:bg-gray-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D5BFF] focus-visible:ring-offset-2 focus-visible:ring-offset-[#1A1A2E]"
             >
               重试
             </button>

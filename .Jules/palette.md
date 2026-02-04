@@ -9,3 +9,7 @@
 ## 2026-02-03 - [Toggle Button State Accessibility]
 **Learning:** Visual toggle states (e.g., changing background color on active sort buttons) are invisible to screen readers. `aria-pressed` provides the necessary semantic state for toggle buttons or filter groups where one item is active.
 **Action:** Always add `aria-pressed={isActive}` to buttons that toggle state or act as exclusive filters.
+
+## 2025-02-20 - [Dark Mode Focus Visibility]
+**Learning:** In dark-themed, glassmorphism designs, default browser focus rings are often invisible against dark backgrounds or conflict with border styles. Interactive elements (cards, icon buttons) require explicit high-contrast focus rings (e.g., brand color) to be navigable by keyboard.
+**Action:** Add `focus-visible:ring-2 focus-visible:ring-[brandColor] focus-visible:outline-none` to all interactive elements in dark mode interfaces.

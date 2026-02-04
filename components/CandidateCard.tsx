@@ -111,7 +111,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
               href={`https://github.com/${profile.username}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 px-3 py-2 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 hover:border-[#2D5BFF]/30 transition-all"
+              className="flex items-center gap-2 px-3 py-2 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 hover:border-[#2D5BFF]/30 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D5BFF]"
             >
               <Github className="w-5 h-5 text-[#2D5BFF] shrink-0" />
               <span className="text-gray-200 font-medium truncate">github.com/{profile.username}</span>
@@ -121,7 +121,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
                 href={profile.website}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 px-3 py-2 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 hover:border-[#2D5BFF]/30 transition-all"
+                className="flex items-center gap-2 px-3 py-2 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 hover:border-[#2D5BFF]/30 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D5BFF]"
               >
                 <Globe className="w-5 h-5 text-[#2D5BFF] shrink-0" />
                 <span className="text-gray-200 font-medium truncate">{profile.website.replace(/^https?:\/\//, '')}</span>
@@ -221,21 +221,21 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
             <button
               onClick={() => setSortKey('stars')}
               aria-pressed={sortKey === 'stars'}
-              className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${sortKey === 'stars' ? 'bg-[#2D5BFF] text-white shadow-lg shadow-[#2D5BFF]/20' : 'text-gray-500 hover:text-gray-300'}`}
+              className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D5BFF] ${sortKey === 'stars' ? 'bg-[#2D5BFF] text-white shadow-lg shadow-[#2D5BFF]/20' : 'text-gray-500 hover:text-gray-300'}`}
             >
               星标
             </button>
             <button
               onClick={() => setSortKey('date')}
               aria-pressed={sortKey === 'date'}
-              className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${sortKey === 'date' ? 'bg-[#2D5BFF] text-white shadow-lg shadow-[#2D5BFF]/20' : 'text-gray-500 hover:text-gray-300'}`}
+              className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D5BFF] ${sortKey === 'date' ? 'bg-[#2D5BFF] text-white shadow-lg shadow-[#2D5BFF]/20' : 'text-gray-500 hover:text-gray-300'}`}
             >
               日期
             </button>
             <button
               onClick={() => setSortKey('name')}
               aria-pressed={sortKey === 'name'}
-              className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${sortKey === 'name' ? 'bg-[#2D5BFF] text-white shadow-lg shadow-[#2D5BFF]/20' : 'text-gray-500 hover:text-gray-300'}`}
+              className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D5BFF] ${sortKey === 'name' ? 'bg-[#2D5BFF] text-white shadow-lg shadow-[#2D5BFF]/20' : 'text-gray-500 hover:text-gray-300'}`}
             >
               名称
             </button>
@@ -252,7 +252,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.1 }}
-              className="block group p-4 bg-white/5 rounded-2xl hover:bg-white/10 transition-all border border-transparent hover:border-[#2D5BFF]/30"
+              className="block group p-4 bg-white/5 rounded-2xl hover:bg-white/10 transition-all border border-transparent hover:border-[#2D5BFF]/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D5BFF]"
             >
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2 overflow-hidden">
@@ -383,7 +383,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
               href={profile.personalWebsiteData.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-xs text-[#2D5BFF] hover:text-[#00C896] transition-colors"
+              className="inline-flex items-center gap-2 text-xs text-[#2D5BFF] hover:text-[#00C896] transition-colors rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D5BFF]"
             >
               访问网站 <ExternalLink className="w-3 h-3" aria-hidden="true" />
               <span className="sr-only">（在新窗口中打开）</span>
