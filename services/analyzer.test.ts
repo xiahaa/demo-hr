@@ -2,6 +2,12 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { parseGitHubUsername, validateScholarUrl, sanitizeInputText, getCacheKey, analyzeCandidate, sanitizeUrl } from './analyzer';
 import * as github from './github';
 
+// Mock pdfjs-dist for Node.js environment
+vi.mock('pdfjs-dist', () => ({
+  GlobalWorkerOptions: { workerSrc: '' },
+  getDocument: vi.fn(),
+}));
+
 // Mock github services
 vi.mock('./github', () => ({
   fetchGitHubProfile: vi.fn(),

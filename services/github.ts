@@ -44,10 +44,10 @@ export async function aggregateLanguageStats(username: string, repos: any[]) {
   const repoCount: Record<string, number> = {};
 
   // Process top repositories to get language data
-  // Prioritize non-fork repos and limit to top 15 to reduce API calls
+  // Prioritize non-fork repos and limit to top 10 to speed up analysis
   const sourceRepos = repos.filter((r: any) => !r.fork);
   const forkRepos = repos.filter((r: any) => r.fork);
-  const topRepos = [...sourceRepos, ...forkRepos].slice(0, 15);
+  const topRepos = [...sourceRepos, ...forkRepos].slice(0, 10);
 
   const BATCH_SIZE = 5;
 

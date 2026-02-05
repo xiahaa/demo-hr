@@ -40,14 +40,14 @@ describe('aggregateLanguageStats', () => {
     console.log(`Duration: ${duration}ms`);
 
     // Verify correctness
-    // 15 repos (limit) * 100 TS = 1500 TS
-    expect(result.languageStats['TypeScript']).toBe(1500);
-    expect(result.languageStats['JavaScript']).toBe(750);
-    expect(result.repoCount['TypeScript']).toBe(15);
+    // 10 repos (limit) * 100 TS = 1000 TS
+    expect(result.languageStats['TypeScript']).toBe(1000);
+    expect(result.languageStats['JavaScript']).toBe(500);
+    expect(result.repoCount['TypeScript']).toBe(10);
 
     // Verify performance
-    // Target: 15 repos / 5 concurrency = 3 batches
-    // 3 batches * (50ms network + overhead) ~= 150ms + overhead
+    // Target: 10 repos / 5 concurrency = 2 batches
+    // 2 batches * (50ms network + overhead) ~= 100ms + overhead
     // Allowing generous buffer for test env
     expect(duration).toBeLessThan(1000);
   });
@@ -73,23 +73,23 @@ describe('aggregateLanguageStats', () => {
 
     const result = await aggregateLanguageStats('testuser', mockRepos);
 
-    // We expect 15 repos to be analyzed.
-    // 10 sources (all prioritized) + 5 forks (fallback)
-    // 15 * 100 = 1500 TS
-    expect(result.languageStats['TypeScript']).toBe(1500);
+    // We expect 10 repos to be analyzed.
+    // All 10 sources (all prioritized), no forks needed
+    // 10 * 100 = 1000 TS
+    expect(result.languageStats['TypeScript']).toBe(1000);
 
     const calls = (global.fetch as any).mock.calls;
     const languageCalls = calls.filter((c: any[]) => c[0].includes('/languages'));
 
     // Verify total calls
-    expect(languageCalls.length).toBe(15);
+    expect(languageCalls.length).toBe(10);
 
     // Verify all source repos were called
     const sourceCalls = languageCalls.filter((c: any[]) => c[0].includes('source-'));
     expect(sourceCalls.length).toBe(10);
 
-    // Verify only 5 fork repos were called
+    // Verify no fork repos were called (we have enough source repos)
     const forkCalls = languageCalls.filter((c: any[]) => c[0].includes('fork-'));
-    expect(forkCalls.length).toBe(5);
+    expect(forkCalls.length).toBe(0);
   });
 });

@@ -16,7 +16,7 @@ const App: React.FC = () => {
   const [profile, setProfile] = useState<CandidateProfile | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const handleAnalyze = async (githubUrl: string, scholarUrl?: string, linkedinText?: string, personalWebsiteUrl?: string) => {
+  const handleAnalyze = async (githubUrl: string, scholarUrl?: string, linkedinText?: string, personalWebsiteUrl?: string, pdfFile?: File) => {
     setStatus('ANALYZING');
     setError(null);
 
@@ -30,7 +30,7 @@ const App: React.FC = () => {
     }
 
     try {
-      const result = await analyzeCandidate(githubUrl, scholarUrl, linkedinText, personalWebsiteUrl);
+      const result = await analyzeCandidate(githubUrl, scholarUrl, linkedinText, personalWebsiteUrl, pdfFile);
       setProfile(result);
       setStatus('RESULT');
     } catch (err: any) {
