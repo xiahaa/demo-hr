@@ -40,7 +40,7 @@ export interface PDFResumeData {
     education: string[];
     summary: string;
   };
-  numpages: number;
+  numPages: number;
 }
 
 export interface CandidateProfile {

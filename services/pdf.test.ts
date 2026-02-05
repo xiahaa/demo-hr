@@ -12,7 +12,7 @@ describe('PDF Service', () => {
     it('should extract email from PDF text', () => {
       const mockPdfData = {
         text: 'John Doe\nSoftware Engineer\nemail: john.doe@example.com\nPhone: 123-456-7890',
-        numpages: 1
+        numPages: 1
       };
 
       const result = extractCandidateInfoFromPDF(mockPdfData);
@@ -33,7 +33,7 @@ Node.js • Python • Docker
 EXPERIENCE
 Software Engineer at Tech Corp
         `,
-        numpages: 1
+        numPages: 1
       };
 
       const result = extractCandidateInfoFromPDF(mockPdfData);
@@ -53,7 +53,7 @@ Developed web applications
 Senior Developer at StartUp Inc
 2018-2020
         `,
-        numpages: 1
+        numPages: 1
       };
 
       const result = extractCandidateInfoFromPDF(mockPdfData);
@@ -69,7 +69,7 @@ Bachelor of Science in Computer Science
 University of Technology
 2014-2018
         `,
-        numpages: 1
+        numPages: 1
       };
 
       const result = extractCandidateInfoFromPDF(mockPdfData);
@@ -80,7 +80,7 @@ University of Technology
     it('should handle PDFs without structured sections', () => {
       const mockPdfData = {
         text: 'Random text without any structure',
-        numpages: 1
+        numPages: 1
       };
 
       const result = extractCandidateInfoFromPDF(mockPdfData);
@@ -97,7 +97,7 @@ University of Technology
         metadata: {
           author: 'Jane Smith'
         },
-        numpages: 1
+        numPages: 1
       };
 
       const result = extractCandidateInfoFromPDF(mockPdfData);
@@ -108,7 +108,7 @@ University of Technology
     it('should create a summary from text', () => {
       const mockPdfData = {
         text: 'This is a long resume text that should be truncated. ' + 'a'.repeat(1000),
-        numpages: 1
+        numPages: 1
       };
 
       const result = extractCandidateInfoFromPDF(mockPdfData);
@@ -129,7 +129,7 @@ ${Array(20).fill('Job Title at Company\n2020-2021\n').join('')}
 EDUCATION
 ${Array(10).fill('Degree at University\n2014-2018\n').join('')}
         `,
-        numpages: 1
+        numPages: 1
       };
 
       const result = extractCandidateInfoFromPDF(mockPdfData);

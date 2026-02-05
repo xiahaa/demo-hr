@@ -432,7 +432,7 @@ export async function analyzeCandidate(
         education: pdfResult.extractedInfo.education,
         summary: pdfResult.extractedInfo.summary
       },
-      numpages: pdfResult.rawData.numpages
+      numPages: pdfResult.rawData.numPages
     } : null,
     topRepositories: sortedRepos.slice(0, 6).map((r: any) => ({
       name: r.name,

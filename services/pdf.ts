@@ -15,7 +15,7 @@ export interface PDFData {
     creator?: string;
     producer?: string;
   };
-  numpages: number;
+  numPages: number;
 }
 
 /**
@@ -63,7 +63,7 @@ export async function parsePDF(file: File | ArrayBuffer): Promise<PDFData> {
         creator: metadata.info.Creator,
         producer: metadata.info.Producer,
       } : undefined,
-      numpages: numPages
+      numPages: numPages
     };
   } catch (err) {
     console.error('Error parsing PDF:', err);
