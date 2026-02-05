@@ -235,20 +235,30 @@ export function extractSkills(textContent: string): string[] {
  * Prevents SSRF attacks on local networks
  */
 export function isPrivateHostname(hostname: string): boolean {
+  // Normalize hostname to handle short/hex/octal IP formats (e.g. 127.1 -> 127.0.0.1)
+  let normalizedHostname = hostname;
+  try {
+    // Prepend protocol if missing to satisfy URL constructor
+    const urlStr = hostname.includes('://') ? hostname : `http://${hostname}`;
+    normalizedHostname = new URL(urlStr).hostname;
+  } catch {
+    // If parsing fails, continue with original hostname
+  }
+
   // Check for localhost and local domains
-  if (hostname === 'localhost' || hostname.endsWith('.local') || hostname.endsWith('.localhost')) {
+  if (normalizedHostname === 'localhost' || normalizedHostname.endsWith('.local') || normalizedHostname.endsWith('.localhost')) {
     return true;
   }
 
   // IPv6 check for localhost
-  if (hostname === '[::1]' || hostname === '::1') {
+  if (normalizedHostname === '[::1]' || normalizedHostname === '::1') {
     return true;
   }
 
   // IPv4 check
   // Matches 1.2.3.4 format
   const ipv4Regex = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
-  const match = hostname.match(ipv4Regex);
+  const match = normalizedHostname.match(ipv4Regex);
 
   if (match) {
     const parts = match.slice(1).map(Number);
