@@ -12,14 +12,17 @@ export const JDMatch: React.FC<JDMatchProps> = ({ onAnalyze }) => {
   const [resumeUrl, setResumeUrl] = useState('');
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [inputMode, setInputMode] = useState<'url' | 'file'>('url');
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setValidationError(null);
+    
     if (!industry.trim() || !companyName.trim() || !jobDescription.trim()) {
       return;
     }
     if (!resumeUrl.trim() && !resumeFile) {
-      alert('Please provide either a resume URL or upload a resume file');
+      setValidationError('请提供简历链接或上传简历文件');
       return;
     }
     
@@ -31,6 +34,7 @@ export const JDMatch: React.FC<JDMatchProps> = ({ onAnalyze }) => {
     if (file) {
       setResumeFile(file);
       setResumeUrl(''); // Clear URL when file is selected
+      setValidationError(null); // Clear validation error
     }
   };
 
@@ -143,6 +147,7 @@ export const JDMatch: React.FC<JDMatchProps> = ({ onAnalyze }) => {
                 onChange={(e) => {
                   setResumeUrl(e.target.value);
                   setResumeFile(null); // Clear file when URL is entered
+                  setValidationError(null); // Clear validation error
                 }}
               />
             </div>
@@ -175,6 +180,13 @@ export const JDMatch: React.FC<JDMatchProps> = ({ onAnalyze }) => {
             </div>
           )}
         </div>
+
+        {/* Validation Error Message */}
+        {validationError && (
+          <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-red-400 text-sm">
+            {validationError}
+          </div>
+        )}
 
         {/* Submit Button */}
         <div className="flex justify-center pt-4">

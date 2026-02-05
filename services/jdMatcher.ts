@@ -142,7 +142,7 @@ Return your analysis in the following JSON format:
  * Call DeepSeek API for analysis
  */
 async function callDeepSeekAPI(prompt: string, apiKey: string): Promise<string> {
-  const model = process.env.DEEPSEEK_CHAT_MODEL || "deepseek-chat";
+  const model = import.meta.env.VITE_DEEPSEEK_CHAT_MODEL || "deepseek-chat";
   
   const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
     method: 'POST',
@@ -202,27 +202,57 @@ function parseAIResponse(response: string): JDMatchResult {
 
 /**
  * Extract text content from HTML
+ * This function removes all HTML tags and extracts plain text only
+ * The extracted text is used for AI analysis, NOT rendered as HTML
+ * 
+ * Security Note: The regex patterns below are flagged by CodeQL as potentially
+ * incomplete for HTML sanitization. However, this is acceptable because:
+ * 1. The result is never rendered as HTML in the browser
+ * 2. All HTML tags are removed after script/style removal (line 224)
+ * 3. When document is available, we use browser's textContent (line 228)
+ * 4. The final text is only sent to the DeepSeek API for analysis
  */
 function extractTextFromHtml(html: string): string {
-  // Remove script and style tags
-  let text = html.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '');
-  text = text.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '');
+  // Remove script and style tags with their content (multiple iterations to handle nested tags)
+  let text = html;
+  let previousLength = 0;
   
-  // Remove HTML tags
-  text = text.replace(/<[^>]+>/g, ' ');
+  // Iterate until no more script/style tags are found
+  while (text.length !== previousLength) {
+    previousLength = text.length;
+    // Note: These regex patterns may not catch all malformed tags, but that's OK
+    // because we remove ALL tags afterward and never render the result as HTML
+    text = text.replace(/<script\b[^>]*>[\s\S]*?<\/script\s*>/gis, ' ');
+    text = text.replace(/<style\b[^>]*>[\s\S]*?<\/style\s*>/gis, ' ');
+    // Also remove any orphaned script/style opening or closing tags
+    text = text.replace(/<\/?script\b[^>]*>/gis, ' ');
+    text = text.replace(/<\/?style\b[^>]*>/gis, ' ');
+  }
   
-  // Decode HTML entities
-  text = text.replace(/&nbsp;/g, ' ');
-  text = text.replace(/&amp;/g, '&');
-  text = text.replace(/&lt;/g, '<');
-  text = text.replace(/&gt;/g, '>');
-  text = text.replace(/&quot;/g, '"');
-  text = text.replace(/&#39;/g, "'");
+  // Remove all remaining HTML tags (final safeguard)
+  text = text.replace(/<[^>]*>/g, ' ');
+  
+  // Decode HTML entities (safe because result is used for text analysis, not HTML rendering)
+  // Only decode common entities to avoid double-escaping issues
+  const tempDiv = typeof document !== 'undefined' ? document.createElement('div') : null;
+  if (tempDiv) {
+    tempDiv.innerHTML = text;
+    text = tempDiv.textContent || tempDiv.innerText || text;
+  } else {
+    // Fallback for non-browser environments
+    text = text.replace(/&nbsp;/g, ' ');
+    text = text.replace(/&lt;/g, '<');
+    text = text.replace(/&gt;/g, '>');
+    text = text.replace(/&quot;/g, '"');
+    text = text.replace(/&#39;/g, "'");
+    text = text.replace(/&amp;/g, '&'); // Decode & last to avoid double-decoding
+  }
   
   // Clean up whitespace
   text = text.replace(/\s+/g, ' ').trim();
   
-  return text;
+  // Limit length for safety
+  return text.substring(0, 50000);
 }
 
 /**
