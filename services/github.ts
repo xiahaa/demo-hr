@@ -49,24 +49,46 @@ export async function aggregateLanguageStats(username: string, repos: any[]) {
   const forkRepos = repos.filter((r: any) => r.fork);
   const topRepos = [...sourceRepos, ...forkRepos].slice(0, 15);
 
-  const BATCH_SIZE = 5;
-
-  for (let i = 0; i < topRepos.length; i += BATCH_SIZE) {
-    const batch = topRepos.slice(i, i + BATCH_SIZE);
-
-    // Process batch concurrently
-    await Promise.all(batch.map(async (repo) => {
-      const languages = await fetchRepoLanguages(username, repo.name);
-      if (languages) {
-        for (const [lang, bytes] of Object.entries(languages)) {
-          languageStats[lang] = (languageStats[lang] || 0) + (bytes as number);
-          repoCount[lang] = (repoCount[lang] || 0) + 1;
-        }
+  // Process repositories with concurrency limit to respect API rate limits
+  // while avoiding the "wait for batch" inefficiency of sequential batches.
+  await runConcurrently(topRepos, 5, async (repo) => {
+    const languages = await fetchRepoLanguages(username, repo.name);
+    if (languages) {
+      for (const [lang, bytes] of Object.entries(languages)) {
+        languageStats[lang] = (languageStats[lang] || 0) + (bytes as number);
+        repoCount[lang] = (repoCount[lang] || 0) + 1;
       }
-    }));
-  }
+    }
+  });
 
   return { languageStats, repoCount };
+}
+
+/**
+ * Helper to run async tasks with controlled concurrency
+ */
+async function runConcurrently<T>(
+  items: T[],
+  concurrency: number,
+  task: (item: T) => Promise<void>
+): Promise<void> {
+  const queue = [...items];
+  const workers = Array(Math.min(concurrency, items.length))
+    .fill(null)
+    .map(async () => {
+      while (queue.length > 0) {
+        const item = queue.shift();
+        if (item !== undefined) {
+          try {
+            await task(item);
+          } catch (err) {
+            console.error('Error in concurrent task:', err);
+          }
+        }
+      }
+    });
+
+  await Promise.all(workers);
 }
 
 /**

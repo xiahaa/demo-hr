@@ -9,3 +9,7 @@
 ## 2025-02-18 - Optimized Repo Analysis Strategy
 **Learning:** Analyzing top 30 repositories regardless of type (fork/source) wasted ~50% of API calls on forks or less relevant repos.
 **Action:** Prioritized source repositories and reduced analysis limit to 15. This cuts API requests by half and focuses on code the user actually wrote.
+
+## 2025-02-18 - Concurrent Pooling vs Batching
+**Learning:** Batched `Promise.all` (chunking) causes head-of-line blocking where fast requests wait for the slowest in the batch.
+**Action:** Implemented a concurrent worker pool (`runConcurrently`) for GitHub API calls. This maintains the concurrency limit (5) but improves throughput by utilizing slots as soon as they become free.
