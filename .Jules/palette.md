@@ -13,3 +13,7 @@
 ## 2025-02-20 - [Dark Mode Focus Visibility]
 **Learning:** In dark-themed, glassmorphism designs, default browser focus rings are often invisible against dark backgrounds or conflict with border styles. Interactive elements (cards, icon buttons) require explicit high-contrast focus rings (e.g., brand color) to be navigable by keyboard.
 **Action:** Add `focus-visible:ring-2 focus-visible:ring-[brandColor] focus-visible:outline-none` to all interactive elements in dark mode interfaces.
+
+## 2026-02-05 - [File Input Keyboard Accessibility]
+**Learning:** Standard `input[type="file"]` elements hidden with `display: none` are inaccessible to keyboard users. Using `sr-only` (visually hidden) combined with the `peer` class allows the input to receive focus while styling the associated label with `peer-focus:ring` to provide visual feedback.
+**Action:** Replace `hidden` with `sr-only peer` on file inputs and add `peer-focus:ring-*` styles to the label.

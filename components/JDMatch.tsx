@@ -112,6 +112,7 @@ export const JDMatch: React.FC<JDMatchProps> = ({ onAnalyze }) => {
           <div className="flex gap-4 mb-4">
             <button
               type="button"
+              aria-pressed={inputMode === 'url'}
               onClick={() => setInputMode('url')}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
                 inputMode === 'url'
@@ -124,6 +125,7 @@ export const JDMatch: React.FC<JDMatchProps> = ({ onAnalyze }) => {
             </button>
             <button
               type="button"
+              aria-pressed={inputMode === 'file'}
               onClick={() => setInputMode('file')}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
                 inputMode === 'file'
@@ -162,11 +164,11 @@ export const JDMatch: React.FC<JDMatchProps> = ({ onAnalyze }) => {
                   id="resumeFile"
                   accept=".txt,.pdf,.doc,.docx"
                   onChange={handleFileChange}
-                  className="hidden"
+                  className="sr-only peer"
                 />
                 <label
                   htmlFor="resumeFile"
-                  className="flex items-center justify-center gap-2 w-full bg-white/5 border-2 border-dashed border-white/10 rounded-xl px-4 py-8 cursor-pointer hover:bg-white/10 transition-all"
+                  className="flex items-center justify-center gap-2 w-full bg-white/5 border-2 border-dashed border-white/10 rounded-xl px-4 py-8 cursor-pointer hover:bg-white/10 transition-all peer-focus:ring-2 peer-focus:ring-[#2D5BFF] peer-focus:ring-offset-2 peer-focus:ring-offset-[#1A1A2E]"
                 >
                   <Upload className="w-6 h-6 text-gray-400" />
                   <span className="text-gray-400">
