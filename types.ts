@@ -55,3 +55,29 @@ export interface CandidateProfile {
 }
 
 export type AppStatus = 'IDLE' | 'ANALYZING' | 'RESULT' | 'ERROR';
+
+// JD Matching Feature Types
+export interface JobDescription {
+  industry: string;
+  companyName: string;
+  jobDescription: string;
+  resumeUrl?: string;
+  resumeFile?: File;
+}
+
+export interface MatchScore {
+  category: string;
+  score: number; // 0-100
+  details: string;
+}
+
+export interface JDMatchResult {
+  overallScore: number; // 0-100
+  matchScores: MatchScore[];
+  strengths: string[];
+  gaps: string[];
+  recommendations: string[];
+  fitLevel: 'Excellent' | 'Good' | 'Fair' | 'Poor';
+}
+
+export type FeatureMode = 'github-analysis' | 'jd-match';
