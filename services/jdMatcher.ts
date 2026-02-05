@@ -1,0 +1,248 @@
+import { JobDescription, JDMatchResult, MatchScore } from "../types";
+
+/**
+ * Analyzes job description and resume/link for matching
+ */
+export async function analyzeJDMatch(jd: JobDescription): Promise<JDMatchResult> {
+  const apiKey = import.meta.env.VITE_DEEPSEEK_API_KEY || process.env.DEEPSEEK_API_KEY;
+  
+  if (!apiKey) {
+    throw new Error('DeepSeek API key not configured. Please set DEEPSEEK_API_KEY in .env file.');
+  }
+
+  let resumeContent = '';
+  
+  // Fetch resume content from URL or file
+  if (jd.resumeUrl) {
+    try {
+      resumeContent = await fetchResumeFromUrl(jd.resumeUrl);
+    } catch (err) {
+      throw new Error(`Failed to fetch resume from URL: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    }
+  } else if (jd.resumeFile) {
+    try {
+      resumeContent = await readResumeFile(jd.resumeFile);
+    } catch (err) {
+      throw new Error(`Failed to read resume file: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    }
+  } else {
+    throw new Error('Please provide either a resume URL or upload a resume file');
+  }
+
+  // Analyze with AI
+  const prompt = buildMatchingPrompt(jd, resumeContent);
+  const aiResponse = await callDeepSeekAPI(prompt, apiKey);
+  
+  return parseAIResponse(aiResponse);
+}
+
+/**
+ * Fetch resume from URL (supports text, HTML pages, or LinkedIn/GitHub profiles)
+ */
+async function fetchResumeFromUrl(url: string): Promise<string> {
+  const sanitizedUrl = sanitizeUrl(url);
+  if (!sanitizedUrl) {
+    throw new Error('Invalid URL format');
+  }
+
+  const response = await fetch(sanitizedUrl, {
+    headers: {
+      'User-Agent': 'ZhimaBot/1.0 (HR JD Matcher; Contact: hr@zhima.ai)',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch URL (status ${response.status})`);
+  }
+
+  const contentType = response.headers.get('content-type') || '';
+  
+  if (contentType.includes('application/pdf')) {
+    // For PDF, we'll need to handle it differently or just return a message
+    throw new Error('PDF parsing from URL is not yet supported. Please upload the PDF file instead.');
+  }
+
+  const text = await response.text();
+  
+  // If HTML, extract text content
+  if (contentType.includes('text/html')) {
+    return extractTextFromHtml(text);
+  }
+  
+  return text;
+}
+
+/**
+ * Read resume from uploaded file
+ */
+async function readResumeFile(file: File): Promise<string> {
+  if (file.type === 'application/pdf') {
+    throw new Error('PDF file parsing requires a PDF library. For now, please provide resume as a text file or URL.');
+  }
+
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const content = e.target?.result as string;
+      resolve(content);
+    };
+    reader.onerror = () => reject(new Error('Failed to read file'));
+    reader.readAsText(file);
+  });
+}
+
+/**
+ * Build the matching prompt for AI analysis
+ */
+function buildMatchingPrompt(jd: JobDescription, resumeContent: string): string {
+  return `You are an expert HR professional analyzing candidate fit for a job position.
+
+# Job Details:
+Industry: ${jd.industry}
+Company: ${jd.companyName}
+Job Description:
+${jd.jobDescription}
+
+# Candidate Resume/Profile:
+${resumeContent}
+
+# Task:
+Analyze how well this candidate matches the job requirements. Provide:
+
+1. Overall Match Score (0-100)
+2. Detailed category scores with explanations:
+   - Technical Skills Match
+   - Experience Level Match
+   - Industry Knowledge Match
+   - Cultural Fit
+   - Educational Background
+3. Key Strengths (how candidate excels)
+4. Gaps (what's missing or weak)
+5. Recommendations (for both candidate and hiring team)
+6. Overall Fit Level (Excellent/Good/Fair/Poor)
+
+Return your analysis in the following JSON format:
+{
+  "overallScore": number,
+  "matchScores": [
+    {"category": "Technical Skills", "score": number, "details": "explanation"},
+    {"category": "Experience Level", "score": number, "details": "explanation"},
+    {"category": "Industry Knowledge", "score": number, "details": "explanation"},
+    {"category": "Cultural Fit", "score": number, "details": "explanation"},
+    {"category": "Educational Background", "score": number, "details": "explanation"}
+  ],
+  "strengths": ["strength1", "strength2", ...],
+  "gaps": ["gap1", "gap2", ...],
+  "recommendations": ["rec1", "rec2", ...],
+  "fitLevel": "Excellent" | "Good" | "Fair" | "Poor"
+}`;
+}
+
+/**
+ * Call DeepSeek API for analysis
+ */
+async function callDeepSeekAPI(prompt: string, apiKey: string): Promise<string> {
+  const model = process.env.DEEPSEEK_CHAT_MODEL || "deepseek-chat";
+  
+  const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model,
+      messages: [
+        {
+          role: 'user',
+          content: prompt,
+        },
+      ],
+      temperature: 0.7,
+      max_tokens: 2000,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`DeepSeek API error: ${response.status} - ${errorText}`);
+  }
+
+  const data = await response.json();
+  return data.choices[0].message.content;
+}
+
+/**
+ * Parse AI response into structured result
+ */
+function parseAIResponse(response: string): JDMatchResult {
+  try {
+    // Try to extract JSON from the response
+    const jsonMatch = response.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error('No JSON found in AI response');
+    }
+
+    const parsed = JSON.parse(jsonMatch[0]);
+    
+    // Validate and return
+    return {
+      overallScore: Math.max(0, Math.min(100, parsed.overallScore || 0)),
+      matchScores: parsed.matchScores || [],
+      strengths: parsed.strengths || [],
+      gaps: parsed.gaps || [],
+      recommendations: parsed.recommendations || [],
+      fitLevel: parsed.fitLevel || 'Fair',
+    };
+  } catch (err) {
+    console.error('Failed to parse AI response:', err);
+    throw new Error('Failed to parse AI analysis. Please try again.');
+  }
+}
+
+/**
+ * Extract text content from HTML
+ */
+function extractTextFromHtml(html: string): string {
+  // Remove script and style tags
+  let text = html.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '');
+  text = text.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '');
+  
+  // Remove HTML tags
+  text = text.replace(/<[^>]+>/g, ' ');
+  
+  // Decode HTML entities
+  text = text.replace(/&nbsp;/g, ' ');
+  text = text.replace(/&amp;/g, '&');
+  text = text.replace(/&lt;/g, '<');
+  text = text.replace(/&gt;/g, '>');
+  text = text.replace(/&quot;/g, '"');
+  text = text.replace(/&#39;/g, "'");
+  
+  // Clean up whitespace
+  text = text.replace(/\s+/g, ' ').trim();
+  
+  return text;
+}
+
+/**
+ * Sanitize and validate URL
+ */
+function sanitizeUrl(url: string): string | null {
+  if (!url || !url.trim()) return null;
+  
+  const trimmed = url.trim();
+  
+  try {
+    const parsed = new URL(trimmed.startsWith('http') ? trimmed : `https://${trimmed}`);
+    
+    // Only allow http/https
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+      return null;
+    }
+    
+    return parsed.toString();
+  } catch {
+    return null;
+  }
+}
