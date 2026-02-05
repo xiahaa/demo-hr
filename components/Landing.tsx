@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 interface LandingProps {
-  onAnalyze: (githubUrl: string, scholarUrl?: string, linkedinText?: string, personalWebsiteUrl?: string) => void;
+  onAnalyze: (githubUrl: string, scholarUrl?: string, linkedinText?: string, personalWebsiteUrl?: string, pdfFile?: File) => void;
 }
 
 export const Landing: React.FC<LandingProps> = ({ onAnalyze }) => {
@@ -9,15 +9,26 @@ export const Landing: React.FC<LandingProps> = ({ onAnalyze }) => {
   const [scholarUrl, setScholarUrl] = useState('');
   const [linkedinText, setLinkedinText] = useState('');
   const [personalWebsiteUrl, setPersonalWebsiteUrl] = useState('');
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!githubUrl.trim()) return;
-    onAnalyze(githubUrl, scholarUrl, linkedinText, personalWebsiteUrl);
+    onAnalyze(githubUrl, scholarUrl, linkedinText, personalWebsiteUrl, pdfFile || undefined);
   };
 
   const handleDemo = () => {
     onAnalyze('demo', '', '', '');
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && file.type === 'application/pdf') {
+      setPdfFile(file);
+    } else if (file) {
+      alert('请上传 PDF 文件');
+      e.target.value = '';
+    }
   };
 
   return (
@@ -89,6 +100,27 @@ export const Landing: React.FC<LandingProps> = ({ onAnalyze }) => {
           />
           <p className="text-xs text-gray-500 mt-2 px-2">
             注意：仅抓取允许爬取的网站（遵守 robots.txt 规范）
+          </p>
+        </div>
+
+        <div className="w-full">
+          <label className="flex flex-col gap-2">
+            <span className="text-sm text-gray-400 px-2">上传简历 PDF（可选）</span>
+            <input
+              type="file"
+              accept=".pdf"
+              aria-label="PDF 简历"
+              onChange={handleFileChange}
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#2D5BFF]/30 focus:border-[#2D5BFF] transition-all text-base file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#2D5BFF] file:text-white hover:file:bg-[#2D5BFF]/90"
+            />
+            {pdfFile && (
+              <p className="text-xs text-green-400 px-2">
+                已选择: {pdfFile.name}
+              </p>
+            )}
+          </label>
+          <p className="text-xs text-gray-500 mt-2 px-2">
+            PDF 将被解析以提取技能、经验和教育背景信息
           </p>
         </div>
       </form>

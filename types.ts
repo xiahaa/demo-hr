@@ -25,6 +25,24 @@ export interface PersonalWebsiteData {
   scrapingDisallowed?: boolean;
 }
 
+export interface PDFResumeData {
+  fileName: string;
+  metadata?: {
+    title?: string;
+    author?: string;
+    subject?: string;
+  };
+  extractedInfo: {
+    name?: string;
+    email?: string;
+    skills: string[];
+    experience: string[];
+    education: string[];
+    summary: string;
+  };
+  numPages: number;
+}
+
 export interface CandidateProfile {
   name: string;
   username: string;
@@ -34,6 +52,7 @@ export interface CandidateProfile {
   email: string | null;
   website?: string | null; // Personal website or blog (from GitHub profile)
   personalWebsiteData?: PersonalWebsiteData | null; // Scraped data from personal website
+  pdfResumeData?: PDFResumeData | null; // Extracted data from PDF resume
   engineeringScore: number; // 0-100
   salaryEstimate: {
     min: number;

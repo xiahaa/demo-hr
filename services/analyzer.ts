@@ -1,5 +1,5 @@
 
-import { CandidateProfile, TechStackItem, PersonalWebsiteData } from "../types";
+import { CandidateProfile, TechStackItem, PersonalWebsiteData, PDFResumeData } from "../types";
 import {
   fetchGitHubProfile,
   fetchGitHubRepos,
@@ -8,8 +8,9 @@ import {
   calculateTechStackFromLanguages
 } from "./github";
 import { fetchPersonalWebsite } from "./website";
+import { parsePDF, extractCandidateInfoFromPDF } from "./pdf";
 
-type AiAnalysis = Omit<CandidateProfile, "username" | "avatarUrl" | "location" | "email" | "topRepositories" | "personalWebsiteData">;
+type AiAnalysis = Omit<CandidateProfile, "username" | "avatarUrl" | "location" | "email" | "topRepositories" | "personalWebsiteData" | "pdfResumeData">;
 
 const CACHE_PREFIX = 'gittalent_v1_';
 const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
@@ -306,7 +307,8 @@ export async function analyzeCandidate(
   githubUrl: string,
   scholarUrl?: string,
   linkedinText?: string,
-  personalWebsiteUrl?: string
+  personalWebsiteUrl?: string,
+  pdfFile?: File
 ): Promise<CandidateProfile> {
   const username = parseGitHubUsername(githubUrl);
   if (!username) throw new Error('Invalid GitHub URL');
@@ -320,12 +322,19 @@ export async function analyzeCandidate(
     return cached;
   }
 
-  // 1. Fetch real raw data
-  const [profileData, reposData, email, personalWebsiteData] = await Promise.all([
+  // 1. Fetch real raw data - optimized with parallel processing
+  const [profileData, reposData, email, personalWebsiteData, pdfResult] = await Promise.all([
     fetchGitHubProfile(username),
     fetchGitHubRepos(username),
     findEmail(username),
-    personalWebsiteUrl ? fetchPersonalWebsite(personalWebsiteUrl) : Promise.resolve(null)
+    personalWebsiteUrl ? fetchPersonalWebsite(personalWebsiteUrl) : Promise.resolve(null),
+    pdfFile ? parsePDF(pdfFile).then(pdfData => ({
+      rawData: pdfData,
+      extractedInfo: extractCandidateInfoFromPDF(pdfData)
+    })).catch(err => {
+      console.error('PDF parsing error:', err);
+      return null;
+    }) : Promise.resolve(null)
   ]);
 
   if (!profileData) {
@@ -372,6 +381,12 @@ export async function analyzeCandidate(
       technologies: personalWebsiteData.technologies,
       skills: personalWebsiteData.skills,
       content: personalWebsiteData.content
+    } : null,
+    pdfResume: pdfResult ? {
+      skills: pdfResult.extractedInfo.skills,
+      experience: pdfResult.extractedInfo.experience,
+      education: pdfResult.extractedInfo.education,
+      summary: pdfResult.extractedInfo.summary
     } : null
   };
 
@@ -405,6 +420,19 @@ export async function analyzeCandidate(
       skills: personalWebsiteData.skills,
       canScrape: personalWebsiteData.canScrape,
       scrapingDisallowed: personalWebsiteData.scrapingDisallowed
+    } : null,
+    pdfResumeData: pdfResult && pdfFile ? {
+      fileName: pdfFile.name,
+      metadata: pdfResult.rawData.metadata,
+      extractedInfo: {
+        name: pdfResult.extractedInfo.name,
+        email: pdfResult.extractedInfo.email,
+        skills: pdfResult.extractedInfo.skills,
+        experience: pdfResult.extractedInfo.experience,
+        education: pdfResult.extractedInfo.education,
+        summary: pdfResult.extractedInfo.summary
+      },
+      numPages: pdfResult.rawData.numPages
     } : null,
     topRepositories: sortedRepos.slice(0, 6).map((r: any) => ({
       name: r.name,
