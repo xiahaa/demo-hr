@@ -7,10 +7,35 @@ import {
   extractSkills,
   validatePersonalWebsiteUrl,
   checkRobotsTxt,
-  fetchPersonalWebsite
+  fetchPersonalWebsite,
+  isPrivateHostname
 } from './website';
 
 const originalFetch = global.fetch;
+
+describe('isPrivateHostname', () => {
+  it('should identify standard private hostnames', () => {
+    expect(isPrivateHostname('127.0.0.1')).toBe(true);
+    expect(isPrivateHostname('localhost')).toBe(true);
+    expect(isPrivateHostname('192.168.1.1')).toBe(true);
+    expect(isPrivateHostname('10.0.0.1')).toBe(true);
+    expect(isPrivateHostname('169.254.1.1')).toBe(true);
+    expect(isPrivateHostname('[::1]')).toBe(true);
+  });
+
+  it('should identify alternative IPv4 formats as private', () => {
+    expect(isPrivateHostname('127.1')).toBe(true);
+    expect(isPrivateHostname('0177.0.0.1')).toBe(true);
+    expect(isPrivateHostname('2130706433')).toBe(true); // Decimal 127.0.0.1
+    expect(isPrivateHostname('0x7f.0.0.1')).toBe(true);
+  });
+
+  it('should identify public hostnames', () => {
+    expect(isPrivateHostname('google.com')).toBe(false);
+    expect(isPrivateHostname('8.8.8.8')).toBe(false);
+    expect(isPrivateHostname('example.com')).toBe(false);
+  });
+});
 
 describe('parseRobotsTxt', () => {
   it('should allow scraping when robots.txt allows all', () => {

@@ -7,3 +7,8 @@
 **Vulnerability:** Application fetched user-provided URLs without validating if they pointed to internal network resources (localhost, 192.168.x.x), allowing potential reconnaissance of local services.
 **Learning:** Even client-side fetches are subject to SSRF risks if the user is tricked into analyzing a malicious profile that targets their own local network.
 **Prevention:** Implement strict hostname validation that blocks private IP ranges and localhost before initiating any fetch requests.
+
+## 2025-02-18 - SSRF Bypass via IP Normalization
+**Vulnerability:** Private IP checks relied on strict regex matching (e.g. `127.0.0.1`), allowing bypasses using alternative formats like `127.1`, octal, or hex IPs.
+**Learning:** Attackers can represent IPs in many valid formats that simple regexes miss. The browser/OS resolves them to the same target.
+**Prevention:** Normalize hostnames using `new URL(url).hostname` before applying security checks. This converts obscure formats (e.g. `0x7f.0.0.1`) to standard dotted-decimal notation.
