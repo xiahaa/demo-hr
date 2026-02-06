@@ -65,11 +65,20 @@ export async function checkRobotsTxt(url: string): Promise<boolean> {
     const urlObj = new URL(url);
     const robotsUrl = `${urlObj.protocol}//${urlObj.host}/robots.txt`;
 
-    const response = await fetch(robotsUrl, {
-      headers: {
-        'User-Agent': 'ZhimaBot/1.0 (HR Analysis Tool; Respects robots.txt)'
-      }
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+    let response;
+    try {
+      response = await fetch(robotsUrl, {
+        headers: {
+          'User-Agent': 'ZhimaBot/1.0 (HR Analysis Tool; Respects robots.txt)'
+        },
+        signal: controller.signal
+      });
+    } finally {
+      clearTimeout(timeoutId);
+    }
 
     // If robots.txt doesn't exist (404), assume scraping is allowed
     if (response.status === 404) {
@@ -255,10 +264,37 @@ export function isPrivateHostname(hostname: string): boolean {
     return true;
   }
 
+  // Handle IPv6 mapped IPv4 (e.g., ::ffff:127.0.0.1)
+  // URL hostname usually includes brackets for IPv6: [::ffff:127.0.0.1]
+  let checkHostname = normalizedHostname;
+  if (checkHostname.startsWith('[') && checkHostname.endsWith(']')) {
+    checkHostname = checkHostname.slice(1, -1);
+  }
+
+  if (checkHostname.toLowerCase().startsWith('::ffff:')) {
+    const suffix = checkHostname.substring(7);
+    if (suffix.includes('.')) {
+       // Already dotted decimal
+       checkHostname = suffix;
+    } else {
+       // Hex format (e.g. 7f00:1), convert to dotted decimal
+       const parts = suffix.split(':');
+       if (parts.length === 2) {
+          const g1 = parseInt(parts[0], 16);
+          const g2 = parseInt(parts[1], 16);
+          const a = (g1 >> 8) & 0xff;
+          const b = g1 & 0xff;
+          const c = (g2 >> 8) & 0xff;
+          const d = g2 & 0xff;
+          checkHostname = `${a}.${b}.${c}.${d}`;
+       }
+    }
+  }
+
   // IPv4 check
   // Matches 1.2.3.4 format
   const ipv4Regex = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
-  const match = normalizedHostname.match(ipv4Regex);
+  const match = checkHostname.match(ipv4Regex);
 
   if (match) {
     const parts = match.slice(1).map(Number);
@@ -380,12 +416,21 @@ export async function fetchPersonalWebsite(url: string): Promise<WebsiteInfo | n
     }
 
     // Fetch the website content
-    const response = await fetch(validUrl, {
-      headers: {
-        'User-Agent': 'ZhimaBot/1.0 (HR Analysis Tool; Respects robots.txt)',
-        'Accept': 'text/html,application/xhtml+xml'
-      }
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+    let response;
+    try {
+      response = await fetch(validUrl, {
+        headers: {
+          'User-Agent': 'ZhimaBot/1.0 (HR Analysis Tool; Respects robots.txt)',
+          'Accept': 'text/html,application/xhtml+xml'
+        },
+        signal: controller.signal
+      });
+    } finally {
+      clearTimeout(timeoutId);
+    }
 
     if (!response.ok) {
       console.error(`Failed to fetch website ${validUrl}: ${response.status}`);

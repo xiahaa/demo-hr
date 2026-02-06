@@ -12,3 +12,8 @@
 **Vulnerability:** Private IP checks relied on strict regex matching (e.g. `127.0.0.1`), allowing bypasses using alternative formats like `127.1`, octal, or hex IPs.
 **Learning:** Attackers can represent IPs in many valid formats that simple regexes miss. The browser/OS resolves them to the same target.
 **Prevention:** Normalize hostnames using `new URL(url).hostname` before applying security checks. This converts obscure formats (e.g. `0x7f.0.0.1`) to standard dotted-decimal notation.
+
+## 2025-05-22 - SSRF Bypass via IPv6-Mapped IPv4
+**Vulnerability:** Private IP checks bypassed using IPv6-mapped IPv4 addresses (e.g., `[::ffff:127.0.0.1]` or `[::ffff:7f00:1]`) which `new URL()` normalizes differently than standard IPv4.
+**Learning:** URL parsers may normalize IPv6-mapped addresses to compressed hex format, evading standard regex-based IPv4 blocklists.
+**Prevention:** Explicitly detect and decode IPv6-mapped IPv4 addresses (starting with `::ffff:`) back to dotted-decimal notation before applying IP allow/block lists.
