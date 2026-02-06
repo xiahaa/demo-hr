@@ -323,9 +323,8 @@ export async function analyzeCandidate(
   }
 
   // 1. Fetch real raw data - optimized with parallel processing
-  const [profileData, reposData, email, personalWebsiteData, pdfResult] = await Promise.all([
+  const [profileData, email, personalWebsiteData, pdfResult, reposAndStats] = await Promise.all([
     fetchGitHubProfile(username),
-    fetchGitHubRepos(username),
     findEmail(username),
     personalWebsiteUrl ? fetchPersonalWebsite(personalWebsiteUrl) : Promise.resolve(null),
     pdfFile ? parsePDF(pdfFile).then(pdfData => ({
@@ -334,7 +333,11 @@ export async function analyzeCandidate(
     })).catch(err => {
       console.error('PDF parsing error:', err);
       return null;
-    }) : Promise.resolve(null)
+    }) : Promise.resolve(null),
+    fetchGitHubRepos(username).then(async (repos) => {
+      const stats = await aggregateLanguageStats(username, repos || []);
+      return { repos, stats };
+    })
   ]);
 
   if (!profileData) {
@@ -342,7 +345,8 @@ export async function analyzeCandidate(
   }
 
   // 2. Aggregate language statistics for better tech stack inference
-  const { languageStats, repoCount } = await aggregateLanguageStats(username, reposData || []);
+  // Now extracted from the parallel execution above
+  const { repos: reposData, stats: { languageStats, repoCount } } = reposAndStats;
   const fallbackTechStack = calculateTechStackFromLanguages(languageStats, repoCount);
 
   // 3. Prepare enhanced context for LLM
