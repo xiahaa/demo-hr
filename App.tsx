@@ -87,6 +87,7 @@ const App: React.FC = () => {
           <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-full p-1 flex gap-1">
             <button
               onClick={() => switchMode('github-analysis')}
+              aria-pressed={featureMode === 'github-analysis'}
               className={`flex items-center gap-2 px-6 py-3 rounded-full font-medium transition-all ${
                 featureMode === 'github-analysis'
                   ? 'bg-[#2D5BFF] text-white shadow-lg shadow-[#2D5BFF]/20'
@@ -98,6 +99,7 @@ const App: React.FC = () => {
             </button>
             <button
               onClick={() => switchMode('jd-match')}
+              aria-pressed={featureMode === 'jd-match'}
               className={`flex items-center gap-2 px-6 py-3 rounded-full font-medium transition-all ${
                 featureMode === 'jd-match'
                   ? 'bg-[#2D5BFF] text-white shadow-lg shadow-[#2D5BFF]/20'
