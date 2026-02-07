@@ -17,3 +17,9 @@
 **Vulnerability:** Private IP checks bypassed using IPv6-mapped IPv4 addresses (e.g., `[::ffff:127.0.0.1]` or `[::ffff:7f00:1]`) which `new URL()` normalizes differently than standard IPv4.
 **Learning:** URL parsers may normalize IPv6-mapped addresses to compressed hex format, evading standard regex-based IPv4 blocklists.
 **Prevention:** Explicitly detect and decode IPv6-mapped IPv4 addresses (starting with `::ffff:`) back to dotted-decimal notation before applying IP allow/block lists.
+## 2026-02-07 - Client-Side SSRF & DNS Rebinding Mitigation
+**Vulnerability:** Client-side applications fetching arbitrary URLs can be used to scan local networks or access localhost services (DNS Rebinding) via the user's browser.
+**Learning:** Browser APIs lack DNS resolution capabilities, making traditional SSRF prevention (resolve IP -> check range -> fetch) impossible.
+**Prevention:** Implement a defense-in-depth approach:
+1. Block known localhost wildcard domains (nip.io, localtest.me).
+2. Recursively check hostnames for embedded IP patterns (e.g., 1-1-1-1.nip.io) to detect and block private IPs hidden in public domains.
