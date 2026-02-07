@@ -1,4 +1,9 @@
 import { JobDescription, JDMatchResult, MatchScore } from "../types";
+import { parsePDF } from "./pdf";
+
+// Validation constants
+const MIN_RESUME_LENGTH = 100; // Minimum characters for valid resume content
+const MAX_NON_PRINTABLE_RATIO = 0.05; // Maximum ratio of non-printable characters allowed (5%)
 
 /**
  * Analyzes job description and resume/link for matching
@@ -27,6 +32,30 @@ export async function analyzeJDMatch(jd: JobDescription): Promise<JDMatchResult>
     }
   } else {
     throw new Error('Please provide either a resume URL or upload a resume file');
+  }
+
+  // Validate resume content
+  if (!resumeContent || resumeContent.trim().length < MIN_RESUME_LENGTH) {
+    throw new Error(`Resume content is too short or empty. Please provide a valid resume with at least ${MIN_RESUME_LENGTH} characters.`);
+  }
+
+  // Check if content looks like binary data (contains many non-printable characters)
+  // This check is safe because we already validated that resumeContent has minimum length above
+  let nonPrintableCount = 0;
+  for (let i = 0; i < resumeContent.length; i++) {
+    const charCode = resumeContent.charCodeAt(i);
+    // Check for control characters (0x00-0x08, 0x0B, 0x0C, 0x0E-0x1F, 0x7F)
+    if ((charCode >= 0x00 && charCode <= 0x08) || 
+        charCode === 0x0B || 
+        charCode === 0x0C || 
+        (charCode >= 0x0E && charCode <= 0x1F) || 
+        charCode === 0x7F) {
+      nonPrintableCount++;
+    }
+  }
+  const nonPrintableRatio = nonPrintableCount / resumeContent.length;
+  if (nonPrintableRatio > MAX_NON_PRINTABLE_RATIO) {
+    throw new Error('Resume content appears to be corrupted or in an unsupported format. Please ensure the file is a valid text or PDF file.');
   }
 
   // Analyze with AI
@@ -58,8 +87,14 @@ async function fetchResumeFromUrl(url: string): Promise<string> {
   const contentType = response.headers.get('content-type') || '';
   
   if (contentType.includes('application/pdf')) {
-    // For PDF, we'll need to handle it differently or just return a message
-    throw new Error('PDF parsing from URL is not yet supported. Please upload the PDF file instead.');
+    // Parse PDF from URL
+    try {
+      const arrayBuffer = await response.arrayBuffer();
+      const pdfData = await parsePDF(arrayBuffer);
+      return pdfData.text;
+    } catch (err) {
+      throw new Error(`Failed to parse PDF from URL: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    }
   }
 
   const text = await response.text();
@@ -77,7 +112,12 @@ async function fetchResumeFromUrl(url: string): Promise<string> {
  */
 async function readResumeFile(file: File): Promise<string> {
   if (file.type === 'application/pdf') {
-    throw new Error('PDF file parsing requires a PDF library. For now, please provide resume as a text file or URL.');
+    try {
+      const pdfData = await parsePDF(file);
+      return pdfData.text;
+    } catch (err) {
+      throw new Error(`Failed to parse PDF file: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    }
   }
 
   return new Promise((resolve, reject) => {
@@ -107,17 +147,19 @@ ${jd.jobDescription}
 ${resumeContent}
 
 # Task:
-Analyze how well this candidate matches the job requirements. Provide:
+Analyze how well this candidate matches the job requirements. BE OBJECTIVE AND REALISTIC in your assessment. If the candidate's background is not relevant to the position, give a low score. Only give high scores (70+) when there is clear, strong alignment between the candidate's experience and the job requirements.
 
-1. Overall Match Score (0-100)
+Provide:
+
+1. Overall Match Score (0-100) - Be strict and realistic. Score should reflect actual fit.
 2. Detailed category scores with explanations:
    - Technical Skills Match
    - Experience Level Match
    - Industry Knowledge Match
    - Cultural Fit
    - Educational Background
-3. Key Strengths (how candidate excels)
-4. Gaps (what's missing or weak)
+3. Key Strengths (how candidate excels for THIS specific role)
+4. Gaps (what's missing or weak compared to job requirements)
 5. Recommendations (for both candidate and hiring team)
 6. Overall Fit Level (Excellent/Good/Fair/Poor)
 
