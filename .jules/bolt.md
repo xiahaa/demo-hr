@@ -17,3 +17,7 @@
 ## 2025-02-19 - Parallelizing Dependent Promises with Independent Tasks
 **Learning:** `aggregateLanguageStats` was unnecessarily waiting for unrelated tasks (profile fetch, PDF parsing) to complete because it was awaited after `Promise.all`. This added ~500ms of latency (the duration of the stats aggregation) to the total execution time.
 **Action:** Chain dependent tasks (like stats aggregation) directly to their prerequisites (repo fetching) within the `Promise.all` array. This allows the dependent task to start as soon as its prerequisite is done, running concurrently with other independent long-running tasks.
+
+## 2025-02-19 - Regex Loops vs Native DOM Parsing
+**Learning:** Found a potential performance and security bottleneck in `jdMatcher.ts` using a `while` loop with regex to strip scripts/styles from HTML. This is O(N^2) worst-case and fragile.
+**Action:** Replaced with `DOMParser` in browser environments, which is native, faster (single pass), and safer. Maintained regex fallback for Node.js/Test environments to avoid breaking tests or requiring heavy DOM mocks.

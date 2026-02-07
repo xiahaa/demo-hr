@@ -255,20 +255,42 @@ function parseAIResponse(response: string): JDMatchResult {
  * 4. The final text is only sent to the DeepSeek API for analysis
  */
 function extractTextFromHtml(html: string): string {
-  // Remove script and style tags with their content (multiple iterations to handle nested tags)
   let text = html;
-  let previousLength = 0;
-  
-  // Iterate until no more script/style tags are found
-  while (text.length !== previousLength) {
-    previousLength = text.length;
-    // Note: These regex patterns may not catch all malformed tags, but that's OK
-    // because we remove ALL tags afterward and never render the result as HTML
-    text = text.replace(/<script\b[^>]*>[\s\S]*?<\/script\s*>/gis, ' ');
-    text = text.replace(/<style\b[^>]*>[\s\S]*?<\/style\s*>/gis, ' ');
-    // Also remove any orphaned script/style opening or closing tags
-    text = text.replace(/<\/?script\b[^>]*>/gis, ' ');
-    text = text.replace(/<\/?style\b[^>]*>/gis, ' ');
+  let useRegexLoop = true;
+
+  // Optimized path for browser environments: Use DOMParser
+  // This is significantly faster than the regex loop and safer against nested tags
+  if (typeof DOMParser !== 'undefined') {
+    try {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+
+      // Remove script and style elements
+      const elementsToRemove = doc.querySelectorAll('script, style');
+      elementsToRemove.forEach(el => el.remove());
+
+      text = doc.body.innerHTML;
+      useRegexLoop = false;
+    } catch (e) {
+      console.warn('DOMParser failed, falling back to regex', e);
+    }
+  }
+
+  if (useRegexLoop) {
+    // Remove script and style tags with their content (multiple iterations to handle nested tags)
+    let previousLength = 0;
+
+    // Iterate until no more script/style tags are found
+    while (text.length !== previousLength) {
+      previousLength = text.length;
+      // Note: These regex patterns may not catch all malformed tags, but that's OK
+      // because we remove ALL tags afterward and never render the result as HTML
+      text = text.replace(/<script\b[^>]*>[\s\S]*?<\/script\s*>/gis, ' ');
+      text = text.replace(/<style\b[^>]*>[\s\S]*?<\/style\s*>/gis, ' ');
+      // Also remove any orphaned script/style opening or closing tags
+      text = text.replace(/<\/?script\b[^>]*>/gis, ' ');
+      text = text.replace(/<\/?style\b[^>]*>/gis, ' ');
+    }
   }
   
   // Remove all remaining HTML tags (final safeguard)
