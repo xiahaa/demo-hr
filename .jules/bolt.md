@@ -13,3 +13,7 @@
 ## 2025-02-18 - Concurrent Pooling vs Batching
 **Learning:** Batched `Promise.all` (chunking) causes head-of-line blocking where fast requests wait for the slowest in the batch.
 **Action:** Implemented a concurrent worker pool (`runConcurrently`) for GitHub API calls. This maintains the concurrency limit (5) but improves throughput by utilizing slots as soon as they become free.
+
+## 2025-02-19 - Parallelizing Dependent Promises with Independent Tasks
+**Learning:** `aggregateLanguageStats` was unnecessarily waiting for unrelated tasks (profile fetch, PDF parsing) to complete because it was awaited after `Promise.all`. This added ~500ms of latency (the duration of the stats aggregation) to the total execution time.
+**Action:** Chain dependent tasks (like stats aggregation) directly to their prerequisites (repo fetching) within the `Promise.all` array. This allows the dependent task to start as soon as its prerequisite is done, running concurrently with other independent long-running tasks.
