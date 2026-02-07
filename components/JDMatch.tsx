@@ -177,7 +177,7 @@ export const JDMatch: React.FC<JDMatchProps> = ({ onAnalyze }) => {
                 </label>
               </div>
               <p className="text-xs text-gray-500 mt-2">
-                支持格式：TXT, PDF（PDF解析功能开发中，建议使用TXT）
+                支持格式：TXT, PDF
               </p>
             </div>
           )}
