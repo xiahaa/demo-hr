@@ -6,6 +6,11 @@ if (typeof window !== 'undefined') {
   pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 }
 
+// Constants for information extraction
+const NAME_SKIP_KEYWORDS = ['resume', 'curriculum', 'vitae', 'cv', '@', 'phone', 'email', 'address'];
+const SKILL_DELIMITERS = /[,;•·|●○◦▪▫–—]/;
+const EMAIL_REGEX = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g;
+
 export interface PDFData {
   text: string;
   metadata?: {
@@ -153,13 +158,11 @@ export function extractCandidateInfoFromPDF(pdfData: PDFData): {
 } {
   const text = pdfData.text;
   
-  // Normalize whitespace and split into lines
-  const normalizedText = text.replace(/\s+/g, ' ').trim();
+  // Split into lines for processing
   const lines = text.split(/\n+/).map(line => line.trim()).filter(Boolean);
   
-  // Extract email using regex (improved pattern)
-  const emailRegex = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g;
-  const emailMatches = normalizedText.match(emailRegex);
+  // Extract email using regex
+  const emailMatches = text.match(EMAIL_REGEX);
   const email = emailMatches ? emailMatches[0] : undefined;
   
   // Extract name from metadata or first few lines
@@ -171,8 +174,7 @@ export function extractCandidateInfoFromPDF(pdfData: PDFData): {
     for (let i = 0; i < Math.min(5, lines.length); i++) {
       const line = lines[i];
       // Skip lines that are too short, too long, or contain common header keywords
-      const skipKeywords = ['resume', 'curriculum', 'vitae', 'cv', '@', 'phone', 'email', 'address'];
-      const shouldSkip = skipKeywords.some(kw => line.toLowerCase().includes(kw));
+      const shouldSkip = NAME_SKIP_KEYWORDS.some(kw => line.toLowerCase().includes(kw));
       
       if (!shouldSkip && line.length > 3 && line.length < 60 && /[a-zA-Z]/.test(line)) {
         // Check if it looks like a name (has at least 2 words or is capitalized)
@@ -205,7 +207,7 @@ export function extractCandidateInfoFromPDF(pdfData: PDFData): {
       
       if (trimmedLine.length > 2) {
         // Split by common delimiters and bullet points
-        const items = trimmedLine.split(/[,;•·|●○◦▪▫–—]/);
+        const items = trimmedLine.split(SKILL_DELIMITERS);
         items.forEach(item => {
           const cleaned = item.trim().replace(/^[-*]\s*/, ''); // Remove leading bullets/dashes
           if (cleaned.length > 1 && cleaned.length < 60 && /[a-zA-Z]/.test(cleaned)) {
@@ -283,8 +285,8 @@ export function extractCandidateInfoFromPDF(pdfData: PDFData): {
     }
   }
   
-  // Create summary (first 500 characters of normalized text)
-  const summary = normalizedText.slice(0, 500);
+  // Create summary (first 500 characters of text, normalized)
+  const summary = text.slice(0, 500).replace(/\s+/g, ' ').trim();
   
   return {
     name,

@@ -95,7 +95,7 @@
    - Detailed Job Description
 3. **Provide Resume**:
    - **Option A**: Enter an online resume URL (GitHub profile, LinkedIn, or personal website)
-   - **Option B**: Upload a resume file (TXT format recommended, PDF support coming soon)
+   - **Option B**: Upload a resume file (TXT or PDF format supported with enhanced parsing)
 4. **Click "开始匹配分析"** - Wait 10-20 seconds for AI analysis
 5. **View Results** - Review matching scores, strengths, gaps, and recommendations
 
@@ -107,6 +107,7 @@
 - **Charts**: Recharts
 - **AI**: DeepSeek API for intelligent analysis
 - **Data Source**: GitHub REST API
+- **PDF Processing**: unpdf (primary), pdfjs-dist (fallback) for robust PDF parsing
 
 ## 📂 Project Structure / 项目结构
 
@@ -166,7 +167,8 @@ See `QUICK_REFERENCE.md` for detailed technical documentation and `JD_MATCH_FEAT
 ## 📝 Documentation / 文档
 
 - `README.md` - Main project documentation (this file)
-- `JD_MATCH_FEATURE.md` - Complete JD matching feature documentation (NEW)
+- `PDF_PARSING_ENHANCEMENT.md` - Enhanced PDF parsing with unpdf documentation (NEW)
+- `JD_MATCH_FEATURE.md` - Complete JD matching feature documentation
 - `PERSONAL_WEBSITE_FEATURE.md` - Personal website scraping feature documentation
 - `IMPLEMENTATION_SUMMARY.md` - Personal website feature implementation summary
 - `QUICK_REFERENCE.md` - Quick overview of features and changes
