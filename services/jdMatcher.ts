@@ -1,4 +1,5 @@
 import { JobDescription, JDMatchResult, MatchScore } from "../types";
+import { parsePDF } from "./pdf";
 
 /**
  * Analyzes job description and resume/link for matching
@@ -58,8 +59,14 @@ async function fetchResumeFromUrl(url: string): Promise<string> {
   const contentType = response.headers.get('content-type') || '';
   
   if (contentType.includes('application/pdf')) {
-    // For PDF, we'll need to handle it differently or just return a message
-    throw new Error('PDF parsing from URL is not yet supported. Please upload the PDF file instead.');
+    // Parse PDF from URL
+    try {
+      const arrayBuffer = await response.arrayBuffer();
+      const pdfData = await parsePDF(arrayBuffer);
+      return pdfData.text;
+    } catch (err) {
+      throw new Error(`Failed to parse PDF from URL: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    }
   }
 
   const text = await response.text();
@@ -77,7 +84,12 @@ async function fetchResumeFromUrl(url: string): Promise<string> {
  */
 async function readResumeFile(file: File): Promise<string> {
   if (file.type === 'application/pdf') {
-    throw new Error('PDF file parsing requires a PDF library. For now, please provide resume as a text file or URL.');
+    try {
+      const pdfData = await parsePDF(file);
+      return pdfData.text;
+    } catch (err) {
+      throw new Error(`Failed to parse PDF file: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    }
   }
 
   return new Promise((resolve, reject) => {
