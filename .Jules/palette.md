@@ -17,3 +17,7 @@
 ## 2026-02-05 - [File Input Keyboard Accessibility]
 **Learning:** Standard `input[type="file"]` elements hidden with `display: none` are inaccessible to keyboard users. Using `sr-only` (visually hidden) combined with the `peer` class allows the input to receive focus while styling the associated label with `peer-focus:ring` to provide visual feedback.
 **Action:** Replace `hidden` with `sr-only peer` on file inputs and add `peer-focus:ring-*` styles to the label.
+
+## 2026-02-07 - [Visible Labels for Secondary Inputs]
+**Learning:** In minimalist "Bento" dark-mode forms, optional or secondary inputs (like scholar links or LinkedIn URLs) often omit labels for aesthetics, relying on placeholders. This hides context once the user starts typing and creates accessibility barriers.
+**Action:** Always provide visible `<label>` text for form inputs, using `text-sm text-gray-400 font-medium` to balance readability with the minimalist design.
