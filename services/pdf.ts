@@ -1,4 +1,5 @@
 import * as pdfjsLib from 'pdfjs-dist';
+import { extractText, getDocumentProxy } from 'unpdf';
 
 // Set worker source for PDF.js
 if (typeof window !== 'undefined') {
@@ -19,7 +20,91 @@ export interface PDFData {
 }
 
 /**
+ * Parses a PDF file using unpdf library (enhanced PDF parser)
+ * Falls back to pdfjs-dist if unpdf fails
+ * @param file - The PDF file to parse (File or ArrayBuffer)
+ * @returns PDFData containing text, metadata, and page count
+ */
+async function parsePDFWithUnpdf(arrayBuffer: ArrayBuffer): Promise<PDFData> {
+  try {
+    // Use unpdf's extractText for better text extraction
+    const { text, totalPages, metadata } = await extractText(arrayBuffer, { 
+      mergePages: true,
+      // Add better spacing between text items
+      itemSeparator: ' ',
+    });
+    
+    return {
+      text: text || '',
+      metadata: metadata ? {
+        title: metadata.title,
+        author: metadata.author,
+        subject: metadata.subject,
+        keywords: metadata.keywords,
+        creator: metadata.creator,
+        producer: metadata.producer,
+      } : undefined,
+      numPages: totalPages || 0
+    };
+  } catch (err) {
+    console.error('unpdf parsing failed, falling back to pdfjs-dist:', err);
+    throw err; // Re-throw to trigger fallback
+  }
+}
+
+/**
+ * Parses a PDF file using pdfjs-dist library (fallback method)
+ * @param arrayBuffer - The PDF file as ArrayBuffer
+ * @returns PDFData containing text, metadata, and page count
+ */
+async function parsePDFWithPDFJS(arrayBuffer: ArrayBuffer): Promise<PDFData> {
+  const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+  const pdf = await loadingTask.promise;
+  
+  // Extract metadata
+  const metadata = await pdf.getMetadata().catch(() => ({ info: null, metadata: null }));
+  
+  // Extract text from all pages with better spacing
+  const textParts: string[] = [];
+  const numPages = pdf.numPages;
+  
+  for (let i = 1; i <= numPages; i++) {
+    const page = await pdf.getPage(i);
+    const textContent = await page.getTextContent();
+    
+    // Improved text extraction with better spacing and line breaks
+    let lastY = -1;
+    let pageText = '';
+    
+    for (const item of textContent.items as any[]) {
+      // Add line break if Y position changed significantly (new line)
+      if (lastY !== -1 && Math.abs(item.transform[5] - lastY) > 5) {
+        pageText += '\n';
+      }
+      pageText += item.str + ' ';
+      lastY = item.transform[5];
+    }
+    
+    textParts.push(pageText.trim());
+  }
+  
+  return {
+    text: textParts.join('\n\n'), // Double newline between pages
+    metadata: metadata.info ? {
+      title: metadata.info.Title,
+      author: metadata.info.Author,
+      subject: metadata.info.Subject,
+      keywords: metadata.info.Keywords,
+      creator: metadata.info.Creator,
+      producer: metadata.info.Producer,
+    } : undefined,
+    numPages: numPages
+  };
+}
+
+/**
  * Parses a PDF file and extracts text content and metadata
+ * Uses unpdf (enhanced parser) with pdfjs-dist as fallback
  * @param file - The PDF file to parse (File or ArrayBuffer)
  * @returns PDFData containing text, metadata, and page count
  */
@@ -33,46 +118,28 @@ export async function parsePDF(file: File | ArrayBuffer): Promise<PDFData> {
       arrayBuffer = file;
     }
 
-    // Load the PDF document
-    const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
-    const pdf = await loadingTask.promise;
-    
-    // Extract metadata
-    const metadata = await pdf.getMetadata().catch(() => ({ info: null, metadata: null }));
-    
-    // Extract text from all pages
-    const textParts: string[] = [];
-    const numPages = pdf.numPages;
-    
-    for (let i = 1; i <= numPages; i++) {
-      const page = await pdf.getPage(i);
-      const textContent = await page.getTextContent();
-      const pageText = textContent.items
-        .map((item: any) => item.str)
-        .join(' ');
-      textParts.push(pageText);
+    // Try unpdf first (more robust PDF parsing)
+    try {
+      console.log('Attempting PDF parsing with unpdf (enhanced parser)...');
+      const result = await parsePDFWithUnpdf(arrayBuffer);
+      console.log('Successfully parsed PDF with unpdf');
+      return result;
+    } catch (unpdfError) {
+      console.warn('unpdf failed, trying pdfjs-dist fallback...');
+      // Fallback to pdfjs-dist
+      const result = await parsePDFWithPDFJS(arrayBuffer);
+      console.log('Successfully parsed PDF with pdfjs-dist fallback');
+      return result;
     }
-    
-    return {
-      text: textParts.join('\n'),
-      metadata: metadata.info ? {
-        title: metadata.info.Title,
-        author: metadata.info.Author,
-        subject: metadata.info.Subject,
-        keywords: metadata.info.Keywords,
-        creator: metadata.info.Creator,
-        producer: metadata.info.Producer,
-      } : undefined,
-      numPages: numPages
-    };
   } catch (err) {
-    console.error('Error parsing PDF:', err);
-    throw new Error('Failed to parse PDF file. Please ensure the file is a valid PDF.');
+    console.error('Error parsing PDF with all methods:', err);
+    throw new Error(`Failed to parse PDF file. Please ensure the file is a valid PDF. Error: ${err instanceof Error ? err.message : 'Unknown error'}`);
   }
 }
 
 /**
  * Extracts relevant information from PDF text for candidate analysis
+ * Enhanced with better pattern matching and text processing
  * @param pdfData - Parsed PDF data
  * @returns Structured information extracted from the PDF
  */
@@ -85,12 +152,15 @@ export function extractCandidateInfoFromPDF(pdfData: PDFData): {
   summary: string;
 } {
   const text = pdfData.text;
-  const lines = text.split('\n').map(line => line.trim()).filter(Boolean);
   
-  // Extract email using regex
-  const emailRegex = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/;
-  const emailMatch = text.match(emailRegex);
-  const email = emailMatch ? emailMatch[0] : undefined;
+  // Normalize whitespace and split into lines
+  const normalizedText = text.replace(/\s+/g, ' ').trim();
+  const lines = text.split(/\n+/).map(line => line.trim()).filter(Boolean);
+  
+  // Extract email using regex (improved pattern)
+  const emailRegex = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g;
+  const emailMatches = normalizedText.match(emailRegex);
+  const email = emailMatches ? emailMatches[0] : undefined;
   
   // Extract name from metadata or first few lines
   let name = pdfData.metadata?.author || pdfData.metadata?.title;
@@ -98,93 +168,128 @@ export function extractCandidateInfoFromPDF(pdfData: PDFData): {
   // If no name in metadata, try to find it in first few lines (common CV format)
   if (!name && lines.length > 0) {
     // Usually name is in the first 3 lines and is longer than 2 words
-    for (let i = 0; i < Math.min(3, lines.length); i++) {
+    for (let i = 0; i < Math.min(5, lines.length); i++) {
       const line = lines[i];
-      if (line.length > 5 && line.length < 50 && !line.includes('@') && !line.toLowerCase().includes('resume')) {
-        name = line;
-        break;
+      // Skip lines that are too short, too long, or contain common header keywords
+      const skipKeywords = ['resume', 'curriculum', 'vitae', 'cv', '@', 'phone', 'email', 'address'];
+      const shouldSkip = skipKeywords.some(kw => line.toLowerCase().includes(kw));
+      
+      if (!shouldSkip && line.length > 3 && line.length < 60 && /[a-zA-Z]/.test(line)) {
+        // Check if it looks like a name (has at least 2 words or is capitalized)
+        const words = line.split(/\s+/);
+        if (words.length >= 2 || /^[A-Z][a-z]+/.test(line)) {
+          name = line;
+          break;
+        }
       }
     }
   }
   
-  // Extract skills (look for common skill section headers)
+  // Extract skills (look for common skill section headers) - improved regex
   const skills: string[] = [];
-  const skillSectionRegex = /(?:skills?|技能|expertise|competencies|technologies)/i;
-  const skillSectionIndex = lines.findIndex(line => skillSectionRegex.test(line));
+  const skillSectionRegex = /(?:^|\n)\s*(?:technical\s+)?(?:skills?|技能|expertise|competencies|technologies|proficiencies|core\s+competenc(?:y|ies))(?:\s*:|\s*$)/im;
+  const skillSectionMatch = text.match(skillSectionRegex);
   
-  if (skillSectionIndex !== -1) {
-    // Extract skills from next 10 lines or until next section
-    for (let i = skillSectionIndex + 1; i < Math.min(skillSectionIndex + 10, lines.length); i++) {
-      const line = lines[i];
+  if (skillSectionMatch) {
+    const skillStartIndex = skillSectionMatch.index! + skillSectionMatch[0].length;
+    const skillText = text.substring(skillStartIndex, Math.min(skillStartIndex + 1000, text.length));
+    const skillLines = skillText.split(/\n+/).slice(0, 15); // Get next 15 lines
+    
+    for (const line of skillLines) {
+      const trimmedLine = line.trim();
+      
       // Stop if we hit another section header
-      if (line.length > 0 && /^[A-Z\s]{3,}$/.test(line) && line.length < 30) {
+      if (trimmedLine.length > 0 && /^[A-Z\s]{5,}$/.test(trimmedLine) && trimmedLine.length < 40) {
         break;
       }
-      if (line.length > 2) {
-        // Split by common delimiters
-        const items = line.split(/[,;•·|]/);
+      
+      if (trimmedLine.length > 2) {
+        // Split by common delimiters and bullet points
+        const items = trimmedLine.split(/[,;•·|●○◦▪▫–—]/);
         items.forEach(item => {
-          const trimmed = item.trim();
-          if (trimmed.length > 1 && trimmed.length < 50) {
-            skills.push(trimmed);
+          const cleaned = item.trim().replace(/^[-*]\s*/, ''); // Remove leading bullets/dashes
+          if (cleaned.length > 1 && cleaned.length < 60 && /[a-zA-Z]/.test(cleaned)) {
+            skills.push(cleaned);
           }
         });
       }
     }
   }
   
-  // Extract experience (look for experience section)
+  // Extract experience (look for experience section) - improved
   const experience: string[] = [];
-  const expSectionRegex = /(?:experience|工作经历|employment|work history)/i;
-  const expSectionIndex = lines.findIndex(line => expSectionRegex.test(line));
+  const expSectionRegex = /(?:^|\n)\s*(?:professional\s+|work\s+)?(?:experience|工作经历|employment|work\s+history|career\s+history)(?:\s*:|\s*$)/im;
+  const expSectionMatch = text.match(expSectionRegex);
   
-  if (expSectionIndex !== -1) {
-    // Extract experience entries (next 20 lines or until next section)
+  if (expSectionMatch) {
+    const expStartIndex = expSectionMatch.index! + expSectionMatch[0].length;
+    const expText = text.substring(expStartIndex, Math.min(expStartIndex + 2000, text.length));
+    const expLines = expText.split(/\n+/).slice(0, 30);
+    
     let currentEntry = '';
-    for (let i = expSectionIndex + 1; i < Math.min(expSectionIndex + 20, lines.length); i++) {
-      const line = lines[i];
-      // Stop if we hit another section header
-      if (line.length > 0 && /^[A-Z\s]{3,}$/.test(line) && line.length < 30 && !currentEntry) {
+    for (const line of expLines) {
+      const trimmedLine = line.trim();
+      
+      // Stop if we hit another major section header
+      if (trimmedLine.length > 0 && /^[A-Z\s]{5,}$/.test(trimmedLine) && trimmedLine.length < 40 && !currentEntry) {
         break;
       }
-      currentEntry += line + ' ';
-      // If line looks like a date or end of entry, save and reset
-      if (/\d{4}/.test(line) || line.length === 0) {
-        if (currentEntry.trim().length > 10) {
+      
+      currentEntry += trimmedLine + ' ';
+      
+      // If line contains a year range or date, it might be end of entry
+      if (/\d{4}\s*[-–—]\s*(?:\d{4}|present|current)/i.test(trimmedLine)) {
+        if (currentEntry.trim().length > 15) {
+          experience.push(currentEntry.trim());
+        }
+        currentEntry = '';
+      }
+      // Also check for double newline in original text (paragraph break)
+      else if (currentEntry.length > 100 && /\d{4}/.test(currentEntry)) {
+        if (currentEntry.trim().length > 15) {
           experience.push(currentEntry.trim());
         }
         currentEntry = '';
       }
     }
-    if (currentEntry.trim().length > 10) {
+    
+    // Add final entry if exists
+    if (currentEntry.trim().length > 15) {
       experience.push(currentEntry.trim());
     }
   }
   
-  // Extract education
+  // Extract education - improved
   const education: string[] = [];
-  const eduSectionRegex = /(?:education|教育背景|academic|qualifications)/i;
-  const eduSectionIndex = lines.findIndex(line => eduSectionRegex.test(line));
+  const eduSectionRegex = /(?:^|\n)\s*(?:education|教育背景|academic|qualifications|学历)(?:\s*:|\s*$)/im;
+  const eduSectionMatch = text.match(eduSectionRegex);
   
-  if (eduSectionIndex !== -1) {
-    for (let i = eduSectionIndex + 1; i < Math.min(eduSectionIndex + 10, lines.length); i++) {
-      const line = lines[i];
-      if (line.length > 0 && /^[A-Z\s]{3,}$/.test(line) && line.length < 30) {
+  if (eduSectionMatch) {
+    const eduStartIndex = eduSectionMatch.index! + eduSectionMatch[0].length;
+    const eduText = text.substring(eduStartIndex, Math.min(eduStartIndex + 1000, text.length));
+    const eduLines = eduText.split(/\n+/).slice(0, 15);
+    
+    for (const line of eduLines) {
+      const trimmedLine = line.trim();
+      
+      // Stop if we hit another section header
+      if (trimmedLine.length > 0 && /^[A-Z\s]{5,}$/.test(trimmedLine) && trimmedLine.length < 40) {
         break;
       }
-      if (line.length > 5) {
-        education.push(line);
+      
+      if (trimmedLine.length > 5 && /[a-zA-Z]/.test(trimmedLine)) {
+        education.push(trimmedLine);
       }
     }
   }
   
-  // Create summary (first 500 characters of text)
-  const summary = text.slice(0, 500).replace(/\s+/g, ' ').trim();
+  // Create summary (first 500 characters of normalized text)
+  const summary = normalizedText.slice(0, 500);
   
   return {
     name,
     email,
-    skills: skills.slice(0, 20), // Limit to 20 skills
+    skills: [...new Set(skills)].slice(0, 20), // Remove duplicates, limit to 20 skills
     experience: experience.slice(0, 5), // Limit to 5 experience entries
     education: education.slice(0, 5), // Limit to 5 education entries
     summary
