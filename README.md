@@ -167,11 +167,11 @@ See `QUICK_REFERENCE.md` for detailed technical documentation and `JD_MATCH_FEAT
 ## 📝 Documentation / 文档
 
 - `README.md` - Main project documentation (this file)
-- `PDF_PARSING_ENHANCEMENT.md` - Enhanced PDF parsing with unpdf documentation (NEW)
+- `QUICK_REFERENCE.md` - Quick overview of features and changes
+- `PDF_PARSING_ENHANCEMENT.md` - Enhanced PDF parsing with unpdf documentation
 - `JD_MATCH_FEATURE.md` - Complete JD matching feature documentation
 - `PERSONAL_WEBSITE_FEATURE.md` - Personal website scraping feature documentation
 - `IMPLEMENTATION_SUMMARY.md` - Personal website feature implementation summary
-- `QUICK_REFERENCE.md` - Quick overview of features and changes
 
 ## 🤝 Contributing / 贡献
 

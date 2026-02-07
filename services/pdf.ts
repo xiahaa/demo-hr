@@ -7,9 +7,14 @@ if (typeof window !== 'undefined') {
 }
 
 // Constants for information extraction
-const NAME_SKIP_KEYWORDS = ['resume', 'curriculum', 'vitae', 'cv', '@', 'phone', 'email', 'address'];
+const RESUME_HEADER_KEYWORDS = ['resume', 'curriculum', 'vitae', 'cv', '@', 'phone', 'email', 'address'];
 const SKILL_DELIMITERS = /[,;•·|●○◦▪▫–—]/;
 const EMAIL_REGEX = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g;
+
+// Section header keywords for resume parsing
+const SKILLS_KEYWORDS = ['skills?', 'technical\\s+skills?', '技能', 'expertise', 'competencies', 'technologies', 'proficiencies', 'core\\s+competenc(?:y|ies)'];
+const EXPERIENCE_KEYWORDS = ['professional\\s+experience', 'work\\s+experience', 'experience', '工作经历', 'employment', 'work\\s+history', 'career\\s+history'];
+const EDUCATION_KEYWORDS = ['education', '教育背景', 'academic', 'qualifications', '学历'];
 
 export interface PDFData {
   text: string;
@@ -173,8 +178,8 @@ export function extractCandidateInfoFromPDF(pdfData: PDFData): {
     // Usually name is in the first 3 lines and is longer than 2 words
     for (let i = 0; i < Math.min(5, lines.length); i++) {
       const line = lines[i];
-      // Skip lines that are too short, too long, or contain common header keywords
-      const shouldSkip = NAME_SKIP_KEYWORDS.some(kw => line.toLowerCase().includes(kw));
+      // Skip lines that are too short, too long, or contain common resume header keywords
+      const shouldSkip = RESUME_HEADER_KEYWORDS.some(kw => line.toLowerCase().includes(kw));
       
       if (!shouldSkip && line.length > 3 && line.length < 60 && /[a-zA-Z]/.test(line)) {
         // Check if it looks like a name (has at least 2 words or is capitalized)
@@ -187,9 +192,10 @@ export function extractCandidateInfoFromPDF(pdfData: PDFData): {
     }
   }
   
-  // Extract skills (look for common skill section headers) - improved regex
+  // Extract skills - looks for common skill section headers
+  // Matches variations like "SKILLS", "Technical Skills", "Competencies", etc.
   const skills: string[] = [];
-  const skillSectionRegex = /(?:^|\n)\s*(?:technical\s+)?(?:skills?|技能|expertise|competencies|technologies|proficiencies|core\s+competenc(?:y|ies))(?:\s*:|\s*$)/im;
+  const skillSectionRegex = new RegExp(`(?:^|\\n)\\s*(?:${SKILLS_KEYWORDS.join('|')})(?:\\s*:|\\s*$)`, 'im');
   const skillSectionMatch = text.match(skillSectionRegex);
   
   if (skillSectionMatch) {
@@ -218,9 +224,10 @@ export function extractCandidateInfoFromPDF(pdfData: PDFData): {
     }
   }
   
-  // Extract experience (look for experience section) - improved
+  // Extract experience - looks for experience/employment section headers
+  // Matches variations like "EXPERIENCE", "Work History", "Professional Experience", etc.
   const experience: string[] = [];
-  const expSectionRegex = /(?:^|\n)\s*(?:professional\s+|work\s+)?(?:experience|工作经历|employment|work\s+history|career\s+history)(?:\s*:|\s*$)/im;
+  const expSectionRegex = new RegExp(`(?:^|\\n)\\s*(?:${EXPERIENCE_KEYWORDS.join('|')})(?:\\s*:|\\s*$)`, 'im');
   const expSectionMatch = text.match(expSectionRegex);
   
   if (expSectionMatch) {
@@ -261,9 +268,10 @@ export function extractCandidateInfoFromPDF(pdfData: PDFData): {
     }
   }
   
-  // Extract education - improved
+  // Extract education - looks for education/academic section headers
+  // Matches variations like "EDUCATION", "Academic Background", "Qualifications", etc.
   const education: string[] = [];
-  const eduSectionRegex = /(?:^|\n)\s*(?:education|教育背景|academic|qualifications|学历)(?:\s*:|\s*$)/im;
+  const eduSectionRegex = new RegExp(`(?:^|\\n)\\s*(?:${EDUCATION_KEYWORDS.join('|')})(?:\\s*:|\\s*$)`, 'im');
   const eduSectionMatch = text.match(eduSectionRegex);
   
   if (eduSectionMatch) {
