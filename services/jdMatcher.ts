@@ -1,6 +1,10 @@
 import { JobDescription, JDMatchResult, MatchScore } from "../types";
 import { parsePDF } from "./pdf";
 
+// Validation constants
+const MIN_RESUME_LENGTH = 100; // Minimum characters for valid resume content
+const MAX_NON_PRINTABLE_RATIO = 0.05; // Maximum ratio of non-printable characters allowed (5%)
+
 /**
  * Analyzes job description and resume/link for matching
  */
@@ -31,13 +35,26 @@ export async function analyzeJDMatch(jd: JobDescription): Promise<JDMatchResult>
   }
 
   // Validate resume content
-  if (!resumeContent || resumeContent.trim().length < 50) {
-    throw new Error('Resume content is too short or empty. Please provide a valid resume.');
+  if (!resumeContent || resumeContent.trim().length < MIN_RESUME_LENGTH) {
+    throw new Error(`Resume content is too short or empty. Please provide a valid resume with at least ${MIN_RESUME_LENGTH} characters.`);
   }
 
   // Check if content looks like binary data (contains many non-printable characters)
-  const nonPrintableRatio = (resumeContent.match(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\xFF]/g) || []).length / resumeContent.length;
-  if (nonPrintableRatio > 0.3) {
+  // This check is safe because we already validated that resumeContent has minimum length above
+  let nonPrintableCount = 0;
+  for (let i = 0; i < resumeContent.length; i++) {
+    const charCode = resumeContent.charCodeAt(i);
+    // Check for control characters (0x00-0x08, 0x0B, 0x0C, 0x0E-0x1F, 0x7F)
+    if ((charCode >= 0x00 && charCode <= 0x08) || 
+        charCode === 0x0B || 
+        charCode === 0x0C || 
+        (charCode >= 0x0E && charCode <= 0x1F) || 
+        charCode === 0x7F) {
+      nonPrintableCount++;
+    }
+  }
+  const nonPrintableRatio = nonPrintableCount / resumeContent.length;
+  if (nonPrintableRatio > MAX_NON_PRINTABLE_RATIO) {
     throw new Error('Resume content appears to be corrupted or in an unsupported format. Please ensure the file is a valid text or PDF file.');
   }
 
