@@ -71,33 +71,42 @@ export const Landing: React.FC<LandingProps> = ({ onAnalyze }) => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input
-            type="text"
-            aria-label="Google Scholar 链接"
-            placeholder="Google Scholar URL（可选）"
-            className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#2D5BFF]/30 focus:border-[#2D5BFF] transition-all text-base placeholder:text-gray-600"
-            value={scholarUrl}
-            onChange={(e) => setScholarUrl(e.target.value)}
-          />
-          <input
-            type="text"
-            aria-label="LinkedIn 内容"
-            placeholder="LinkedIn 内容 / 原始文本（可选）"
-            className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#2D5BFF]/30 focus:border-[#2D5BFF] transition-all text-base placeholder:text-gray-600"
-            value={linkedinText}
-            onChange={(e) => setLinkedinText(e.target.value)}
-          />
+          <label className="flex flex-col gap-2">
+            <span className="text-sm text-gray-400 px-2 font-medium">Google Scholar (可选)</span>
+            <input
+              type="text"
+              aria-label="Google Scholar 链接"
+              placeholder="例如：scholar.google.com/citations?user=..."
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#2D5BFF]/30 focus:border-[#2D5BFF] transition-all text-base placeholder:text-gray-600"
+              value={scholarUrl}
+              onChange={(e) => setScholarUrl(e.target.value)}
+            />
+          </label>
+          <label className="flex flex-col gap-2">
+            <span className="text-sm text-gray-400 px-2 font-medium">LinkedIn (可选)</span>
+            <input
+              type="text"
+              aria-label="LinkedIn 内容"
+              placeholder="例如：linkedin.com/in/username"
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#2D5BFF]/30 focus:border-[#2D5BFF] transition-all text-base placeholder:text-gray-600"
+              value={linkedinText}
+              onChange={(e) => setLinkedinText(e.target.value)}
+            />
+          </label>
         </div>
 
         <div className="w-full">
-          <input
-            type="text"
-            aria-label="个人网站链接"
-            placeholder="个人网站 URL（可选，不包括 GitHub/LinkedIn/Scholar）"
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#2D5BFF]/30 focus:border-[#2D5BFF] transition-all text-base placeholder:text-gray-600"
-            value={personalWebsiteUrl}
-            onChange={(e) => setPersonalWebsiteUrl(e.target.value)}
-          />
+          <label className="flex flex-col gap-2">
+            <span className="text-sm text-gray-400 px-2 font-medium">个人网站 (可选)</span>
+            <input
+              type="text"
+              aria-label="个人网站链接"
+              placeholder="例如：yoursite.com"
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#2D5BFF]/30 focus:border-[#2D5BFF] transition-all text-base placeholder:text-gray-600"
+              value={personalWebsiteUrl}
+              onChange={(e) => setPersonalWebsiteUrl(e.target.value)}
+            />
+          </label>
           <p className="text-xs text-gray-500 mt-2 px-2">
             注意：仅抓取允许爬取的网站（遵守 robots.txt 规范）
           </p>
@@ -105,7 +114,7 @@ export const Landing: React.FC<LandingProps> = ({ onAnalyze }) => {
 
         <div className="w-full">
           <label className="flex flex-col gap-2">
-            <span className="text-sm text-gray-400 px-2">上传简历 PDF（可选）</span>
+            <span className="text-sm text-gray-400 px-2 font-medium">上传简历 PDF (可选)</span>
             <input
               type="file"
               accept=".pdf"
