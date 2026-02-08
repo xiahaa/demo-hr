@@ -259,6 +259,23 @@ export function isPrivateHostname(hostname: string): boolean {
     return true;
   }
 
+  // Block known DNS rebinding / localhost wildcard services
+  const localhostDomains = [
+    'localtest.me',
+    'lvh.me',
+    'vcap.me',
+    'nip.io',
+    'xip.io',
+    'sslip.io',
+    'localhost.tv'
+  ];
+
+  for (const domain of localhostDomains) {
+    if (normalizedHostname === domain || normalizedHostname.endsWith('.' + domain)) {
+      return true;
+    }
+  }
+
   // IPv6 check for localhost
   if (normalizedHostname === '[::1]' || normalizedHostname === '::1') {
     return true;
@@ -320,6 +337,21 @@ export function isPrivateHostname(hostname: string): boolean {
 
     // 0.0.0.0/8 (Current network)
     if (a === 0) return true;
+  }
+
+  // Check for embedded IPs in hostname (e.g., 10-0-0-1.mycompany.com)
+  // This helps catch DNS rebinding attempts or internal hostnames
+  // We use a global regex to find ALL potential IP patterns
+  const ipPattern = /(\d{1,3})[\.-](\d{1,3})[\.-](\d{1,3})[\.-](\d{1,3})/g;
+  const matches = checkHostname.matchAll(ipPattern);
+
+  for (const match of matches) {
+    const ip = `${match[1]}.${match[2]}.${match[3]}.${match[4]}`;
+    // Recursively check the extracted IP
+    // Note: strict check to avoid infinite recursion if something weird happens
+    if (ip !== checkHostname && isPrivateHostname(ip)) {
+      return true;
+    }
   }
 
   return false;
