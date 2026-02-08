@@ -21,3 +21,7 @@
 ## 2026-02-07 - [Visible Labels for Secondary Inputs]
 **Learning:** In minimalist "Bento" dark-mode forms, optional or secondary inputs (like scholar links or LinkedIn URLs) often omit labels for aesthetics, relying on placeholders. This hides context once the user starts typing and creates accessibility barriers.
 **Action:** Always provide visible `<label>` text for form inputs, using `text-sm text-gray-400 font-medium` to balance readability with the minimalist design.
+
+## 2026-02-21 - [Live Form Validation Accessibility]
+**Learning:** Dynamic validation errors that appear below inputs are often missed by screen readers if they don't have an appropriate role. Using `role="alert"` ensures immediate announcement of critical validation failures without moving focus.
+**Action:** Add `role="alert"` to container elements displaying dynamic form validation error messages.
