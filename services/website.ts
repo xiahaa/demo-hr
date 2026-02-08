@@ -136,35 +136,55 @@ export function extractMetaInfo(html: string): {
   return { title, description, keywords };
 }
 
+// Common tech keywords to look for
+const TECH_KEYWORDS = [
+  // Languages
+  'JavaScript', 'TypeScript', 'Python', 'Java', 'Go', 'Rust', 'C\\+\\+', 'C#', 'Ruby', 'PHP', 'Swift', 'Kotlin',
+  // Frameworks
+  'React', 'Vue', 'Angular', 'Node\\.js', 'Express', 'Django', 'Flask', 'Spring', 'Rails',
+  // Databases
+  'MongoDB', 'PostgreSQL', 'MySQL', 'Redis', 'Elasticsearch',
+  // Cloud/DevOps
+  'AWS', 'Azure', 'GCP', 'Docker', 'Kubernetes', 'CI/CD', 'Jenkins',
+  // Other
+  'Machine Learning', 'Deep Learning', 'TensorFlow', 'PyTorch', 'Data Science'
+];
+
+// Pre-compute normalized map for case restoration (e.g. "react" -> "React")
+const NORMALIZED_TECH_MAP = new Map<string, string>();
+TECH_KEYWORDS.forEach(k => {
+  const clean = k.replace(/\\/g, '');
+  NORMALIZED_TECH_MAP.set(clean.toLowerCase(), clean);
+});
+
+// Single compiled regex for performance
+// Uses (?!\w) lookahead instead of \b at the end to correctly handle keywords ending in symbols (C++, C#, Node.js)
+const TECH_REGEX = new RegExp(`\\b(${TECH_KEYWORDS.join('|')})(?!\\w)`, 'gi');
+
 /**
  * Extract technology mentions from HTML content
  */
 export function extractTechnologies(html: string, textContent: string): string[] {
   const technologies = new Set<string>();
 
-  // Common tech keywords to look for
-  const techKeywords = [
-    // Languages
-    'JavaScript', 'TypeScript', 'Python', 'Java', 'Go', 'Rust', 'C\\+\\+', 'C#', 'Ruby', 'PHP', 'Swift', 'Kotlin',
-    // Frameworks
-    'React', 'Vue', 'Angular', 'Node\\.js', 'Express', 'Django', 'Flask', 'Spring', 'Rails',
-    // Databases
-    'MongoDB', 'PostgreSQL', 'MySQL', 'Redis', 'Elasticsearch',
-    // Cloud/DevOps
-    'AWS', 'Azure', 'GCP', 'Docker', 'Kubernetes', 'CI/CD', 'Jenkins',
-    // Other
-    'Machine Learning', 'Deep Learning', 'TensorFlow', 'PyTorch', 'Data Science'
-  ];
+  const processText = (text: string) => {
+    // Reset lastIndex for stateful global regex
+    TECH_REGEX.lastIndex = 0;
+    const matches = text.match(TECH_REGEX);
 
-  const combinedContent = html + ' ' + textContent;
-  
-  for (const tech of techKeywords) {
-    const regex = new RegExp(`\\b${tech}\\b`, 'gi');
-    if (regex.test(combinedContent)) {
-      // Normalize the match to the standard form
-      technologies.add(tech.replace(/\\/g, ''));
+    if (matches) {
+      for (const match of matches) {
+        const canonical = NORMALIZED_TECH_MAP.get(match.toLowerCase());
+        if (canonical) {
+          technologies.add(canonical);
+        }
+      }
     }
-  }
+  };
+
+  // Process HTML and text separately to avoid large string concatenation
+  processText(html);
+  processText(textContent);
 
   return Array.from(technologies);
 }
