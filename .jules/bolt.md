@@ -25,3 +25,7 @@
 ## 2025-02-21 - Regex Loop vs Single Compilation
 **Learning:** Scanning content with 45 different regexes in a loop is O(K*N) and failed to detect keywords ending in symbols (e.g., `C++`) due to `\b` boundary issues.
 **Action:** Replaced with a single pre-compiled `RegExp` using alternation (`|`) and lookahead `(?!\w)`. This is O(N), reduces execution time by ~40x in worst-case scenarios (no matches), and correctly handles symbol-ending keywords.
+
+## 2025-02-24 - Efficient HTML Text Extraction
+**Learning:** Sending raw HTML to LLMs increases token usage and costs. The previous `DOMParser` implementation returned `innerHTML` (HTML string), which was then regex-processed, causing redundant serialization/parsing overhead and inconsistent output compared to the plain-text regex fallback.
+**Action:** Implemented recursive DOM traversal (`extractTextFromNode`) to extract text directly from the DOM tree, inserting smart whitespace for block elements. This avoids `innerHTML` serialization, reduces payload size by stripping tags early, and ensures clean plain-text output across environments.

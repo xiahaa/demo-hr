@@ -257,20 +257,43 @@ function parseAIResponse(response: string): JDMatchResult {
 }
 
 /**
- * Extract text content from HTML
- * This function removes all HTML tags and extracts plain text only
- * The extracted text is used for AI analysis, NOT rendered as HTML
- * 
- * Security Note: The regex patterns below are flagged by CodeQL as potentially
- * incomplete for HTML sanitization. However, this is acceptable because:
- * 1. The result is never rendered as HTML in the browser
- * 2. All HTML tags are removed after script/style removal (line 224)
- * 3. When document is available, we use browser's textContent (line 228)
- * 4. The final text is only sent to the DeepSeek API for analysis
+ * Helper to extract text from DOM node with structure preservation
  */
+function extractTextFromNode(node: Node): string {
+  if (node.nodeType === 3) { // Node.TEXT_NODE
+    return node.textContent || '';
+  }
+
+  if (node.nodeType === 1) { // Node.ELEMENT_NODE
+    const tagName = (node as Element).tagName.toLowerCase();
+
+    // Skip script and style tags (safeguard)
+    if (tagName === 'script' || tagName === 'style') return '';
+
+    // Handle line breaks
+    if (tagName === 'br') return '\n';
+
+    let text = '';
+    const isBlock = /^(div|p|h[1-6]|li|tr|header|footer|section|article|blockquote)$/.test(tagName);
+
+    // Add newline before block elements
+    if (isBlock) text += '\n';
+
+    for (let i = 0; i < node.childNodes.length; i++) {
+      text += extractTextFromNode(node.childNodes[i]);
+    }
+
+    // Add newline after block elements
+    if (isBlock) text += '\n';
+
+    return text;
+  }
+
+  return '';
+}
+
 function extractTextFromHtml(html: string): string {
   let text = html;
-  let useRegexLoop = true;
 
   // Optimized path for browser environments: Use DOMParser
   // This is significantly faster than the regex loop and safer against nested tags
@@ -283,14 +306,15 @@ function extractTextFromHtml(html: string): string {
       const elementsToRemove = doc.querySelectorAll('script, style');
       elementsToRemove.forEach(el => el.remove());
 
-      text = doc.body.innerHTML;
-      useRegexLoop = false;
+      // Extract text directly from DOM, preserving minimal structure
+      return extractTextFromNode(doc.body).replace(/\s+/g, ' ').trim().substring(0, 50000);
     } catch (e) {
       console.warn('DOMParser failed, falling back to regex', e);
     }
   }
 
-  if (useRegexLoop) {
+  // Fallback regex loop
+  {
     // Remove script and style tags with their content (multiple iterations to handle nested tags)
     let previousLength = 0;
 
