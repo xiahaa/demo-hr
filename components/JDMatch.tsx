@@ -141,7 +141,11 @@ export const JDMatch: React.FC<JDMatchProps> = ({ onAnalyze }) => {
           {/* URL Input */}
           {inputMode === 'url' && (
             <div>
+              <label htmlFor="resumeUrl" className="block text-sm font-medium text-gray-400 mb-2">
+                简历链接 <span className="text-red-400">*</span>
+              </label>
               <input
+                id="resumeUrl"
                 type="text"
                 placeholder="简历链接（GitHub、LinkedIn或其他在线简历）"
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#2D5BFF]/50 focus:border-[#2D5BFF] transition-all text-base placeholder:text-gray-600"
@@ -185,7 +189,7 @@ export const JDMatch: React.FC<JDMatchProps> = ({ onAnalyze }) => {
 
         {/* Validation Error Message */}
         {validationError && (
-          <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-red-400 text-sm">
+          <div role="alert" className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-red-400 text-sm">
             {validationError}
           </div>
         )}
