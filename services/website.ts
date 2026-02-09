@@ -339,6 +339,29 @@ export function isPrivateHostname(hostname: string): boolean {
     if (a === 0) return true;
   }
 
+  // Check for integer IP format (e.g., 2130706433 -> 127.0.0.1)
+  // Some browsers might not normalize this automatically
+  if (/^\d+$/.test(checkHostname)) {
+    try {
+      const ipInt = parseInt(checkHostname, 10);
+      if (!isNaN(ipInt) && ipInt >= 0 && ipInt <= 4294967295) {
+        // Convert to unsigned 32-bit integer logic
+        const a = (ipInt >>> 24) & 0xff;
+        const b = (ipInt >>> 16) & 0xff;
+        const c = (ipInt >>> 8) & 0xff;
+        const d = ipInt & 0xff;
+        const dotted = `${a}.${b}.${c}.${d}`;
+        // Recursively check the dotted decimal format
+        // Avoid infinite recursion if dotted equals checkHostname (unlikely for dotted vs int)
+        if (dotted !== checkHostname && isPrivateHostname(dotted)) {
+          return true;
+        }
+      }
+    } catch {
+      // Ignore parsing errors
+    }
+  }
+
   // Check for embedded IPs in hostname (e.g., 10-0-0-1.mycompany.com)
   // This helps catch DNS rebinding attempts or internal hostnames
   // We use a global regex to find ALL potential IP patterns

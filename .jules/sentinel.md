@@ -23,3 +23,8 @@
 **Prevention:** Implement a defense-in-depth approach:
 1. Block known localhost wildcard domains (nip.io, localtest.me).
 2. Recursively check hostnames for embedded IP patterns (e.g., 1-1-1-1.nip.io) to detect and block private IPs hidden in public domains.
+
+## 2026-02-18 - SSRF in JD Matcher & Integer IP Bypass
+**Vulnerability:** The JD Matcher feature allowed fetching arbitrary URLs (including localhost/private IPs) via `resumeUrl` because it only validated the protocol. Additionally, `isPrivateHostname` was vulnerable to integer IP formats (e.g., `2130706433`) in environments where `URL` normalization is inconsistent.
+**Learning:** New features often duplicate security logic (like URL validation) poorly instead of reusing robust centralized functions. Also, browser URL parsing behavior varies for non-standard IP formats.
+**Prevention:** Centralize all URL validation in `services/website.ts` and enforce its use. Explicitly handle integer/octal IP formats by converting to dotted-decimal before validation.

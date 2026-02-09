@@ -1,5 +1,6 @@
 import { JobDescription, JDMatchResult, MatchScore } from "../types";
 import { parsePDF } from "./pdf";
+import { isPrivateHostname } from "./website";
 
 // Validation constants
 const MIN_RESUME_LENGTH = 100; // Minimum characters for valid resume content
@@ -72,6 +73,19 @@ async function fetchResumeFromUrl(url: string): Promise<string> {
   const sanitizedUrl = sanitizeUrl(url);
   if (!sanitizedUrl) {
     throw new Error('Invalid URL format');
+  }
+
+  // Security check: Block private network access (SSRF)
+  try {
+    const hostname = new URL(sanitizedUrl).hostname;
+    if (isPrivateHostname(hostname)) {
+      throw new Error('Access to private network resources is blocked.');
+    }
+  } catch (err) {
+    if (err instanceof Error && err.message.includes('blocked')) {
+      throw err;
+    }
+    throw new Error('Invalid URL for security check');
   }
 
   const response = await fetch(sanitizedUrl, {
