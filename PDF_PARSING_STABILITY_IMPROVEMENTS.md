@@ -19,17 +19,17 @@
 
 #### 1. **Retry Logic with Exponential Backoff**
 ```typescript
-// Retry up to 2 times with exponential backoff (1s, 2s, 4s)
+// Retry up to 2 times with exponential backoff (delays: 1s, 2s)
 const result = await retryWithBackoff(
   parseFunction,
-  PDF_PARSE_MAX_RETRIES,  // 2 retries
+  PDF_PARSE_MAX_RETRIES,  // 2 retries (3 total attempts)
   PDF_PARSE_RETRY_DELAY_MS // 1000ms base delay
 );
 ```
 
 **Benefits:**
 - Handles transient parsing failures
-- Exponential backoff prevents resource exhaustion (1s → 2s → 4s)
+- Exponential backoff prevents resource exhaustion (delays: 1s, 2s between attempts)
 - Configurable retry count and delays
 
 #### 2. **Timeout Protection**
@@ -125,12 +125,16 @@ Try unpdf with retry & timeout
 ```
 
 #### Retry Strategy
-- **Attempt 1**: Immediate (0ms delay)
-- **Attempt 2**: After 1s delay (1000ms * 2^0 = 1s)
-- **Attempt 3**: After 2s delay (1000ms * 2^1 = 2s)
-- **Total if all fail**: After 4s delay (1000ms * 2^2 = 4s)
+With `maxRetries = 2`, there are **3 total attempts** with **2 delays** between them:
 
-Note: The delay increases exponentially using the formula: `baseDelay * 2^attempt`
+- **Attempt 1**: Immediate (no delay before first attempt)
+- **Delay**: 1s (1000ms * 2^0 = 1000ms)
+- **Attempt 2**: After 1s delay
+- **Delay**: 2s (1000ms * 2^1 = 2000ms)
+- **Attempt 3**: After 2s delay (final attempt, no delay after)
+
+**Total wait time**: 3s (1s + 2s) across all retries  
+**Formula**: `delay = baseDelay * 2^attemptNumber` where attemptNumber is 0-indexed
 
 Each attempt has:
 - 30-second timeout
@@ -141,8 +145,8 @@ Each attempt has:
 
 ```typescript
 const PDF_PARSE_TIMEOUT_MS = 30000;        // 30 seconds per attempt
-const PDF_PARSE_MAX_RETRIES = 2;           // 2 retry attempts
-const PDF_PARSE_RETRY_DELAY_MS = 1000;     // 1 second base delay (exponential: 1s, 2s, 4s)
+const PDF_PARSE_MAX_RETRIES = 2;           // 2 retry attempts (3 total attempts)
+const PDF_PARSE_RETRY_DELAY_MS = 1000;     // 1 second base delay (exponential: 1s, 2s between attempts)
 const PDF_MIN_TEXT_LENGTH = 10;            // Minimum text length for valid extraction
 const PDF_SIGNATURE = [0x25, 0x50, 0x44, 0x46]; // "%PDF"
 ```
@@ -218,15 +222,15 @@ Total: 76 tests passing
 - **Attempt 1**: Fails
 - **Delay**: 1s (1000ms * 2^0)
 - **Attempt 2**: Succeeds
-- **Total Time**: <7s (acceptable for reliability gain)
+- **Total Time**: <7s (5s parse + 1s delay + 1s parse, acceptable for reliability)
 
-### Corrupted File
+### Corrupted File (All attempts fail)
 - **Attempt 1**: Fails after timeout (30s)
 - **Delay**: 1s (1000ms * 2^0)
 - **Attempt 2**: Fails after timeout (30s)
 - **Delay**: 2s (1000ms * 2^1)
 - **Attempt 3**: Fails after timeout (30s)
-- **Total Time**: ~93s (30+1+30+2+30 = only for truly problematic files)
+- **Total Time**: ~93s (30s + 1s + 30s + 2s + 30s, only for truly problematic files)
 - **Better than**: Indefinite hang
 
 ### Invalid File (No PDF Header)
