@@ -1,5 +1,6 @@
 import { JobDescription, JDMatchResult, MatchScore } from "../types";
 import { parsePDF } from "./pdf";
+import { extractWithMineru } from "./mineru";
 import { isPrivateHostname } from "./website";
 
 // Validation constants
@@ -112,11 +113,19 @@ async function fetchResumeFromUrl(url: string): Promise<string> {
   const contentType = response.headers.get('content-type') || '';
   
   if (contentType.includes('application/pdf')) {
-    // Parse PDF from URL
+    // Parse PDF from URL using Mineru API
     try {
-      const arrayBuffer = await response.arrayBuffer();
-      const pdfData = await parsePDF(arrayBuffer);
-      return pdfData.text;
+      // Try mineru first for URL-based PDFs
+      try {
+        const result = await extractWithMineru(sanitizedUrl);
+        return result.text;
+      } catch (mineruErr) {
+        // Fallback to local parsing if mineru fails
+        console.warn('Mineru parsing failed, falling back to local parser:', mineruErr);
+        const arrayBuffer = await response.arrayBuffer();
+        const pdfData = await parsePDF(arrayBuffer);
+        return pdfData.text;
+      }
     } catch (err) {
       throw new Error(`Failed to parse PDF from URL: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
