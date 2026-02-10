@@ -50,24 +50,29 @@ export const Landing: React.FC<LandingProps> = ({ onAnalyze }) => {
       </div>
 
       <form onSubmit={handleSubmit} className="w-full max-w-2xl space-y-4">
-        <div className="relative group">
-          <input
-            type="text"
-            required
-            aria-label="GitHub 个人资料链接"
-            placeholder="GitHub URL（例如 github.com/torvalds）"
-            className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-5 focus:outline-none focus:ring-2 focus:ring-[#2D5BFF]/50 focus:border-[#2D5BFF] transition-all text-xl placeholder:text-gray-600"
-            value={githubUrl}
-            onChange={(e) => setGithubUrl(e.target.value)}
-          />
-          <button
-            type="submit"
-            disabled={!githubUrl.trim()}
-            aria-label="分析个人资料"
-            className="absolute right-3 top-3 bottom-3 bg-[#2D5BFF] hover:bg-[#2D5BFF]/90 text-white px-8 rounded-xl font-bold transition-all shadow-lg shadow-[#2D5BFF]/20 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#2D5BFF]"
-          >
-            分析
-          </button>
+        <div className="flex flex-col gap-2">
+          <label htmlFor="github-url" className="text-sm text-gray-400 px-2 font-medium">
+            GitHub 个人资料 URL <span className="text-red-400">*</span>
+          </label>
+          <div className="relative group">
+            <input
+              id="github-url"
+              type="text"
+              required
+              placeholder="GitHub URL（例如 github.com/torvalds）"
+              className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-5 focus:outline-none focus:ring-2 focus:ring-[#2D5BFF]/50 focus:border-[#2D5BFF] transition-all text-xl placeholder:text-gray-600"
+              value={githubUrl}
+              onChange={(e) => setGithubUrl(e.target.value)}
+            />
+            <button
+              type="submit"
+              disabled={!githubUrl.trim()}
+              aria-label="分析个人资料"
+              className="absolute right-3 top-3 bottom-3 bg-[#2D5BFF] hover:bg-[#2D5BFF]/90 text-white px-8 rounded-xl font-bold transition-all shadow-lg shadow-[#2D5BFF]/20 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#2D5BFF]"
+            >
+              分析
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

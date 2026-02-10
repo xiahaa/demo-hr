@@ -25,3 +25,7 @@
 ## 2026-02-21 - [Live Form Validation Accessibility]
 **Learning:** Dynamic validation errors that appear below inputs are often missed by screen readers if they don't have an appropriate role. Using `role="alert"` ensures immediate announcement of critical validation failures without moving focus.
 **Action:** Add `role="alert"` to container elements displaying dynamic form validation error messages.
+
+## 2026-02-09 - [Visible Labels for Primary Search Inputs]
+**Learning:** Even for primary, prominent "search-bar" style inputs in dark mode, relying solely on placeholders causes context loss when the user starts typing. A visible label, even if small, maintains context and improves accessibility for cognitive disabilities.
+**Action:** Ensure all form inputs, including primary search bars, have a visible label, possibly positioned above the input to maintain the search bar aesthetic.
