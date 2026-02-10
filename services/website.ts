@@ -164,10 +164,12 @@ const TECH_REGEX = new RegExp(`\\b(${TECH_KEYWORDS.join('|')})(?!\\w)`, 'gi');
 /**
  * Extract technology mentions from HTML content
  */
-export function extractTechnologies(html: string, textContent: string): string[] {
+export function extractTechnologies(textContent: string, metaContent: string = ''): string[] {
   const technologies = new Set<string>();
 
   const processText = (text: string) => {
+    if (!text) return;
+
     // Reset lastIndex for stateful global regex
     TECH_REGEX.lastIndex = 0;
     const matches = text.match(TECH_REGEX);
@@ -182,9 +184,11 @@ export function extractTechnologies(html: string, textContent: string): string[]
     }
   };
 
-  // Process HTML and text separately to avoid large string concatenation
-  processText(html);
+  // Process text and meta content separately to avoid large string concatenation
+  // Performance: We only scan visible text and metadata, avoiding the large HTML structure
+  // Accuracy: This prevents false positives from HTML attributes (e.g. class="react-container")
   processText(textContent);
+  processText(metaContent);
 
   return Array.from(technologies);
 }
@@ -517,7 +521,13 @@ export async function fetchPersonalWebsite(url: string): Promise<WebsiteInfo | n
     // Extract information from HTML
     const { title, description, keywords } = extractMetaInfo(html);
     const textContent = extractTextContent(html);
-    const technologies = extractTechnologies(html, textContent);
+
+    // Combine meta info for technology extraction
+    // Filter out null/undefined and empty strings
+    const metaParts = [title, description, ...keywords].filter((part): part is string => !!part);
+    const metaContent = metaParts.join(' ');
+
+    const technologies = extractTechnologies(textContent, metaContent);
     const skills = extractSkills(textContent);
 
     // Add keywords to skills if they seem relevant

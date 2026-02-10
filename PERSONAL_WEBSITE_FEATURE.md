@@ -73,7 +73,7 @@ function validatePersonalWebsiteUrl(url: string): string | null
 async function fetchPersonalWebsite(url: string): Promise<WebsiteInfo | null>
 
 // 提取技术栈
-function extractTechnologies(html: string, textContent: string): string[]
+function extractTechnologies(textContent: string, metaContent: string): string[]
 
 // 提取技能
 function extractSkills(textContent: string): string[]
