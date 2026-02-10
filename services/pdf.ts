@@ -96,7 +96,9 @@ function validateExtractedText(result: PDFData): void {
 /**
  * Retry a function with exponential backoff
  * @param fn - The function to retry
- * @param maxRetries - Maximum number of retries
+ * @param maxRetries - Maximum number of retries (not including initial attempt). 
+ *                     For example, maxRetries=2 results in 3 total attempts: 
+ *                     initial attempt + 2 retry attempts
  * @param baseDelayMs - Base delay for exponential backoff
  * @returns Result of the function
  */
@@ -107,6 +109,7 @@ async function retryWithBackoff<T>(
 ): Promise<T> {
   let lastError: Error | undefined;
   
+  // Loop through initial attempt (0) + retry attempts (1 to maxRetries)
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       return await fn();
