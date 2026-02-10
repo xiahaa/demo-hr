@@ -59,14 +59,8 @@ function validatePDFStructure(arrayBuffer: ArrayBuffer): boolean {
     
     const header = new Uint8Array(arrayBuffer.slice(0, 4));
     
-    // Check for PDF signature "%PDF"
-    for (let i = 0; i < PDF_SIGNATURE.length; i++) {
-      if (header[i] !== PDF_SIGNATURE[i]) {
-        return false;
-      }
-    }
-    
-    return true;
+    // Check for PDF signature "%PDF" using idiomatic comparison
+    return header.every((byte, i) => byte === PDF_SIGNATURE[i]);
   } catch (err) {
     return false;
   }
@@ -86,6 +80,17 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number, errorMessage: st
       setTimeout(() => reject(new Error(errorMessage)), timeoutMs);
     })
   ]);
+}
+
+/**
+ * Validates that extracted text contains meaningful content
+ * @param result - The PDF parsing result to validate
+ * @throws Error if text is empty or too short
+ */
+function validateExtractedText(result: PDFData): void {
+  if (!result.text || result.text.trim().length < PDF_MIN_TEXT_LENGTH) {
+    throw new Error('No meaningful text extracted from PDF');
+  }
 }
 
 /**
@@ -237,9 +242,7 @@ export async function parsePDF(file: File | ArrayBuffer): Promise<PDFData> {
         );
         
         // Validate that we got meaningful text
-        if (!result.text || result.text.trim().length < PDF_MIN_TEXT_LENGTH) {
-          throw new Error('No meaningful text extracted from PDF');
-        }
+        validateExtractedText(result);
         
         return result;
       } catch (unpdfError) {
@@ -256,9 +259,7 @@ export async function parsePDF(file: File | ArrayBuffer): Promise<PDFData> {
           );
           
           // Validate that we got meaningful text
-          if (!result.text || result.text.trim().length < PDF_MIN_TEXT_LENGTH) {
-            throw new Error('No meaningful text extracted from PDF using fallback parser');
-          }
+          validateExtractedText(result);
           
           return result;
         } catch (pdfjsError) {
