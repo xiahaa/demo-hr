@@ -10,6 +10,7 @@ if (typeof window !== 'undefined') {
 const PDF_PARSE_TIMEOUT_MS = 30000; // 30 seconds timeout for PDF parsing
 const PDF_PARSE_MAX_RETRIES = 2; // Maximum retry attempts
 const PDF_PARSE_RETRY_DELAY_MS = 1000; // Initial retry delay (exponential backoff)
+const PDF_MIN_TEXT_LENGTH = 10; // Minimum text length to consider parsing successful
 const PDF_SIGNATURE = new Uint8Array([0x25, 0x50, 0x44, 0x46]); // "%PDF" header
 
 // Constants for information extraction
@@ -236,7 +237,7 @@ export async function parsePDF(file: File | ArrayBuffer): Promise<PDFData> {
         );
         
         // Validate that we got meaningful text
-        if (!result.text || result.text.trim().length < 10) {
+        if (!result.text || result.text.trim().length < PDF_MIN_TEXT_LENGTH) {
           throw new Error('No meaningful text extracted from PDF');
         }
         
@@ -255,7 +256,7 @@ export async function parsePDF(file: File | ArrayBuffer): Promise<PDFData> {
           );
           
           // Validate that we got meaningful text
-          if (!result.text || result.text.trim().length < 10) {
+          if (!result.text || result.text.trim().length < PDF_MIN_TEXT_LENGTH) {
             throw new Error('No meaningful text extracted from PDF using fallback parser');
           }
           

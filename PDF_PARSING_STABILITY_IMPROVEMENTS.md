@@ -29,7 +29,7 @@ const result = await retryWithBackoff(
 
 **Benefits:**
 - Handles transient parsing failures
-- Exponential backoff prevents resource exhaustion
+- Exponential backoff prevents resource exhaustion (1s → 2s → 4s)
 - Configurable retry count and delays
 
 #### 2. **Timeout Protection**
@@ -126,8 +126,11 @@ Try unpdf with retry & timeout
 
 #### Retry Strategy
 - **Attempt 1**: Immediate (0ms delay)
-- **Attempt 2**: After 1s delay (1000ms)
-- **Attempt 3**: After 2s delay (2000ms)
+- **Attempt 2**: After 1s delay (1000ms * 2^0 = 1s)
+- **Attempt 3**: After 2s delay (1000ms * 2^1 = 2s)
+- **Total if all fail**: After 4s delay (1000ms * 2^2 = 4s)
+
+Note: The delay increases exponentially using the formula: `baseDelay * 2^attempt`
 
 Each attempt has:
 - 30-second timeout
@@ -139,7 +142,8 @@ Each attempt has:
 ```typescript
 const PDF_PARSE_TIMEOUT_MS = 30000;        // 30 seconds per attempt
 const PDF_PARSE_MAX_RETRIES = 2;           // 2 retry attempts
-const PDF_PARSE_RETRY_DELAY_MS = 1000;     // 1 second base delay
+const PDF_PARSE_RETRY_DELAY_MS = 1000;     // 1 second base delay (exponential: 1s, 2s, 4s)
+const PDF_MIN_TEXT_LENGTH = 10;            // Minimum text length for valid extraction
 const PDF_SIGNATURE = [0x25, 0x50, 0x44, 0x46]; // "%PDF"
 ```
 
@@ -212,17 +216,17 @@ Total: 76 tests passing
 
 ### Transient Failure (Network hiccup)
 - **Attempt 1**: Fails
-- **Delay**: 1s
+- **Delay**: 1s (1000ms * 2^0)
 - **Attempt 2**: Succeeds
 - **Total Time**: <7s (acceptable for reliability gain)
 
 ### Corrupted File
 - **Attempt 1**: Fails after timeout (30s)
-- **Delay**: 1s
+- **Delay**: 1s (1000ms * 2^0)
 - **Attempt 2**: Fails after timeout (30s)
-- **Delay**: 2s
+- **Delay**: 2s (1000ms * 2^1)
 - **Attempt 3**: Fails after timeout (30s)
-- **Total Time**: ~93s (only for truly problematic files)
+- **Total Time**: ~93s (30+1+30+2+30 = only for truly problematic files)
 - **Better than**: Indefinite hang
 
 ### Invalid File (No PDF Header)
