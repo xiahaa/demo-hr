@@ -80,15 +80,35 @@ describe('analyzeJDMatch', () => {
   it('should process HTML resume using DOMParser when available', async () => {
     // Mock DOMParser
     const mockRemove = vi.fn();
+
+    // Helper to create mock nodes
+    const createMockNode = (type: number, tagNameOrContent: string, children: any[] = []) => {
+      if (type === 3) { // TEXT_NODE
+        return {
+          nodeType: 3,
+          textContent: tagNameOrContent,
+          childNodes: []
+        };
+      }
+      return {
+        nodeType: 1, // ELEMENT_NODE
+        tagName: tagNameOrContent.toUpperCase(),
+        childNodes: children,
+        remove: mockRemove
+      };
+    };
+
     const mockParseFromString = vi.fn((html: string) => {
-      // Return a mocked document structure
+      // Construct a simple DOM tree representing:
+      // <body><h1>Resume</h1><div class="content">...text...</div></body>
+      const body = createMockNode(1, 'BODY', [
+        createMockNode(1, 'H1', [createMockNode(3, 'Resume')]),
+        createMockNode(1, 'DIV', [createMockNode(3, LONG_RESUME_TEXT)])
+      ]);
+
       return {
         querySelectorAll: () => [{ remove: mockRemove }], // Mock finding one script/style
-        body: {
-          // After script removal, innerHTML should contain the text content
-          // We simulate what DOMParser would produce after removal
-          innerHTML: `<h1>Resume</h1> <div class="content">${LONG_RESUME_TEXT.replace(/\n/g, '<br>')}</div>`
-        }
+        body: body
       };
     });
 
