@@ -6,6 +6,12 @@ if (typeof window !== 'undefined') {
   pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 }
 
+// Constants for PDF parsing
+const PDF_PARSE_TIMEOUT_MS = 30000; // 30 seconds timeout for PDF parsing
+const PDF_PARSE_MAX_RETRIES = 2; // Maximum retry attempts
+const PDF_PARSE_RETRY_DELAY_MS = 1000; // Initial retry delay (exponential backoff)
+const PDF_SIGNATURE = new Uint8Array([0x25, 0x50, 0x44, 0x46]); // "%PDF" header
+
 // Constants for information extraction
 const RESUME_HEADER_KEYWORDS = ['resume', 'curriculum', 'vitae', 'cv', '@', 'phone', 'email', 'address'];
 const SKILL_DELIMITERS = /[,;•·|●○◦▪▫–—]/;
@@ -30,36 +36,117 @@ export interface PDFData {
 }
 
 /**
+ * Error class for PDF parsing failures
+ */
+class PDFParseError extends Error {
+  constructor(message: string, public readonly cause?: Error) {
+    super(message);
+    this.name = 'PDFParseError';
+  }
+}
+
+/**
+ * Validates that the ArrayBuffer contains a valid PDF file structure
+ * @param arrayBuffer - The buffer to validate
+ * @returns true if valid PDF, false otherwise
+ */
+function validatePDFStructure(arrayBuffer: ArrayBuffer): boolean {
+  try {
+    if (arrayBuffer.byteLength < 4) {
+      return false;
+    }
+    
+    const header = new Uint8Array(arrayBuffer.slice(0, 4));
+    
+    // Check for PDF signature "%PDF"
+    for (let i = 0; i < PDF_SIGNATURE.length; i++) {
+      if (header[i] !== PDF_SIGNATURE[i]) {
+        return false;
+      }
+    }
+    
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
+
+/**
+ * Wraps a promise with a timeout
+ * @param promise - The promise to wrap
+ * @param timeoutMs - Timeout in milliseconds
+ * @param errorMessage - Error message to throw on timeout
+ * @returns Promise that rejects if timeout is exceeded
+ */
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number, errorMessage: string): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) => {
+      setTimeout(() => reject(new Error(errorMessage)), timeoutMs);
+    })
+  ]);
+}
+
+/**
+ * Retry a function with exponential backoff
+ * @param fn - The function to retry
+ * @param maxRetries - Maximum number of retries
+ * @param baseDelayMs - Base delay for exponential backoff
+ * @returns Result of the function
+ */
+async function retryWithBackoff<T>(
+  fn: () => Promise<T>,
+  maxRetries: number,
+  baseDelayMs: number
+): Promise<T> {
+  let lastError: Error | undefined;
+  
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastError = err instanceof Error ? err : new Error(String(err));
+      
+      // Don't retry on last attempt
+      if (attempt === maxRetries) {
+        break;
+      }
+      
+      // Calculate exponential backoff delay
+      const delay = baseDelayMs * Math.pow(2, attempt);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+  
+  throw lastError;
+}
+
+/**
  * Parses a PDF file using unpdf library (enhanced PDF parser)
  * Falls back to pdfjs-dist if unpdf fails
- * @param file - The PDF file to parse (File or ArrayBuffer)
+ * @param arrayBuffer - The PDF file as ArrayBuffer
  * @returns PDFData containing text, metadata, and page count
  */
 async function parsePDFWithUnpdf(arrayBuffer: ArrayBuffer): Promise<PDFData> {
-  try {
-    // Use unpdf's extractText for better text extraction
-    const { text, totalPages, metadata } = await extractText(arrayBuffer, { 
-      mergePages: true,
-      // Add better spacing between text items
-      itemSeparator: ' ',
-    });
-    
-    return {
-      text: text || '',
-      metadata: metadata ? {
-        title: metadata.title,
-        author: metadata.author,
-        subject: metadata.subject,
-        keywords: metadata.keywords,
-        creator: metadata.creator,
-        producer: metadata.producer,
-      } : undefined,
-      numPages: totalPages || 0
-    };
-  } catch (err) {
-    console.error('unpdf parsing failed, falling back to pdfjs-dist:', err);
-    throw err; // Re-throw to trigger fallback
-  }
+  // Use unpdf's extractText for better text extraction
+  const { text, totalPages, metadata } = await extractText(arrayBuffer, { 
+    mergePages: true,
+    // Add better spacing between text items
+    itemSeparator: ' ',
+  });
+  
+  return {
+    text: text || '',
+    metadata: metadata ? {
+      title: metadata.title,
+      author: metadata.author,
+      subject: metadata.subject,
+      keywords: metadata.keywords,
+      creator: metadata.creator,
+      producer: metadata.producer,
+    } : undefined,
+    numPages: totalPages || 0
+  };
 }
 
 /**
@@ -115,6 +202,7 @@ async function parsePDFWithPDFJS(arrayBuffer: ArrayBuffer): Promise<PDFData> {
 /**
  * Parses a PDF file and extracts text content and metadata
  * Uses unpdf (enhanced parser) with pdfjs-dist as fallback
+ * Includes retry logic, timeout protection, and structure validation
  * @param file - The PDF file to parse (File or ArrayBuffer)
  * @returns PDFData containing text, metadata, and page count
  */
@@ -128,22 +216,72 @@ export async function parsePDF(file: File | ArrayBuffer): Promise<PDFData> {
       arrayBuffer = file;
     }
 
-    // Try unpdf first (more robust PDF parsing)
-    try {
-      console.log('Attempting PDF parsing with unpdf (enhanced parser)...');
-      const result = await parsePDFWithUnpdf(arrayBuffer);
-      console.log('Successfully parsed PDF with unpdf');
-      return result;
-    } catch (unpdfError) {
-      console.warn('unpdf failed, trying pdfjs-dist fallback...');
-      // Fallback to pdfjs-dist
-      const result = await parsePDFWithPDFJS(arrayBuffer);
-      console.log('Successfully parsed PDF with pdfjs-dist fallback');
-      return result;
+    // Validate PDF structure before attempting to parse
+    if (!validatePDFStructure(arrayBuffer)) {
+      throw new PDFParseError('Invalid PDF file: File does not have a valid PDF header. Please ensure the file is a valid PDF document.');
     }
+
+    // Define parsing function with retry and timeout
+    const parseWithRetryAndTimeout = async (): Promise<PDFData> => {
+      // Try unpdf first (more robust PDF parsing)
+      try {
+        const result = await retryWithBackoff(
+          async () => withTimeout(
+            parsePDFWithUnpdf(arrayBuffer),
+            PDF_PARSE_TIMEOUT_MS,
+            'PDF parsing timed out (unpdf). The file may be corrupted or too complex.'
+          ),
+          PDF_PARSE_MAX_RETRIES,
+          PDF_PARSE_RETRY_DELAY_MS
+        );
+        
+        // Validate that we got meaningful text
+        if (!result.text || result.text.trim().length < 10) {
+          throw new Error('No meaningful text extracted from PDF');
+        }
+        
+        return result;
+      } catch (unpdfError) {
+        // Fallback to pdfjs-dist
+        try {
+          const result = await retryWithBackoff(
+            async () => withTimeout(
+              parsePDFWithPDFJS(arrayBuffer),
+              PDF_PARSE_TIMEOUT_MS,
+              'PDF parsing timed out (pdfjs-dist). The file may be corrupted or too complex.'
+            ),
+            PDF_PARSE_MAX_RETRIES,
+            PDF_PARSE_RETRY_DELAY_MS
+          );
+          
+          // Validate that we got meaningful text
+          if (!result.text || result.text.trim().length < 10) {
+            throw new Error('No meaningful text extracted from PDF using fallback parser');
+          }
+          
+          return result;
+        } catch (pdfjsError) {
+          // Both parsers failed
+          throw new PDFParseError(
+            'Failed to parse PDF with all available parsers. The file may be corrupted, password-protected, or contain only images.',
+            pdfjsError instanceof Error ? pdfjsError : new Error(String(pdfjsError))
+          );
+        }
+      }
+    };
+
+    const result = await parseWithRetryAndTimeout();
+    return result;
   } catch (err) {
-    console.error('Error parsing PDF with all methods:', err);
-    throw new Error(`Failed to parse PDF file. Please ensure the file is a valid PDF. Error: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    if (err instanceof PDFParseError) {
+      throw err;
+    }
+    
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    throw new PDFParseError(
+      `Failed to parse PDF file: ${errorMessage}. Please ensure the file is a valid, non-encrypted PDF document.`,
+      err instanceof Error ? err : undefined
+    );
   }
 }
 

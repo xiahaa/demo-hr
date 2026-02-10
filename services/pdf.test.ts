@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { extractCandidateInfoFromPDF } from './pdf';
+import { extractCandidateInfoFromPDF, parsePDF } from './pdf';
 
 // Mock pdfjs-dist for Node.js environment
 vi.mock('pdfjs-dist', () => ({
@@ -7,7 +7,32 @@ vi.mock('pdfjs-dist', () => ({
   getDocument: vi.fn(),
 }));
 
+// Mock unpdf for Node.js environment
+vi.mock('unpdf', () => ({
+  extractText: vi.fn(),
+  getDocumentProxy: vi.fn(),
+}));
+
 describe('PDF Service', () => {
+  describe('parsePDF - Error Handling & Validation', () => {
+    it('should reject invalid PDF files (missing PDF header)', async () => {
+      // Create an invalid file without PDF header
+      const invalidBuffer = new ArrayBuffer(100);
+      const view = new Uint8Array(invalidBuffer);
+      for (let i = 0; i < 100; i++) {
+        view[i] = 0xFF; // Fill with random bytes
+      }
+
+      await expect(parsePDF(invalidBuffer)).rejects.toThrow(/Invalid PDF file/);
+    });
+
+    it('should reject files that are too small to be valid PDFs', async () => {
+      const tinyBuffer = new ArrayBuffer(2);
+
+      await expect(parsePDF(tinyBuffer)).rejects.toThrow(/Invalid PDF file/);
+    });
+  });
+
   describe('extractCandidateInfoFromPDF', () => {
     it('should extract email from PDF text', () => {
       const mockPdfData = {
