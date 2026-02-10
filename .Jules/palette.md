@@ -29,3 +29,7 @@
 ## 2026-02-09 - [Visible Labels for Primary Search Inputs]
 **Learning:** Even for primary, prominent "search-bar" style inputs in dark mode, relying solely on placeholders causes context loss when the user starts typing. A visible label, even if small, maintains context and improves accessibility for cognitive disabilities.
 **Action:** Ensure all form inputs, including primary search bars, have a visible label, possibly positioned above the input to maintain the search bar aesthetic.
+
+## 2026-02-10 - [State Preservation in Loading/Error States]
+**Learning:** Replacing form components with loading/error screens via conditional rendering unmounts them, destroying user input. This forces users to retype data after a failed request or retry action.
+**Action:** Use CSS visibility toggling (e.g., `hidden` vs `block`) instead of conditional rendering for forms to preserve state during temporary UI transitions like loading or error feedback.

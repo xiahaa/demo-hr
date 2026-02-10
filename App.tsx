@@ -113,12 +113,16 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {status === 'IDLE' && featureMode === 'github-analysis' && (
-        <Landing onAnalyze={handleAnalyze} />
+      {featureMode === 'github-analysis' && (
+        <div className={status === 'IDLE' ? 'block' : 'hidden'}>
+          <Landing onAnalyze={handleAnalyze} />
+        </div>
       )}
 
-      {status === 'IDLE' && featureMode === 'jd-match' && (
-        <JDMatch onAnalyze={handleJDMatch} />
+      {featureMode === 'jd-match' && (
+        <div className={status === 'IDLE' ? 'block' : 'hidden'}>
+          <JDMatch onAnalyze={handleJDMatch} />
+        </div>
       )}
 
       {status === 'ANALYZING' && <LoadingScreen />}
