@@ -5,6 +5,7 @@ import { isPrivateHostname } from "./website";
 // Validation constants
 const MIN_RESUME_LENGTH = 100; // Minimum characters for valid resume content
 const MAX_NON_PRINTABLE_RATIO = 0.05; // Maximum ratio of non-printable characters allowed (5%)
+const MAX_RESUME_LENGTH = 50000; // Maximum characters for resume content (security & cost limit)
 
 /**
  * Analyzes job description and resume/link for matching
@@ -35,6 +36,11 @@ export async function analyzeJDMatch(jd: JobDescription): Promise<JDMatchResult>
     throw new Error('Please provide either a resume URL or upload a resume file');
   }
 
+  // Security: Enforce maximum length to prevent DoS and token limit issues
+  if (resumeContent.length > MAX_RESUME_LENGTH) {
+    resumeContent = resumeContent.slice(0, MAX_RESUME_LENGTH);
+  }
+
   // Validate resume content
   if (!resumeContent || resumeContent.trim().length < MIN_RESUME_LENGTH) {
     throw new Error(`Resume content is too short or empty. Please provide a valid resume with at least ${MIN_RESUME_LENGTH} characters.`);
@@ -61,7 +67,12 @@ export async function analyzeJDMatch(jd: JobDescription): Promise<JDMatchResult>
 
   // Analyze with AI
   const prompt = buildMatchingPrompt(jd, resumeContent);
-  const aiResponse = await callDeepSeekAPI(prompt, apiKey);
+  const messages = [
+    { role: 'system', content: prompt.system },
+    { role: 'user', content: prompt.user }
+  ];
+
+  const aiResponse = await callDeepSeekAPI(messages, apiKey);
   
   return parseAIResponse(aiResponse);
 }
@@ -134,6 +145,10 @@ async function readResumeFile(file: File): Promise<string> {
     }
   }
 
+  // Security: Limit file reading to first 1MB to prevent memory exhaustion
+  // 1MB is more than enough for a text resume (50,000 chars is ~50-200KB)
+  const blob = file.slice(0, 1024 * 1024);
+
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -141,24 +156,15 @@ async function readResumeFile(file: File): Promise<string> {
       resolve(content);
     };
     reader.onerror = () => reject(new Error('Failed to read file'));
-    reader.readAsText(file);
+    reader.readAsText(blob);
   });
 }
 
 /**
  * Build the matching prompt for AI analysis
  */
-function buildMatchingPrompt(jd: JobDescription, resumeContent: string): string {
-  return `You are an expert HR professional analyzing candidate fit for a job position.
-
-# Job Details:
-Industry: ${jd.industry}
-Company: ${jd.companyName}
-Job Description:
-${jd.jobDescription}
-
-# Candidate Resume/Profile:
-${resumeContent}
+function buildMatchingPrompt(jd: JobDescription, resumeContent: string): { system: string, user: string } {
+  const systemPrompt = `You are an expert HR professional analyzing candidate fit for a job position.
 
 # Task:
 Analyze how well this candidate matches the job requirements. BE OBJECTIVE AND REALISTIC in your assessment. If the candidate's background is not relevant to the position, give a low score. Only give high scores (70+) when there is clear, strong alignment between the candidate's experience and the job requirements.
@@ -192,12 +198,23 @@ Return your analysis in the following JSON format:
   "recommendations": ["rec1", "rec2", ...],
   "fitLevel": "Excellent" | "Good" | "Fair" | "Poor"
 }`;
+
+  const userPrompt = `# Job Details:
+Industry: ${jd.industry}
+Company: ${jd.companyName}
+Job Description:
+${jd.jobDescription}
+
+# Candidate Resume/Profile:
+${resumeContent}`;
+
+  return { system: systemPrompt, user: userPrompt };
 }
 
 /**
  * Call DeepSeek API for analysis
  */
-async function callDeepSeekAPI(prompt: string, apiKey: string): Promise<string> {
+async function callDeepSeekAPI(messages: { role: string, content: string }[], apiKey: string): Promise<string> {
   const model = import.meta.env.VITE_DEEPSEEK_CHAT_MODEL || "deepseek-chat";
   
   const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
@@ -208,12 +225,7 @@ async function callDeepSeekAPI(prompt: string, apiKey: string): Promise<string> 
     },
     body: JSON.stringify({
       model,
-      messages: [
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ],
+      messages: messages,
       temperature: 0.7,
       max_tokens: 2000,
     }),

@@ -28,3 +28,10 @@
 **Vulnerability:** The JD Matcher feature allowed fetching arbitrary URLs (including localhost/private IPs) via `resumeUrl` because it only validated the protocol. Additionally, `isPrivateHostname` was vulnerable to integer IP formats (e.g., `2130706433`) in environments where `URL` normalization is inconsistent.
 **Learning:** New features often duplicate security logic (like URL validation) poorly instead of reusing robust centralized functions. Also, browser URL parsing behavior varies for non-standard IP formats.
 **Prevention:** Centralize all URL validation in `services/website.ts` and enforce its use. Explicitly handle integer/octal IP formats by converting to dotted-decimal before validation.
+
+## 2026-03-05 - Prompt Injection & DoS in JD Matcher
+**Vulnerability:** The JD Matcher combined system instructions and user-provided resume content into a single prompt string for the LLM, making it susceptible to prompt injection. Additionally, large resume files were processed without length limits, risking Denial of Service (DoS) and API cost spikes.
+**Learning:** Treating user input as instructions (by concatenating it with system prompts) is a security risk. Also, client-side file reading and API calls must have explicit size limits to prevent resource exhaustion.
+**Prevention:**
+1. Use structured `system` and `user` roles in LLM API calls to separate instructions from data.
+2. Enforce strict character/size limits on user-provided content before processing or sending to external APIs.
