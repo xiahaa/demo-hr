@@ -1,16 +1,23 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { extractWithMineru } from './mineru';
 
 // Mock fetch globally
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
+// Mock environment
+const originalEnv = { ...import.meta.env };
+
 describe('Mineru Service', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Set up mock environment variables
-    import.meta.env.VITE_MINERU_ID = 'test_id';
-    import.meta.env.VITE_MINERU_KEY = 'test_key';
+    // Set up mock environment variables using stubEnv
+    vi.stubEnv('VITE_MINERU_ID', 'test_id');
+    vi.stubEnv('VITE_MINERU_KEY', 'test_key');
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
   });
 
   it('should successfully extract text from PDF URL', async () => {
@@ -52,8 +59,7 @@ describe('Mineru Service', () => {
   });
 
   it('should throw error when credentials are not configured', async () => {
-    delete import.meta.env.VITE_MINERU_ID;
-    delete import.meta.env.VITE_MINERU_KEY;
+    vi.unstubAllEnvs();
 
     await expect(
       extractWithMineru('https://example.com/test.pdf')

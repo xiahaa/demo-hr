@@ -121,7 +121,10 @@ async function fetchResumeFromUrl(url: string): Promise<string> {
         return result.text;
       } catch (mineruErr) {
         // Fallback to local parsing if mineru fails
-        console.warn('Mineru parsing failed, falling back to local parser:', mineruErr);
+        // Only log in development to avoid exposing errors in production
+        if (import.meta.env.DEV) {
+          console.warn('Mineru parsing failed, falling back to local parser');
+        }
         const arrayBuffer = await response.arrayBuffer();
         const pdfData = await parsePDF(arrayBuffer);
         return pdfData.text;
