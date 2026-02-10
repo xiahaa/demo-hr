@@ -24,7 +24,8 @@
 
 ### JD Matching / 职位匹配 (NEW!)
 - 💼 **Job Description Matching** - AI-powered candidate-to-job fit analysis
-- 📝 **Resume Analysis** - Supports online resume links (GitHub, LinkedIn) and file uploads (TXT)
+- 📝 **Resume Analysis** - Supports online resume links (GitHub, LinkedIn) and file uploads (TXT, PDF)
+- 🔍 **Enhanced PDF Parsing** - Uses Mineru API for URL-based PDFs with automatic fallback to local parsing
 - 🎯 **Multi-Dimensional Scoring** - Evaluates technical skills, experience, industry knowledge, cultural fit, and education
 - ✅ **Strengths & Gaps** - Identifies candidate strengths and areas for improvement
 - 💡 **Recommendations** - Provides actionable suggestions for both candidates and hiring teams
@@ -60,10 +61,19 @@
    Create a `.env` file in the root directory:
    ```env
    DEEPSEEK_API_KEY=your_api_key_here
+   # Optional: Mineru PDF parsing service (for enhanced PDF extraction from URLs)
+   # MINERU_ID=your_mineru_id
+   # MINERU_KEY=your_mineru_key
    # Optional: Customize AI models
    # DEEPSEEK_CHAT_MODEL=deepseek-chat
    # DEEPSEEK_REASONER_MODEL=deepseek-reasoner
    ```
+   
+   **Note on PDF Parsing:**
+   - For URL-based PDF resumes, the system will attempt to use [Mineru](https://mineru.net) for enhanced extraction if credentials are configured
+   - If Mineru is not configured or fails, it will automatically fall back to local PDF parsing
+   - For uploaded PDF files, local parsing is always used
+   - Get Mineru credentials from [https://mineru.net/apiManage/docs](https://mineru.net/apiManage/docs)
 
 4. **Run the development server / 运行开发服务器**
    ```bash
