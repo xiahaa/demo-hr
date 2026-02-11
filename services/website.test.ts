@@ -117,22 +117,30 @@ describe('extractMetaInfo', () => {
 describe('extractTechnologies', () => {
   it('should extract common technologies from text', () => {
     const text = 'I work with React, Node.js, and Python for web development';
-    const result = extractTechnologies('', text);
+    const result = extractTechnologies(text, '');
     expect(result).toContain('React');
     expect(result).toContain('Node.js');
     expect(result).toContain('Python');
   });
 
+  it('should extract technologies from meta content', () => {
+    const text = 'I am a developer.';
+    const meta = 'Expert in React and Vue';
+    const result = extractTechnologies(text, meta);
+    expect(result).toContain('React');
+    expect(result).toContain('Vue');
+  });
+
   it('should be case insensitive', () => {
     const text = 'JAVASCRIPT and react are my main tools';
-    const result = extractTechnologies('', text);
+    const result = extractTechnologies(text, '');
     expect(result).toContain('JavaScript');
     expect(result).toContain('React');
   });
 
   it('should not extract partial matches', () => {
     const text = 'I like reactionary politics'; // Should not match React
-    const result = extractTechnologies('', text);
+    const result = extractTechnologies(text, '');
     // This might match React, which is a limitation of simple regex
     // In production, you'd want more sophisticated NLP
   });
