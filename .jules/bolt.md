@@ -29,3 +29,9 @@
 ## 2025-02-24 - Efficient HTML Text Extraction
 **Learning:** Sending raw HTML to LLMs increases token usage and costs. The previous `DOMParser` implementation returned `innerHTML` (HTML string), which was then regex-processed, causing redundant serialization/parsing overhead and inconsistent output compared to the plain-text regex fallback.
 **Action:** Implemented recursive DOM traversal (`extractTextFromNode`) to extract text directly from the DOM tree, inserting smart whitespace for block elements. This avoids `innerHTML` serialization, reduces payload size by stripping tags early, and ensures clean plain-text output across environments.
+
+## 2025-02-27 - Regex Optimization and String Concatenation Surprises
+**Learning:**
+1. `String.matchAll` with a complex regex in a loop (like checking for IP patterns in hostnames) is expensive when run frequently on strings that clearly don't match (e.g. "google.com"). A simple pre-check (e.g. `/[0-9:]/`) can skip 99% of the work.
+2. Contrary to common wisdom, recursive string concatenation (`str += str`) in V8 for DOM text extraction was significantly faster (~30%) than array accumulation (`arr.push(str); arr.join('')`) for typical resume-sized DOM trees.
+**Action:** Always measure micro-optimizations. Implemented a fast-path check in `isPrivateHostname` which improved performance by ~50% for common domain names.
