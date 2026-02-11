@@ -21,7 +21,10 @@ export default defineConfig(({ mode }) => {
         'process.env.API_KEY': JSON.stringify(env.DEEPSEEK_API_KEY),
         'process.env.DEEPSEEK_API_KEY': JSON.stringify(env.DEEPSEEK_API_KEY),
         'process.env.DEEPSEEK_CHAT_MODEL': JSON.stringify(env.DEEPSEEK_CHAT_MODEL),
-        'process.env.DEEPSEEK_REASONER_MODEL': JSON.stringify(env.DEEPSEEK_REASONER_MODEL)
+        'process.env.DEEPSEEK_REASONER_MODEL': JSON.stringify(env.DEEPSEEK_REASONER_MODEL),
+        'process.env.GITHUB_TOKEN': JSON.stringify(env.GITHUB_TOKEN),
+        'process.env.MINERU_ID': JSON.stringify(env.MINERU_ID),
+        'process.env.MINERU_KEY': JSON.stringify(env.MINERU_KEY)
       },
       resolve: {
         alias: {

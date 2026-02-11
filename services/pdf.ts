@@ -19,9 +19,42 @@ const SKILL_DELIMITERS = /[,;•·|●○◦▪▫–—]/;
 const EMAIL_REGEX = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g;
 
 // Section header keywords for resume parsing
-const SKILLS_KEYWORDS = ['skills?', 'technical\\s+skills?', '技能', 'expertise', 'competencies', 'technologies', 'proficiencies', 'core\\s+competenc(?:y|ies)'];
-const EXPERIENCE_KEYWORDS = ['professional\\s+experience', 'work\\s+experience', 'experience', '工作经历', 'employment', 'work\\s+history', 'career\\s+history'];
-const EDUCATION_KEYWORDS = ['education', '教育背景', 'academic', 'qualifications', '学历'];
+const SKILLS_KEYWORDS = [
+  'skills?',
+  'technical\\s+skills?',
+  '技能',
+  'expertise',
+  'competencies',
+  'technologies',
+  'proficiencies',
+  'core\\s+competenc(?:y|ies)',
+  'stack',
+  'programming',
+  'languages'
+];
+const EXPERIENCE_KEYWORDS = [
+  'professional\\s+experience',
+  'work\\s+experience',
+  'experience',
+  '工作经历',
+  'employment',
+  'work\\s+history',
+  'career\\s+history',
+  'history',
+  'work',
+  'positions',
+  'projects'
+];
+const EDUCATION_KEYWORDS = [
+  'education',
+  '教育背景',
+  'academic',
+  'qualifications',
+  '学历',
+  'university',
+  'college',
+  'degree'
+];
 
 export interface PDFData {
   text: string;
