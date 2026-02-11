@@ -35,3 +35,8 @@
 **Prevention:**
 1. Use structured `system` and `user` roles in LLM API calls to separate instructions from data.
 2. Enforce strict character/size limits on user-provided content before processing or sending to external APIs.
+
+## 2026-02-10 - SSRF Bypass via Redirects
+**Vulnerability:** Client-side SSRF protection using `isPrivateHostname` was bypassed because `fetch` follows redirects by default. An attacker could use a public URL that redirects to a private IP (e.g. localhost) to scan the local network or access internal services.
+**Learning:** Validating the initial URL is insufficient. The HTTP client must also be configured to block redirects or validate the redirect target.
+**Prevention:** Use `redirect: 'error'` in `fetch` options for high-risk data retrieval to prevent the browser/client from silently following redirects to restricted networks.

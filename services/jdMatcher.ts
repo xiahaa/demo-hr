@@ -100,11 +100,21 @@ async function fetchResumeFromUrl(url: string): Promise<string> {
     throw new Error('Invalid URL for security check');
   }
 
-  const response = await fetch(sanitizedUrl, {
-    headers: {
-      'User-Agent': 'ZhimaBot/1.0 (HR JD Matcher; Contact: hr@zhima.ai)',
-    },
-  });
+  let response;
+  try {
+    response = await fetch(sanitizedUrl, {
+      headers: {
+        'User-Agent': 'ZhimaBot/1.0 (HR JD Matcher; Contact: hr@zhima.ai)',
+      },
+      redirect: 'error' // Security: Prevent following redirects to private networks
+    });
+  } catch (err) {
+    // Check if it's a redirect error or other fetch error
+    if (err instanceof TypeError && err.message.includes('redirect')) {
+      throw new Error('Redirects are not supported for security reasons. Please use the direct URL.');
+    }
+    throw err;
+  }
 
   if (!response.ok) {
     throw new Error(`Failed to fetch URL (status ${response.status})`);
@@ -358,14 +368,17 @@ function extractTextFromHtml(html: string): string {
   // Remove all remaining HTML tags (final safeguard)
   text = text.replace(/<[^>]*>/g, ' ');
   
-  // Decode HTML entities (safe because result is used for text analysis, not HTML rendering)
-  // Only decode common entities to avoid double-escaping issues
-  const tempDiv = typeof document !== 'undefined' ? document.createElement('div') : null;
-  if (tempDiv) {
-    tempDiv.innerHTML = text;
-    text = tempDiv.textContent || tempDiv.innerText || text;
+  // Decode HTML entities
+  // Use DOMParser if available for safe decoding without executing scripts
+  if (typeof DOMParser !== 'undefined') {
+    try {
+      const doc = new DOMParser().parseFromString(text, 'text/html');
+      text = doc.documentElement.textContent || text;
+    } catch (e) {
+      // Ignore parser errors and fall back to regex replacement
+    }
   } else {
-    // Fallback for non-browser environments
+    // Fallback for non-browser environments or if DOMParser is unavailable
     text = text.replace(/&nbsp;/g, ' ');
     text = text.replace(/&lt;/g, '<');
     text = text.replace(/&gt;/g, '>');
