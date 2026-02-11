@@ -1,7 +1,63 @@
 
+const CACHE_TTL = 3600 * 1000; // 1 hour
+
+function getGitHubToken() {
+  return import.meta.env.VITE_GITHUB_TOKEN || process.env.GITHUB_TOKEN;
+}
+
+async function fetchWithCache(url: string, options: RequestInit = {}) {
+  const token = getGitHubToken();
+  const headers = {
+    ...options.headers,
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    'Accept': 'application/vnd.github.v3+json'
+  };
+
+  const cacheKey = `gh_cache_${url}`;
+
+  try {
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+      const { timestamp, data } = JSON.parse(cached);
+      if (Date.now() - timestamp < CACHE_TTL) {
+        // Return a mock response-like object
+        return {
+          ok: true,
+          json: async () => data,
+          status: 200,
+          clone: () => ({ json: async () => data })
+        };
+      }
+      localStorage.removeItem(cacheKey);
+    }
+  } catch (e) {
+    // Ignore cache errors
+  }
+
+  const response = await fetch(url, { ...options, headers });
+
+  if (response.ok) {
+    // Clone response to read body and cache it
+    const clone = response.clone();
+    const data = await clone.json();
+    try {
+      localStorage.setItem(cacheKey, JSON.stringify({
+        timestamp: Date.now(),
+        data
+      }));
+    } catch (e) {
+      // Ignore storage quota errors
+      console.warn('Failed to cache GitHub response', e);
+    }
+    return response;
+  }
+
+  return response;
+}
+
 export async function fetchGitHubProfile(username: string) {
   try {
-    const response = await fetch(`https://api.github.com/users/${username}`);
+    const response = await fetchWithCache(`https://api.github.com/users/${username}`);
     if (!response.ok) throw new Error('GitHub profile not found');
     return await response.json();
   } catch (err) {
@@ -13,7 +69,7 @@ export async function fetchGitHubProfile(username: string) {
 export async function fetchGitHubRepos(username: string) {
   try {
     // Fetch more repos (up to 100) to get better language statistics
-    const response = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=100`);
+    const response = await fetchWithCache(`https://api.github.com/users/${username}/repos?sort=updated&per_page=100`);
     if (!response.ok) return [];
     return await response.json();
   } catch (err) {
@@ -27,7 +83,7 @@ export async function fetchGitHubRepos(username: string) {
  */
 export async function fetchRepoLanguages(username: string, repoName: string) {
   try {
-    const response = await fetch(`https://api.github.com/repos/${username}/${repoName}/languages`);
+    const response = await fetchWithCache(`https://api.github.com/repos/${username}/${repoName}/languages`);
     if (!response.ok) return null;
     return await response.json();
   } catch (err) {
@@ -47,7 +103,12 @@ export async function aggregateLanguageStats(username: string, repos: any[]) {
   // Prioritize non-fork repos and limit to top 10 to speed up analysis
   const sourceRepos = repos.filter((r: any) => !r.fork);
   const forkRepos = repos.filter((r: any) => r.fork);
-  const topRepos = [...sourceRepos, ...forkRepos].slice(0, 10);
+
+  // Adjust limit based on auth status
+  const token = getGitHubToken();
+  const limit = token ? 15 : 5; // More aggressive limit for unauthenticated users
+
+  const topRepos = [...sourceRepos, ...forkRepos].slice(0, limit);
 
   // Process repositories with concurrency limit to respect API rate limits
   // while avoiding the "wait for batch" inefficiency of sequential batches.
@@ -96,7 +157,9 @@ async function runConcurrently<T>(
  */
 export async function searchForEmail(username: string) {
   try {
-    const eventsResponse = await fetch(`https://api.github.com/users/${username}/events/public`);
+    // Note: /events/public doesn't support easy caching because it changes frequently
+    // But we'll use the cache wrapper anyway for auth header support
+    const eventsResponse = await fetchWithCache(`https://api.github.com/users/${username}/events/public`);
     if (!eventsResponse.ok) return null;
     const events = await eventsResponse.json();
 

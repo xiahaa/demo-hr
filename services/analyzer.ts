@@ -308,11 +308,13 @@ export async function analyzeCandidate(
   scholarUrl?: string,
   linkedinText?: string,
   personalWebsiteUrl?: string,
-  pdfFile?: File
+  pdfFile?: File,
+  onProgress?: (msg: string) => void
 ): Promise<CandidateProfile> {
   const username = parseGitHubUsername(githubUrl);
   if (!username) throw new Error('Invalid GitHub URL');
 
+  onProgress?.('Fetching GitHub profile...');
 
   // Check cache
   const cacheKey = getCacheKey(username, scholarUrl, linkedinText);
@@ -323,6 +325,7 @@ export async function analyzeCandidate(
   }
 
   // 1. Fetch real raw data - optimized with parallel processing
+  onProgress?.('Fetching repositories and external data...');
   const [profileData, email, personalWebsiteData, pdfResult, reposAndStats] = await Promise.all([
     fetchGitHubProfile(username),
     findEmail(username),
@@ -335,6 +338,7 @@ export async function analyzeCandidate(
       return null;
     }) : Promise.resolve(null),
     fetchGitHubRepos(username).then(async (repos) => {
+      onProgress?.('Analyzing language statistics...');
       const stats = await aggregateLanguageStats(username, repos || []);
       return { repos, stats };
     })
@@ -395,6 +399,7 @@ export async function analyzeCandidate(
   };
 
   // 4. Run DeepSeek analysis with fallback tech stack
+  onProgress?.('Generating AI analysis report...');
   const selectedModel = selectDeepSeekModel(context);
   const aiResult = await runDeepSeekAnalysis(context, context.fullName, selectedModel, fallbackTechStack);
 

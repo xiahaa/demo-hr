@@ -21,10 +21,12 @@ const App: React.FC = () => {
   const [profile, setProfile] = useState<CandidateProfile | null>(null);
   const [jdMatchResult, setJdMatchResult] = useState<JDMatchResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [progressMessage, setProgressMessage] = useState<string>('');
 
   const handleAnalyze = async (githubUrl: string, scholarUrl?: string, linkedinText?: string, personalWebsiteUrl?: string, pdfFile?: File) => {
     setStatus('ANALYZING');
     setError(null);
+    setProgressMessage('正在初始化分析...');
 
     // Mock/Demo Mode
     if (githubUrl === 'demo') {
@@ -36,7 +38,14 @@ const App: React.FC = () => {
     }
 
     try {
-      const result = await analyzeCandidate(githubUrl, scholarUrl, linkedinText, personalWebsiteUrl, pdfFile);
+      const result = await analyzeCandidate(
+        githubUrl,
+        scholarUrl,
+        linkedinText,
+        personalWebsiteUrl,
+        pdfFile,
+        (msg) => setProgressMessage(msg)
+      );
       setProfile(result);
       setStatus('RESULT');
     } catch (err: any) {
@@ -49,6 +58,7 @@ const App: React.FC = () => {
   const handleJDMatch = async (industry: string, companyName: string, jobDescription: string, resumeUrl?: string, resumeFile?: File) => {
     setStatus('ANALYZING');
     setError(null);
+    setProgressMessage('正在初始化匹配...');
 
     try {
       const result = await analyzeJDMatch({
@@ -57,7 +67,7 @@ const App: React.FC = () => {
         jobDescription,
         resumeUrl,
         resumeFile,
-      });
+      }, (msg) => setProgressMessage(msg));
       setJdMatchResult(result);
       setStatus('RESULT');
     } catch (err: any) {
@@ -125,7 +135,7 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {status === 'ANALYZING' && <LoadingScreen />}
+      {status === 'ANALYZING' && <LoadingScreen message={progressMessage} />}
 
       {status === 'RESULT' && profile && featureMode === 'github-analysis' && (
         <div className="max-w-6xl mx-auto px-4 py-12">

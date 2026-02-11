@@ -1,26 +1,10 @@
+import React from 'react';
 
-import React, { useEffect, useState } from 'react';
+interface LoadingScreenProps {
+  message?: string;
+}
 
-const STEPS = [
-  "正在获取GitHub档案数据...",
-  "正在克隆和扫描顶级仓库...",
-  "正在提取技术栈分布...",
-  "正在运行学术影响力分析...",
-  "正在计算工程质量评分...",
-  "正在估算市场薪酬...",
-  "正在合成网格可视化..."
-];
-
-export const LoadingScreen: React.FC = () => {
-  const [stepIndex, setStepIndex] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setStepIndex((prev) => (prev + 1) % STEPS.length);
-    }, 2000);
-    return () => clearInterval(interval);
-  }, []);
-
+export const LoadingScreen: React.FC<LoadingScreenProps> = ({ message = "正在分析..." }) => {
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] px-4">
       <div className="relative mb-12">
@@ -37,23 +21,20 @@ export const LoadingScreen: React.FC = () => {
           aria-live="polite"
           className="text-[#2D5BFF] font-mono text-base tracking-tight animate-pulse h-6"
         >
-          {STEPS[stepIndex]}
+          {message}
         </p>
       </div>
 
-      <div
-        role="progressbar"
-        aria-label="分析进度"
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-valuenow={Math.round(((stepIndex + 1) / STEPS.length) * 100)}
-        className="mt-12 w-64 h-1 bg-white/5 rounded-full overflow-hidden"
-      >
-        <div
-          className="h-full bg-gradient-to-r from-[#2D5BFF] to-[#00C896] transition-all duration-500 ease-out"
-          style={{ width: `${((stepIndex + 1) / STEPS.length) * 100}%` }}
-        ></div>
+      <div className="mt-12 w-64 h-1 bg-white/5 rounded-full overflow-hidden relative">
+        <div className="absolute top-0 left-0 h-full w-1/3 bg-gradient-to-r from-[#2D5BFF] to-[#00C896] animate-[shimmer_2s_infinite]"></div>
       </div>
+
+      <style>{`
+        @keyframes shimmer {
+          0% { left: -35%; }
+          100% { left: 100%; }
+        }
+      `}</style>
     </div>
   );
 };

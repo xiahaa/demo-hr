@@ -11,7 +11,7 @@ const MAX_RESUME_LENGTH = 50000; // Maximum characters for resume content (secur
 /**
  * Analyzes job description and resume/link for matching
  */
-export async function analyzeJDMatch(jd: JobDescription): Promise<JDMatchResult> {
+export async function analyzeJDMatch(jd: JobDescription, onProgress?: (msg: string) => void): Promise<JDMatchResult> {
   const apiKey = import.meta.env.VITE_DEEPSEEK_API_KEY || process.env.DEEPSEEK_API_KEY;
   
   if (!apiKey) {
@@ -19,6 +19,7 @@ export async function analyzeJDMatch(jd: JobDescription): Promise<JDMatchResult>
   }
 
   let resumeContent = '';
+  onProgress?.('Reading and parsing resume...');
   
   // Fetch resume content from URL or file
   if (jd.resumeUrl) {
@@ -67,6 +68,7 @@ export async function analyzeJDMatch(jd: JobDescription): Promise<JDMatchResult>
   }
 
   // Analyze with AI
+  onProgress?.('Analyzing match with AI...');
   const prompt = buildMatchingPrompt(jd, resumeContent);
   const messages = [
     { role: 'system', content: prompt.system },
