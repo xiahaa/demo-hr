@@ -33,3 +33,7 @@
 ## 2026-02-10 - [State Preservation in Loading/Error States]
 **Learning:** Replacing form components with loading/error screens via conditional rendering unmounts them, destroying user input. This forces users to retype data after a failed request or retry action.
 **Action:** Use CSS visibility toggling (e.g., `hidden` vs `block`) instead of conditional rendering for forms to preserve state during temporary UI transitions like loading or error feedback.
+
+## 2026-02-23 - [File Input UX Enhancement]
+**Learning:** Standard file inputs lack drag-and-drop and clear functionality. Adding a visual drop zone (via `onDragOver/onDrop` on the label) and an explicit 'Clear' button improves usability significantly, especially for non-native file pickers.
+**Action:** Enhance custom file inputs with drag-and-drop handlers on the label and a clear button that resets the file state.
