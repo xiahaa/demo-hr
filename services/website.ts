@@ -332,35 +332,57 @@ export function isPrivateHostname(hostname: string): boolean {
     }
   }
 
-  // IPv4 check
-  // Matches 1.2.3.4 format
-  const ipv4Regex = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
-  const match = checkHostname.match(ipv4Regex);
+  // IPv4 check with support for Hex/Octal formats
+  // Matches 1.2.3.4, 0x7f.0.0.1, 0177.0.0.1 formats
+  const parts = checkHostname.split('.');
+  if (parts.length === 4) {
+    let isIp = true;
+    const numericParts: number[] = [];
 
-  if (match) {
-    const parts = match.slice(1).map(Number);
-    // Check for valid byte range 0-255
-    if (parts.some(p => p < 0 || p > 255)) return false;
+    for (const part of parts) {
+      // Check if part is a valid number format (dec, hex, oct)
+      if (!/^0x[0-9a-f]+$/i.test(part) && !/^\d+$/.test(part)) {
+        isIp = false;
+        break;
+      }
 
-    const [a, b] = parts;
+      let val = 0;
+      if (part.startsWith('0x') || part.startsWith('0X')) {
+        val = parseInt(part, 16);
+      } else if (part.length > 1 && part.startsWith('0')) {
+        val = parseInt(part, 8); // Octal
+      } else {
+        val = parseInt(part, 10);
+      }
 
-    // 127.0.0.0/8 (Loopback)
-    if (a === 127) return true;
+      if (isNaN(val) || val < 0 || val > 255) {
+        isIp = false;
+        break;
+      }
+      numericParts.push(val);
+    }
 
-    // 10.0.0.0/8 (Private)
-    if (a === 10) return true;
+    if (isIp) {
+      const [a, b] = numericParts;
 
-    // 192.168.0.0/16 (Private)
-    if (a === 192 && b === 168) return true;
+      // 127.0.0.0/8 (Loopback)
+      if (a === 127) return true;
 
-    // 172.16.0.0/12 (Private)
-    if (a === 172 && b >= 16 && b <= 31) return true;
+      // 10.0.0.0/8 (Private)
+      if (a === 10) return true;
 
-    // 169.254.0.0/16 (Link-local)
-    if (a === 169 && b === 254) return true;
+      // 192.168.0.0/16 (Private)
+      if (a === 192 && b === 168) return true;
 
-    // 0.0.0.0/8 (Current network)
-    if (a === 0) return true;
+      // 172.16.0.0/12 (Private)
+      if (a === 172 && b >= 16 && b <= 31) return true;
+
+      // 169.254.0.0/16 (Link-local)
+      if (a === 169 && b === 254) return true;
+
+      // 0.0.0.0/8 (Current network)
+      if (a === 0) return true;
+    }
   }
 
   // Check for integer IP format (e.g., 2130706433 -> 127.0.0.1)
