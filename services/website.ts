@@ -312,6 +312,13 @@ export function isPrivateHostname(hostname: string): boolean {
     checkHostname = checkHostname.slice(1, -1);
   }
 
+  // OPTIMIZATION: Fast path - if no digits and no colons, it cannot be an IP address or contain an IP pattern.
+  // This skips expensive regex matching and parsing for the majority of domains (e.g. google.com).
+  // Note: 'localhost', '.local', and IPv6 '::1' are already handled above, so we don't need to worry about them here.
+  if (!/[0-9:]/.test(checkHostname)) {
+    return false;
+  }
+
   if (checkHostname.toLowerCase().startsWith('::ffff:')) {
     const suffix = checkHostname.substring(7);
     if (suffix.includes('.')) {
