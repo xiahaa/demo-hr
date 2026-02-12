@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import { Upload, X } from 'lucide-react';
 
 interface LandingProps {
   onAnalyze: (githubUrl: string, scholarUrl?: string, linkedinText?: string, personalWebsiteUrl?: string, pdfFile?: File) => void;
@@ -10,6 +11,8 @@ export const Landing: React.FC<LandingProps> = ({ onAnalyze }) => {
   const [linkedinText, setLinkedinText] = useState('');
   const [personalWebsiteUrl, setPersonalWebsiteUrl] = useState('');
   const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,6 +31,29 @@ export const Landing: React.FC<LandingProps> = ({ onAnalyze }) => {
     } else if (file) {
       alert('请上传 PDF 文件');
       e.target.value = '';
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      if (file.type === 'application/pdf') {
+        setPdfFile(file);
+      } else {
+        alert('请上传 PDF 文件');
+      }
     }
   };
 
@@ -118,21 +144,54 @@ export const Landing: React.FC<LandingProps> = ({ onAnalyze }) => {
         </div>
 
         <div className="w-full">
-          <label className="flex flex-col gap-2">
-            <span className="text-sm text-gray-400 px-2 font-medium">上传简历 PDF (可选)</span>
+          <label className="block text-sm text-gray-400 px-2 font-medium mb-2">上传简历 PDF (可选)</label>
+          <div className="relative">
             <input
               type="file"
+              ref={fileInputRef}
+              id="resumeFile"
               accept=".pdf"
-              aria-label="PDF 简历"
               onChange={handleFileChange}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#2D5BFF]/30 focus:border-[#2D5BFF] transition-all text-base file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#2D5BFF] file:text-white hover:file:bg-[#2D5BFF]/90"
+              className="sr-only peer"
             />
-            {pdfFile && (
-              <p className="text-xs text-green-400 px-2">
-                已选择: {pdfFile.name}
-              </p>
-            )}
-          </label>
+            <label
+              htmlFor="resumeFile"
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              className={`flex items-center justify-center gap-2 w-full border-2 border-dashed rounded-xl px-4 py-8 cursor-pointer transition-all peer-focus:ring-2 peer-focus:ring-[#2D5BFF] peer-focus:ring-offset-2 peer-focus:ring-offset-[#1A1A2E] ${
+                isDragging
+                  ? 'bg-[#2D5BFF]/10 border-[#2D5BFF] scale-[1.02]'
+                  : 'bg-white/5 border-white/10 hover:bg-white/10'
+              }`}
+            >
+              <Upload className={`w-6 h-6 ${isDragging ? 'text-[#2D5BFF]' : 'text-gray-400'}`} />
+              <span className={`${isDragging ? 'text-[#2D5BFF] font-medium' : 'text-gray-400'}`}>
+                {isDragging
+                  ? '释放文件以上传'
+                  : pdfFile
+                    ? pdfFile.name
+                    : '点击上传简历 PDF'}
+              </span>
+              {pdfFile && !isDragging && (
+                <button
+                  type="button"
+                  aria-label="移除文件"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setPdfFile(null);
+                    if (fileInputRef.current) {
+                      fileInputRef.current.value = '';
+                    }
+                  }}
+                  className="ml-2 p-1 hover:bg-white/20 rounded-full transition-colors text-gray-400 hover:text-white"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </label>
+          </div>
           <p className="text-xs text-gray-500 mt-2 px-2">
             PDF 将被解析以提取技能、经验和教育背景信息
           </p>
