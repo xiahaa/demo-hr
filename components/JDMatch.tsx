@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Upload, Link as LinkIcon, Briefcase } from 'lucide-react';
+import { Upload, Link as LinkIcon, Briefcase, X } from 'lucide-react';
 
 interface JDMatchProps {
   onAnalyze: (industry: string, companyName: string, jobDescription: string, resumeUrl?: string, resumeFile?: File) => void;
@@ -13,6 +13,7 @@ export const JDMatch: React.FC<JDMatchProps> = ({ onAnalyze }) => {
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [inputMode, setInputMode] = useState<'url' | 'file'>('url');
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,6 +36,35 @@ export const JDMatch: React.FC<JDMatchProps> = ({ onAnalyze }) => {
       setResumeFile(file);
       setResumeUrl(''); // Clear URL when file is selected
       setValidationError(null); // Clear validation error
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      const validExtensions = ['.txt', '.pdf', '.doc', '.docx'];
+      const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
+
+      if (validExtensions.includes(fileExtension)) {
+        setResumeFile(file);
+        setResumeUrl('');
+        setValidationError(null);
+      } else {
+        setValidationError('不支持的文件格式。请上传 TXT, PDF, DOC 或 DOCX 文件。');
+      }
     }
   };
 
@@ -172,12 +202,38 @@ export const JDMatch: React.FC<JDMatchProps> = ({ onAnalyze }) => {
                 />
                 <label
                   htmlFor="resumeFile"
-                  className="flex items-center justify-center gap-2 w-full bg-white/5 border-2 border-dashed border-white/10 rounded-xl px-4 py-8 cursor-pointer hover:bg-white/10 transition-all peer-focus:ring-2 peer-focus:ring-[#2D5BFF] peer-focus:ring-offset-2 peer-focus:ring-offset-[#1A1A2E]"
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  className={`flex items-center justify-center gap-2 w-full border-2 border-dashed rounded-xl px-4 py-8 cursor-pointer transition-all peer-focus:ring-2 peer-focus:ring-[#2D5BFF] peer-focus:ring-offset-2 peer-focus:ring-offset-[#1A1A2E] ${
+                    isDragging
+                      ? 'bg-[#2D5BFF]/10 border-[#2D5BFF] scale-[1.02]'
+                      : 'bg-white/5 border-white/10 hover:bg-white/10'
+                  }`}
                 >
-                  <Upload className="w-6 h-6 text-gray-400" />
-                  <span className="text-gray-400">
-                    {resumeFile ? resumeFile.name : '点击上传简历文件 (TXT, PDF)'}
+                  <Upload className={`w-6 h-6 ${isDragging ? 'text-[#2D5BFF]' : 'text-gray-400'}`} />
+                  <span className={`${isDragging ? 'text-[#2D5BFF] font-medium' : 'text-gray-400'}`}>
+                    {isDragging
+                      ? '释放文件以上传'
+                      : resumeFile
+                        ? resumeFile.name
+                        : '点击上传简历文件 (TXT, PDF)'
+                    }
                   </span>
+                  {resumeFile && !isDragging && (
+                    <button
+                      type="button"
+                      aria-label="移除文件"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setResumeFile(null);
+                      }}
+                      className="ml-2 p-1 hover:bg-white/20 rounded-full transition-colors text-gray-400 hover:text-white"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
                 </label>
               </div>
               <p className="text-xs text-gray-500 mt-2">
