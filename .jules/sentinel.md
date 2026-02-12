@@ -40,3 +40,8 @@
 **Vulnerability:** Client-side SSRF protection using `isPrivateHostname` was bypassed because `fetch` follows redirects by default. An attacker could use a public URL that redirects to a private IP (e.g. localhost) to scan the local network or access internal services.
 **Learning:** Validating the initial URL is insufficient. The HTTP client must also be configured to block redirects or validate the redirect target.
 **Prevention:** Use `redirect: 'error'` in `fetch` options for high-risk data retrieval to prevent the browser/client from silently following redirects to restricted networks.
+
+## 2026-03-05 - SSRF Defense in Depth for Octal/Hex IPs
+**Vulnerability:** Private IP blocklists often rely on standard IPv4 parsing. Attackers can bypass these using Octal (e.g. 0177.0.0.1) or Hex (0x7f.0.0.1) formats if the underlying network library normalizes them differently than the validator.
+**Learning:** URL parsers (like `new URL`) are generally reliable but can vary by environment or fail. A robust blocklist must explicitly handle alternative IP formats as a fallback.
+**Prevention:** Implement explicit parsing logic for Octal (leading zero) and Hex (0x prefix) components in hostnames before validating against private ranges, ensuring defense-in-depth.

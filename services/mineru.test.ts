@@ -59,7 +59,10 @@ describe('Mineru Service', () => {
   });
 
   it('should throw error when credentials are not configured', async () => {
-    vi.unstubAllEnvs();
+    vi.stubEnv('VITE_MINERU_ID', '');
+    vi.stubEnv('VITE_MINERU_KEY', '');
+    vi.stubEnv('MINERU_ID', '');
+    vi.stubEnv('MINERU_KEY', '');
 
     await expect(
       extractWithMineru('https://example.com/test.pdf')

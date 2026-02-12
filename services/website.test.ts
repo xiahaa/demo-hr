@@ -35,6 +35,19 @@ describe('isPrivateHostname', () => {
     expect(isPrivateHostname('8.8.8.8')).toBe(false);
     expect(isPrivateHostname('example.com')).toBe(false);
   });
+
+  it('should block octal IPs even if URL normalization fails', () => {
+    const originalURL = global.URL;
+    // Mock URL constructor to throw error, forcing isPrivateHostname to parse the raw string
+    global.URL = vi.fn(() => { throw new Error('Mock URL error'); }) as any;
+
+    // Test octal IP that resolves to 127.0.0.1 (0177 = 127)
+    // The improved regex/parsing logic should catch this
+    expect(isPrivateHostname('0177.0.0.1')).toBe(true);
+
+    // Restore original URL
+    global.URL = originalURL;
+  });
 });
 
 describe('parseRobotsTxt', () => {
