@@ -37,9 +37,8 @@ async function fetchWithCache(url: string, options: RequestInit = {}) {
   const response = await fetch(url, { ...options, headers });
 
   if (response.ok) {
-    // Clone response to read body and cache it
-    const clone = response.clone();
-    const data = await clone.json();
+    // Read body once and cache it
+    const data = await response.json();
     try {
       localStorage.setItem(cacheKey, JSON.stringify({
         timestamp: Date.now(),
@@ -49,7 +48,22 @@ async function fetchWithCache(url: string, options: RequestInit = {}) {
       // Ignore storage quota errors
       console.warn('Failed to cache GitHub response', e);
     }
-    return response;
+
+    // Return a proxy that mimics the Response object but with pre-fetched data
+    // This avoids double parsing (clone.json() + response.json())
+    return {
+      ok: true,
+      status: response.status,
+      statusText: response.statusText,
+      headers: response.headers,
+      url: response.url,
+      json: async () => data,
+      text: async () => JSON.stringify(data),
+      clone: () => ({
+        json: async () => data,
+        text: async () => JSON.stringify(data)
+      })
+    } as any;
   }
 
   return response;
