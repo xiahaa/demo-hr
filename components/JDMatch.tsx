@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Upload, Link as LinkIcon, Briefcase, X } from 'lucide-react';
 
 interface JDMatchProps {
@@ -14,6 +14,7 @@ export const JDMatch: React.FC<JDMatchProps> = ({ onAnalyze }) => {
   const [inputMode, setInputMode] = useState<'url' | 'file'>('url');
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,6 +38,19 @@ export const JDMatch: React.FC<JDMatchProps> = ({ onAnalyze }) => {
       setResumeUrl(''); // Clear URL when file is selected
       setValidationError(null); // Clear validation error
     }
+  };
+
+  const clearFile = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setResumeFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleBoxClick = () => {
+    fileInputRef.current?.click();
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -196,12 +210,22 @@ export const JDMatch: React.FC<JDMatchProps> = ({ onAnalyze }) => {
                 <input
                   type="file"
                   id="resumeFile"
+                  ref={fileInputRef}
                   accept=".txt,.pdf,.doc,.docx"
                   onChange={handleFileChange}
                   className="sr-only peer"
+                  aria-label="上传简历文件"
                 />
-                <label
-                  htmlFor="resumeFile"
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={handleBoxClick}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleBoxClick();
+                    }
+                  }}
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
@@ -224,17 +248,13 @@ export const JDMatch: React.FC<JDMatchProps> = ({ onAnalyze }) => {
                     <button
                       type="button"
                       aria-label="移除文件"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setResumeFile(null);
-                      }}
+                      onClick={clearFile}
                       className="ml-2 p-1 hover:bg-white/20 rounded-full transition-colors text-gray-400 hover:text-white"
                     >
                       <X className="w-4 h-4" />
                     </button>
                   )}
-                </label>
+                </div>
               </div>
               <p className="text-xs text-gray-500 mt-2">
                 支持格式：TXT, PDF
