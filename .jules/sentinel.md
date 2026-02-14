@@ -45,3 +45,8 @@
 **Vulnerability:** Private IP blocklists often rely on standard IPv4 parsing. Attackers can bypass these using Octal (e.g. 0177.0.0.1) or Hex (0x7f.0.0.1) formats if the underlying network library normalizes them differently than the validator.
 **Learning:** URL parsers (like `new URL`) are generally reliable but can vary by environment or fail. A robust blocklist must explicitly handle alternative IP formats as a fallback.
 **Prevention:** Implement explicit parsing logic for Octal (leading zero) and Hex (0x prefix) components in hostnames before validating against private ranges, ensuring defense-in-depth.
+
+## 2026-03-05 - Insecure HTML Parsing in Isomorphic Code
+**Vulnerability:** The application used regex-based HTML sanitization (`replace(/<script...>/)`) to extract text content, which is fragile and prone to bypasses (e.g., nested tags, malformed HTML).
+**Learning:** Regex is insufficient for parsing HTML securely. In browser environments, the native `DOMParser` API provides robust, standards-compliant parsing and sanitization that is far superior to regex.
+**Prevention:** Use `DOMParser` for HTML text extraction when available (browser), falling back to regex only in environments where DOM is absent (Node.js). Ideally, use a robust library like `jsdom` for consistent behavior across environments.

@@ -201,6 +201,30 @@ export function extractTechnologies(textContent: string, metaContent: string = '
  * various HTML edge cases while preventing injection attacks.
  */
 export function extractTextContent(html: string): string {
+  // Safe HTML parsing using DOMParser (Browser environment)
+  // This helps prevent XSS and handles malformed HTML more robustly than regex
+  if (typeof DOMParser !== 'undefined') {
+    try {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+
+      // Remove script and style elements
+      // We use querySelectorAll to find all script and style tags, even nested ones
+      const elementsToRemove = doc.querySelectorAll('script, style');
+      elementsToRemove.forEach(el => el.remove());
+
+      // Get text content
+      // doc.body.textContent automatically handles entity decoding and strips tags
+      let text = doc.body.textContent || '';
+
+      // Normalize whitespace
+      return text.replace(/\s+/g, ' ').trim();
+    } catch (e) {
+      console.warn('DOMParser failed, falling back to regex', e);
+    }
+  }
+
+  // Fallback: Regex-based extraction (Node.js environment / Legacy)
   // Remove script and style tags completely
   // The pattern matches:
   // - Opening tag: <script or <style (case-insensitive)
