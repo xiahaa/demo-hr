@@ -437,7 +437,8 @@ export function isPrivateHostname(hostname: string): boolean {
   // Check for embedded IPs in hostname (e.g., 10-0-0-1.mycompany.com)
   // This helps catch DNS rebinding attempts or internal hostnames
   // We use a global regex to find ALL potential IP patterns
-  const ipPattern = /(\d{1,3})[\.-](\d{1,3})[\.-](\d{1,3})[\.-](\d{1,3})/g;
+  // Improved regex to capture hex/octal parts (alphanumeric) and longer sequences
+  const ipPattern = /([a-zA-Z0-9]+)[\.-]([a-zA-Z0-9]+)[\.-]([a-zA-Z0-9]+)[\.-]([a-zA-Z0-9]+)/g;
   const matches = checkHostname.matchAll(ipPattern);
 
   for (const match of matches) {
