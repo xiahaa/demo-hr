@@ -43,3 +43,7 @@
 ## 2025-02-27 - Response Cloning Overhead
 **Learning:** Using `response.clone()` to cache a response body doubles the JSON parsing work (once for cache, once for the caller) and adds stream buffering overhead.
 **Action:** Read the body once (`await response.json()`), cache the data, and return a proxy object that mimics the `Response` interface but returns the pre-parsed data. This saves ~50% of parsing time.
+
+## 2025-02-27 - Optimized Text Scanning with matchAll
+**Learning:** `String.match()` with a global regex allocates an array of all matching strings, which can be memory-intensive for large texts and frequent scans. `String.matchAll()` returns an iterator, processing matches lazily.
+**Action:** Replaced `match(globalRegex)` with `matchAll(globalRegex)` in `extractTechnologies`. This reduces memory allocation during keyword extraction from large website content.
