@@ -35,3 +35,7 @@
 1. `String.matchAll` with a complex regex in a loop (like checking for IP patterns in hostnames) is expensive when run frequently on strings that clearly don't match (e.g. "google.com"). A simple pre-check (e.g. `/[0-9:]/`) can skip 99% of the work.
 2. Contrary to common wisdom, recursive string concatenation (`str += str`) in V8 for DOM text extraction was significantly faster (~30%) than array accumulation (`arr.push(str); arr.join('')`) for typical resume-sized DOM trees.
 **Action:** Always measure micro-optimizations. Implemented a fast-path check in `isPrivateHostname` which improved performance by ~50% for common domain names.
+
+## 2025-02-27 - Response Cloning Overhead
+**Learning:** Using `response.clone()` to cache a response body doubles the JSON parsing work (once for cache, once for the caller) and adds stream buffering overhead.
+**Action:** Read the body once (`await response.json()`), cache the data, and return a proxy object that mimics the `Response` interface but returns the pre-parsed data. This saves ~50% of parsing time.
