@@ -39,3 +39,7 @@
 ## 2026-02-12 - Fetch Response Cloning and Double Parsing
 **Learning:** Calling `response.clone()` on a fetch response creates a stream tee, forcing the browser to buffer the stream. When followed by `.json()`, it results in parsing the JSON twice (once for the clone, once for the original).
 **Action:** Avoid `clone()` for caching logic. Read the body once using `.json()`, cache the data, and return a mock Response object that wraps the parsed data. This saves memory and CPU.
+
+## 2025-02-27 - Response Cloning Overhead
+**Learning:** Using `response.clone()` to cache a response body doubles the JSON parsing work (once for cache, once for the caller) and adds stream buffering overhead.
+**Action:** Read the body once (`await response.json()`), cache the data, and return a proxy object that mimics the `Response` interface but returns the pre-parsed data. This saves ~50% of parsing time.

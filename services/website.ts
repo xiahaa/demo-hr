@@ -201,6 +201,30 @@ export function extractTechnologies(textContent: string, metaContent: string = '
  * various HTML edge cases while preventing injection attacks.
  */
 export function extractTextContent(html: string): string {
+  // Safe HTML parsing using DOMParser (Browser environment)
+  // This helps prevent XSS and handles malformed HTML more robustly than regex
+  if (typeof DOMParser !== 'undefined') {
+    try {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+
+      // Remove script and style elements
+      // We use querySelectorAll to find all script and style tags, even nested ones
+      const elementsToRemove = doc.querySelectorAll('script, style');
+      elementsToRemove.forEach(el => el.remove());
+
+      // Get text content
+      // doc.body.textContent automatically handles entity decoding and strips tags
+      let text = doc.body.textContent || '';
+
+      // Normalize whitespace
+      return text.replace(/\s+/g, ' ').trim();
+    } catch (e) {
+      console.warn('DOMParser failed, falling back to regex', e);
+    }
+  }
+
+  // Fallback: Regex-based extraction (Node.js environment / Legacy)
   // Remove script and style tags completely
   // The pattern matches:
   // - Opening tag: <script or <style (case-insensitive)
@@ -339,10 +363,10 @@ export function isPrivateHostname(hostname: string): boolean {
     }
   }
 
-  // IPv4 check with support for Hex/Octal formats
-  // Matches 1.2.3.4, 0x7f.0.0.1, 0177.0.0.1 formats
+  // IPv4 check with support for Hex/Octal and Short formats
+  // Matches 1.2.3.4, 127.1, 0x7f.1, 0177.0.0.1 formats
   const parts = checkHostname.split('.');
-  if (parts.length === 4) {
+  if (parts.length >= 1 && parts.length <= 4) {
     let isIp = true;
     const numericParts: number[] = [];
 
@@ -362,7 +386,7 @@ export function isPrivateHostname(hostname: string): boolean {
         val = parseInt(part, 10);
       }
 
-      if (isNaN(val) || val < 0 || val > 255) {
+      if (isNaN(val) || val < 0) {
         isIp = false;
         break;
       }
@@ -370,7 +394,25 @@ export function isPrivateHostname(hostname: string): boolean {
     }
 
     if (isIp) {
-      const [a, b] = numericParts;
+      let finalParts: number[] = [];
+
+      // Normalize to 4-part dotted decimal
+      if (numericParts.length === 4) {
+        finalParts = numericParts;
+      } else if (numericParts.length === 1) {
+        const val = numericParts[0];
+        finalParts = [(val >>> 24) & 0xff, (val >>> 16) & 0xff, (val >>> 8) & 0xff, val & 0xff];
+      } else if (numericParts.length === 2) {
+        // a.b -> a.0.0.b (b is the rest)
+        const [a, rest] = numericParts;
+        finalParts = [a, (rest >>> 16) & 0xff, (rest >>> 8) & 0xff, rest & 0xff];
+      } else if (numericParts.length === 3) {
+        // a.b.c -> a.b.0.c (c is the rest)
+        const [a, b, rest] = numericParts;
+        finalParts = [a, b, (rest >>> 8) & 0xff, rest & 0xff];
+      }
+
+      const [a, b] = finalParts;
 
       // 127.0.0.0/8 (Loopback)
       if (a === 127) return true;
@@ -389,29 +431,6 @@ export function isPrivateHostname(hostname: string): boolean {
 
       // 0.0.0.0/8 (Current network)
       if (a === 0) return true;
-    }
-  }
-
-  // Check for integer IP format (e.g., 2130706433 -> 127.0.0.1)
-  // Some browsers might not normalize this automatically
-  if (/^\d+$/.test(checkHostname)) {
-    try {
-      const ipInt = parseInt(checkHostname, 10);
-      if (!isNaN(ipInt) && ipInt >= 0 && ipInt <= 4294967295) {
-        // Convert to unsigned 32-bit integer logic
-        const a = (ipInt >>> 24) & 0xff;
-        const b = (ipInt >>> 16) & 0xff;
-        const c = (ipInt >>> 8) & 0xff;
-        const d = ipInt & 0xff;
-        const dotted = `${a}.${b}.${c}.${d}`;
-        // Recursively check the dotted decimal format
-        // Avoid infinite recursion if dotted equals checkHostname (unlikely for dotted vs int)
-        if (dotted !== checkHostname && isPrivateHostname(dotted)) {
-          return true;
-        }
-      }
-    } catch {
-      // Ignore parsing errors
     }
   }
 

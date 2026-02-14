@@ -51,21 +51,21 @@ async function fetchWithCache(url: string, options: RequestInit = {}) {
       console.warn('Failed to cache GitHub response', e);
     }
 
-    // Return a proxy object that mimics Response with the data we already have
-    const mockResponse = {
+    // Return a proxy that mimics the Response object but with pre-fetched data
+    // This avoids double parsing (clone.json() + response.json())
+    return {
       ok: true,
       status: response.status,
       statusText: response.statusText,
       headers: response.headers,
       url: response.url,
       json: async () => data,
-      text: async () => JSON.stringify(data)
-    };
-
-    // Allow cloning (which just returns the same data wrapper since it's already in memory)
-    (mockResponse as any).clone = () => mockResponse;
-
-    return mockResponse as unknown as Response;
+      text: async () => JSON.stringify(data),
+      clone: () => ({
+        json: async () => data,
+        text: async () => JSON.stringify(data)
+      })
+    } as any;
   }
 
   return response;

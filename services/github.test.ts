@@ -1,5 +1,5 @@
 import { describe, it, vi, expect, beforeEach, afterEach } from 'vitest';
-import { aggregateLanguageStats } from './github';
+import { aggregateLanguageStats, fetchGitHubProfile } from './github';
 
 // Mock fetch globally
 const originalFetch = global.fetch;
@@ -125,5 +125,34 @@ describe('aggregateLanguageStats', () => {
     // Verify 5 fork repos were called
     const forkCalls = languageCalls.filter((c: any[]) => c[0].includes('fork-'));
     expect(forkCalls.length).toBe(5);
+  });
+
+  it('should fetch profile efficiently without cloning response', async () => {
+    const mockProfile = { login: 'testuser', name: 'Test User' };
+    const jsonSpy = vi.fn().mockResolvedValue(mockProfile);
+    const cloneSpy = vi.fn();
+
+    (global.fetch as any).mockImplementation(async (url: string) => {
+      if (url.includes('/users/testuser')) {
+        return {
+          ok: true,
+          status: 200,
+          headers: new Headers(),
+          json: jsonSpy,
+          clone: cloneSpy.mockReturnValue({
+            json: async () => mockProfile
+          })
+        };
+      }
+      return { ok: false };
+    });
+
+    const result = await fetchGitHubProfile('testuser');
+
+    expect(result).toEqual(mockProfile);
+
+    // The optimization goal: read body once, do not clone
+    expect(jsonSpy).toHaveBeenCalledTimes(1);
+    expect(cloneSpy).not.toHaveBeenCalled();
   });
 });
