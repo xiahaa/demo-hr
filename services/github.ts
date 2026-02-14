@@ -37,8 +37,10 @@ async function fetchWithCache(url: string, options: RequestInit = {}) {
   const response = await fetch(url, { ...options, headers });
 
   if (response.ok) {
-    // Read body once and cache it
+    // Optimization: Avoid response.clone() which creates a stream tee and causes double parsing.
+    // Instead, read the body once, cache it, and return a new Response-like object.
     const data = await response.json();
+
     try {
       localStorage.setItem(cacheKey, JSON.stringify({
         timestamp: Date.now(),
