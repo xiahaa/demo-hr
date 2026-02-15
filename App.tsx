@@ -152,10 +152,14 @@ const App: React.FC = () => {
               知码匹配
              </button>
             <button
-            onClick={() => switchMode('resume-polish')}
+              onClick={() => switchMode('resume-polish')}
               aria-pressed={featureMode === 'resume-polish'}
               className={`flex items-center justify-center lg:justify-start gap-2 px-4 lg:px-5 py-3 rounded-xl font-medium transition-all min-w-[110px] ${
                 featureMode === 'resume-polish'
+                  ? 'bg-[#2D5BFF] text-white shadow-lg shadow-[#2D5BFF]/20'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
               <Sparkles className="w-4 h-4" />
               简历美化
             </button>
