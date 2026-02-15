@@ -99,4 +99,4 @@ export interface JDMatchResult {
   fitLevel: 'Excellent' | 'Good' | 'Fair' | 'Poor';
 }
 
-export type FeatureMode = 'github-analysis' | 'jd-match';
+export type FeatureMode = 'github-analysis' | 'jd-match' | 'resume-polish';

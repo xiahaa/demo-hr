@@ -31,6 +31,11 @@
 - 💡 **Recommendations** - Provides actionable suggestions for both candidates and hiring teams
 - 📊 **Visual Results** - Intuitive score visualization with detailed category breakdowns
 
+### Resume Polish / 简历美化
+- 🎨 **Template-based Preview** - Real-time resume preview with modern/classic layout options
+- 📤 **One-click Export** - Export selected template directly as `.tex` (LaTeX templates) or `.html` (React template)
+- 🧩 **Template Selection** - Choose Awesome-CV / Modern Deedy / Figma-Minimal style before export
+
 ### Platform Features / 平台特性
 - ⚡ **Fast & Reliable** - Code-based baseline with LLM enhancement and automatic fallbacks
 - 🎨 **Modern UI** - Built with React, TypeScript, Tailwind CSS, and Framer Motion
@@ -147,7 +152,19 @@ npm run dev      # Start development server
 npm run build    # Build for production
 npm run preview  # Preview production build
 npm test         # Run tests with Vitest
+npm run compile:tex -- ./resume.tex  # Compile .tex to PDF (requires tectonic or pdflatex)
 ```
+
+### TeX Compile via MCP / TeX 编译说明
+
+可以。当前实现会先导出 `.tex`，然后可通过 MCP 执行本地编译命令：
+
+```bash
+npm run compile:tex -- ./resume-awesome-cv.tex
+```
+
+- 脚本会自动优先使用 `tectonic`，其次使用 `pdflatex`。
+- 若环境未安装 TeX 引擎，会提示安装依赖。
 
 ## 📊 How It Works / 工作原理
 
