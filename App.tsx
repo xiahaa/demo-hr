@@ -188,7 +188,7 @@ const App: React.FC = () => {
       
       {featureMode === 'resume-polish' && (
         <div className={status === 'IDLE' ? 'block' : 'hidden'}>
-          <ZhimaFit onAnalyze={ResumePolish} />
+          <ResumePolish />
         </div>
       )}
 
