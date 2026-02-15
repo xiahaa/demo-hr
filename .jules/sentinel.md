@@ -50,3 +50,8 @@
 **Vulnerability:** The application used regex-based HTML sanitization (`replace(/<script...>/)`) to extract text content, which is fragile and prone to bypasses (e.g., nested tags, malformed HTML).
 **Learning:** Regex is insufficient for parsing HTML securely. In browser environments, the native `DOMParser` API provides robust, standards-compliant parsing and sanitization that is far superior to regex.
 **Prevention:** Use `DOMParser` for HTML text extraction when available (browser), falling back to regex only in environments where DOM is absent (Node.js). Ideally, use a robust library like `jsdom` for consistent behavior across environments.
+
+## 2026-05-27 - SSRF Bypass via Obfuscated IP Patterns in Hostnames
+**Vulnerability:** The `isPrivateHostname` function used a strict regex `(\d{1,3})` to detect embedded IPs, which failed to capture 4-digit octal IPs (e.g., `0177`) or hexadecimal IPs (e.g., `0x7f`). This allowed attackers to bypass SSRF protection using domains like `0177.0.0.1.traefik.me`.
+**Learning:** Regex-based IP detection must account for all valid IP representations, including octal and hexadecimal formats, not just standard decimal notation.
+**Prevention:** Use a more inclusive regex for IP part detection (e.g., `[a-zA-Z0-9]+`) and rely on robust parsing logic to validate the extracted parts as private IPs.

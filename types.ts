@@ -97,6 +97,12 @@ export interface JDMatchResult {
   gaps: string[];
   recommendations: string[];
   fitLevel: 'Excellent' | 'Good' | 'Fair' | 'Poor';
+  socialProfile?: {
+    mbti: string;
+    teamRole: string;
+    collaborationSignal: string;
+    confidence: number; // 0-1
+  };
 }
 
-export type FeatureMode = 'github-analysis' | 'jd-match' | 'resume-polish';
+export type FeatureMode = 'github-analysis' | 'jd-match' | 'zhima-fit' | 'resume-polish';

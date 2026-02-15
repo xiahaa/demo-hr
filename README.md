@@ -31,6 +31,11 @@
 - 💡 **Recommendations** - Provides actionable suggestions for both candidates and hiring teams
 - 📊 **Visual Results** - Intuitive score visualization with detailed category breakdowns
 
+### Zhima Fit Tool / 知码匹配工具 (NEW!)
+- 🧩 **Zhima Fit Workflow** - A third 知码-branded tool with mission + business-impact + collaboration-aware matching
+- 📝 **Optional Multi-Source Inputs** - Accepts Google Scholar, LinkedIn, and resume inputs (all optional but at least one required)
+- 📊 **Social Fit Signals** - Adds MBTI-style team-fit hints to support team composition decisions
+- 
 ### Resume Polish / 简历美化
 - 🎨 **Template-based Preview** - Real-time resume preview with modern/classic layout options
 - 📤 **One-click Export** - Export selected template directly as `.tex` (LaTeX templates) or `.html` (React template)
@@ -39,7 +44,7 @@
 ### Platform Features / 平台特性
 - ⚡ **Fast & Reliable** - Code-based baseline with LLM enhancement and automatic fallbacks
 - 🎨 **Modern UI** - Built with React, TypeScript, Tailwind CSS, and Framer Motion
-- 🔄 **Dual-Mode Navigation** - Seamlessly switch between GitHub analysis and JD matching
+- 🔄 **Multi-Tool Navigation** - Seamlessly switch between GitHub analysis, JD matching, and Zhima Fit analysis
 
 ## 🚀 Quick Start / 快速开始
 
@@ -114,6 +119,14 @@
 4. **Click "开始匹配分析"** - Wait 10-20 seconds for AI analysis
 5. **View Results** - Review matching scores, strengths, gaps, and recommendations
 
+### Zhima Fit Tool / 知码匹配工具
+
+1. **Select Zhima Fit Mode** - Click the "知码匹配" tab at the top
+2. **Add Optional Candidate Sources** - Google Scholar URL, LinkedIn text/link, and/or resume
+3. **Provide Candidate Material** - Resume URL or TXT/PDF file
+4. **Click "开始知码匹配分析"** - Wait for AI-powered analysis
+5. **Review Social + Capability Output** - See score, strengths/gaps, and MBTI-style team-fit hints
+
 ## 🛠️ Tech Stack / 技术栈
 
 - **Frontend**: React 19, TypeScript, Vite
@@ -130,17 +143,19 @@
 demo-hr/
 ├── components/              # React components
 │   ├── Landing.tsx         # GitHub analysis landing page
-│   ├── JDMatch.tsx         # JD matching input form (NEW)
-│   ├── JDMatchResultCard.tsx  # JD matching results display (NEW)
+│   ├── JDMatch.tsx         # JD matching input form
+│   ├── ZhimaFit.tsx        # Zhima Fit input form with extended context (NEW)
+│   ├── JDMatchResultCard.tsx  # JD/Zhima Fit results display
 │   ├── CandidateCard.tsx   # GitHub analysis results display
 │   └── LoadingScreen.tsx   # Analysis loading state
 ├── services/               # Core business logic
 │   ├── analyzer.ts        # GitHub analysis orchestration
-│   ├── jdMatcher.ts       # JD matching analysis (NEW)
+│   ├── jdMatcher.ts       # JD matching analysis
+│   ├── zhimaFitMatcher.ts # Zhima Fit orchestration (NEW)
 │   ├── github.ts          # GitHub API integration
 │   ├── website.ts         # Personal website scraping
 │   └── mockData.ts        # Demo data
-├── App.tsx                # Main application with dual-mode navigation
+├── App.tsx                # Main application with multi-tool navigation
 ├── types.ts               # TypeScript type definitions
 └── index.tsx              # Application entry point
 ```

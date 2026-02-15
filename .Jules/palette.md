@@ -37,3 +37,7 @@
 ## 2026-02-23 - [File Input UX Enhancement]
 **Learning:** Standard file inputs lack drag-and-drop and clear functionality. Adding a visual drop zone (via `onDragOver/onDrop` on the label) and an explicit 'Clear' button improves usability significantly, especially for non-native file pickers.
 **Action:** Enhance custom file inputs with drag-and-drop handlers on the label and a clear button that resets the file state.
+
+## 2026-05-20 - [Semantic File Input Structure]
+**Learning:** Nesting interactive elements (like a clear button) inside a `<label>` linked to a file input is invalid HTML and confuses screen readers. A robust pattern uses an absolute overlay label for the trigger and positions sibling buttons (e.g., Clear) above it with z-index.
+**Action:** Refactor custom file inputs to use a container `div` with a sibling `label` (overlay) and `button` (z-indexed), avoiding nested interactive controls.

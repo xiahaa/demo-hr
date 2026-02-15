@@ -1,14 +1,16 @@
 import React, { useState, Suspense } from 'react';
 import { Landing } from './components/Landing';
 import { JDMatch } from './components/JDMatch';
+import { ZhimaFit } from './components/ZhimaFit';
 import { JDMatchResultCard } from './components/JDMatchResultCard';
 import { ResumePolish } from './components/ResumePolish';
 import { LoadingScreen } from './components/LoadingScreen';
 import { AppStatus, CandidateProfile, FeatureMode, JDMatchResult } from './types';
 import { analyzeCandidate } from './services/analyzer';
 import { analyzeJDMatch } from './services/jdMatcher';
+import { analyzeZhimaFit, ZhimaFitRequest } from './services/zhimaFitMatcher';
 import { MOCK_PROFILE } from './services/mockData';
-import { User, Briefcase, Sparkles } from 'lucide-react';
+import { User, Briefcase, Layers3, Sparkles} from 'lucide-react';
 
 // Lazy load CandidateCard to reduce initial bundle size
 // Includes heavy dependencies like Recharts and Framer Motion
@@ -78,6 +80,23 @@ const App: React.FC = () => {
     }
   };
 
+
+  const handleZhimaFit = async (payload: ZhimaFitRequest) => {
+    setStatus('ANALYZING');
+    setError(null);
+    setProgressMessage('正在初始化知码匹配...');
+
+    try {
+      const result = await analyzeZhimaFit(payload, (msg) => setProgressMessage(msg));
+      setJdMatchResult(result);
+      setStatus('RESULT');
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || '知码匹配分析过程中发生意外错误。');
+      setStatus('ERROR');
+    }
+  };
+
   const reset = () => {
     setStatus('IDLE');
     setProfile(null);
@@ -121,14 +140,22 @@ const App: React.FC = () => {
               JD 匹配
             </button>
             <button
-              onClick={() => switchMode('resume-polish')}
-              aria-pressed={featureMode === 'resume-polish'}
-              className={`flex items-center justify-center lg:justify-start gap-2 px-4 lg:px-5 py-3 rounded-xl font-medium transition-all min-w-[110px] ${
-                featureMode === 'resume-polish'
+              onClick={() => switchMode('zhima-fit')}
+              aria-pressed={featureMode === 'zhima-fit'}
+              className={`flex items-center gap-2 px-6 py-3 rounded-full font-medium transition-all ${
+                featureMode === 'zhima-fit'
                   ? 'bg-[#2D5BFF] text-white shadow-lg shadow-[#2D5BFF]/20'
                   : 'text-gray-400 hover:text-white'
               }`}
             >
+             <Layers3 className="w-4 h-4" />
+              知码匹配
+             </button>
+            <button
+            onClick={() => switchMode('resume-polish')}
+              aria-pressed={featureMode === 'resume-polish'}
+              className={`flex items-center justify-center lg:justify-start gap-2 px-4 lg:px-5 py-3 rounded-xl font-medium transition-all min-w-[110px] ${
+                featureMode === 'resume-polish'
               <Sparkles className="w-4 h-4" />
               简历美化
             </button>
@@ -149,7 +176,17 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {featureMode === 'resume-polish' && status === 'IDLE' && <ResumePolish />}
+      {featureMode === 'zhima-fit' && (
+        <div className={status === 'IDLE' ? 'block' : 'hidden'}>
+          <ZhimaFit onAnalyze={handleZhimaFit} />
+        </div>
+      )}
+      
+      {featureMode === 'resume-polish' && (
+        <div className={status === 'IDLE' ? 'block' : 'hidden'}>
+          <ZhimaFit onAnalyze={ResumePolish} />
+        </div>
+      )}
 
       {status === 'ANALYZING' && <LoadingScreen message={progressMessage} />}
 
@@ -168,7 +205,7 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {status === 'RESULT' && jdMatchResult && featureMode === 'jd-match' && (
+      {status === 'RESULT' && jdMatchResult && (featureMode === 'jd-match' || featureMode === 'zhima-fit') && (
         <div className="max-w-6xl mx-auto px-4 py-12">
           <button
             onClick={reset}

@@ -170,16 +170,16 @@ export function extractTechnologies(textContent: string, metaContent: string = '
   const processText = (text: string) => {
     if (!text) return;
 
-    // Reset lastIndex for stateful global regex
-    TECH_REGEX.lastIndex = 0;
-    const matches = text.match(TECH_REGEX);
+    // Use matchAll to avoid allocating a large array of all matches.
+    // matchAll returns an iterator and is memory efficient for large texts.
+    const matches = text.matchAll(TECH_REGEX);
 
-    if (matches) {
-      for (const match of matches) {
-        const canonical = NORMALIZED_TECH_MAP.get(match.toLowerCase());
-        if (canonical) {
-          technologies.add(canonical);
-        }
+    for (const match of matches) {
+      // match[0] is the full match, match[1] is the capturing group.
+      // Since the regex uses zero-width assertions (\b and lookahead), match[0] is the keyword.
+      const canonical = NORMALIZED_TECH_MAP.get(match[0].toLowerCase());
+      if (canonical) {
+        technologies.add(canonical);
       }
     }
   };
@@ -437,7 +437,8 @@ export function isPrivateHostname(hostname: string): boolean {
   // Check for embedded IPs in hostname (e.g., 10-0-0-1.mycompany.com)
   // This helps catch DNS rebinding attempts or internal hostnames
   // We use a global regex to find ALL potential IP patterns
-  const ipPattern = /(\d{1,3})[\.-](\d{1,3})[\.-](\d{1,3})[\.-](\d{1,3})/g;
+  // Improved regex to capture hex/octal parts (alphanumeric) and longer sequences
+  const ipPattern = /([a-zA-Z0-9]+)[\.-]([a-zA-Z0-9]+)[\.-]([a-zA-Z0-9]+)[\.-]([a-zA-Z0-9]+)/g;
   const matches = checkHostname.matchAll(ipPattern);
 
   for (const match of matches) {
