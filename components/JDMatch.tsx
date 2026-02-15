@@ -46,6 +46,7 @@ export const JDMatch: React.FC<JDMatchProps> = ({ onAnalyze }) => {
     setResumeFile(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
+      fileInputRef.current.focus();
     }
   };
 
@@ -214,18 +215,10 @@ export const JDMatch: React.FC<JDMatchProps> = ({ onAnalyze }) => {
                   accept=".txt,.pdf,.doc,.docx"
                   onChange={handleFileChange}
                   className="sr-only peer"
-                  aria-label="上传简历文件"
+                  aria-label={resumeFile ? `已选择文件: ${resumeFile.name}` : "上传简历文件"}
                 />
                 <div
-                  role="button"
-                  tabIndex={0}
                   onClick={handleBoxClick}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      handleBoxClick();
-                    }
-                  }}
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
