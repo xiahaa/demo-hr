@@ -3,13 +3,14 @@ import { Landing } from './components/Landing';
 import { JDMatch } from './components/JDMatch';
 import { ZhimaFit } from './components/ZhimaFit';
 import { JDMatchResultCard } from './components/JDMatchResultCard';
+import { ResumePolish } from './components/ResumePolish';
 import { LoadingScreen } from './components/LoadingScreen';
 import { AppStatus, CandidateProfile, FeatureMode, JDMatchResult } from './types';
 import { analyzeCandidate } from './services/analyzer';
 import { analyzeJDMatch } from './services/jdMatcher';
 import { analyzeZhimaFit, ZhimaFitRequest } from './services/zhimaFitMatcher';
 import { MOCK_PROFILE } from './services/mockData';
-import { User, Briefcase, Layers3 } from 'lucide-react';
+import { User, Briefcase, Layers3, Sparkles} from 'lucide-react';
 
 // Lazy load CandidateCard to reduce initial bundle size
 // Includes heavy dependencies like Recharts and Framer Motion
@@ -112,12 +113,12 @@ const App: React.FC = () => {
     <div className="min-h-screen bg-[#1A1A2E] text-gray-100 selection:bg-[#2D5BFF]/30">
       {/* Feature Mode Navigation */}
       {status === 'IDLE' && (
-        <div className="fixed top-8 left-1/2 transform -translate-x-1/2 z-50">
-          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-full p-1 flex gap-1">
+        <div className="fixed z-50 bottom-6 left-1/2 -translate-x-1/2 lg:bottom-auto lg:left-6 lg:top-1/2 lg:-translate-y-1/2 lg:translate-x-0">
+          <div className="bg-[#0F1020]/80 backdrop-blur-md border border-white/10 rounded-2xl p-1.5 flex lg:flex-col gap-1 shadow-2xl shadow-black/30">
             <button
               onClick={() => switchMode('github-analysis')}
               aria-pressed={featureMode === 'github-analysis'}
-              className={`flex items-center gap-2 px-6 py-3 rounded-full font-medium transition-all ${
+              className={`flex items-center justify-center lg:justify-start gap-2 px-4 lg:px-5 py-3 rounded-xl font-medium transition-all min-w-[110px] ${
                 featureMode === 'github-analysis'
                   ? 'bg-[#2D5BFF] text-white shadow-lg shadow-[#2D5BFF]/20'
                   : 'text-gray-400 hover:text-white'
@@ -129,7 +130,7 @@ const App: React.FC = () => {
             <button
               onClick={() => switchMode('jd-match')}
               aria-pressed={featureMode === 'jd-match'}
-              className={`flex items-center gap-2 px-6 py-3 rounded-full font-medium transition-all ${
+              className={`flex items-center justify-center lg:justify-start gap-2 px-4 lg:px-5 py-3 rounded-xl font-medium transition-all min-w-[110px] ${
                 featureMode === 'jd-match'
                   ? 'bg-[#2D5BFF] text-white shadow-lg shadow-[#2D5BFF]/20'
                   : 'text-gray-400 hover:text-white'
@@ -147,10 +148,19 @@ const App: React.FC = () => {
                   : 'text-gray-400 hover:text-white'
               }`}
             >
-              <Layers3 className="w-4 h-4" />
+             <Layers3 className="w-4 h-4" />
               知码匹配
+             </button>
+            <button
+            onClick={() => switchMode('resume-polish')}
+              aria-pressed={featureMode === 'resume-polish'}
+              className={`flex items-center justify-center lg:justify-start gap-2 px-4 lg:px-5 py-3 rounded-xl font-medium transition-all min-w-[110px] ${
+                featureMode === 'resume-polish'
+              <Sparkles className="w-4 h-4" />
+              简历美化
             </button>
           </div>
+          <p className="hidden lg:block text-[11px] text-gray-500 mt-2 pl-2">功能导航</p>
         </div>
       )}
 
@@ -169,6 +179,12 @@ const App: React.FC = () => {
       {featureMode === 'zhima-fit' && (
         <div className={status === 'IDLE' ? 'block' : 'hidden'}>
           <ZhimaFit onAnalyze={handleZhimaFit} />
+        </div>
+      )}
+      
+      {featureMode === 'resume-polish' && (
+        <div className={status === 'IDLE' ? 'block' : 'hidden'}>
+          <ZhimaFit onAnalyze={ResumePolish} />
         </div>
       )}
 

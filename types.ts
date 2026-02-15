@@ -105,4 +105,4 @@ export interface JDMatchResult {
   };
 }
 
-export type FeatureMode = 'github-analysis' | 'jd-match' | 'zhima-fit';
+export type FeatureMode = 'github-analysis' | 'jd-match' | 'zhima-fit' | 'resume-polish';
