@@ -84,7 +84,7 @@ const App: React.FC = () => {
   const handleZhimaFit = async (payload: ZhimaFitRequest) => {
     setStatus('ANALYZING');
     setError(null);
-    setProgressMessage('正在初始化知码匹配...');
+    setProgressMessage('正在初始化职业画像...');
 
     try {
       const result = await analyzeZhimaFit(payload, (msg) => setProgressMessage(msg));
@@ -92,7 +92,7 @@ const App: React.FC = () => {
       setStatus('RESULT');
     } catch (err: any) {
       console.error(err);
-      setError(err.message || '知码匹配分析过程中发生意外错误。');
+      setError(err.message || '职业画像分析过程中发生意外错误。');
       setStatus('ERROR');
     }
   };
@@ -149,7 +149,7 @@ const App: React.FC = () => {
               }`}
             >
              <Layers3 className="w-4 h-4" />
-              知码匹配
+              职业画像
              </button>
             <button
               onClick={() => switchMode('resume-polish')}
