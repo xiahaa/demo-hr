@@ -128,6 +128,26 @@ export const JDMatchResultCard: React.FC<JDMatchResultCardProps> = ({ result }) 
         </div>
       </div>
 
+
+      {/* Social Fit / Team Composition */}
+      {result.socialProfile && (
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-8">
+          <h3 className="text-xl font-bold text-white mb-6">社交画像与团队配比</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+              <div className="text-gray-400 text-sm mb-1">MBTI 倾向</div>
+              <div className="text-2xl font-bold text-[#2D5BFF]">{result.socialProfile.mbti}</div>
+            </div>
+            <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+              <div className="text-gray-400 text-sm mb-1">团队角色</div>
+              <div className="text-white font-semibold">{result.socialProfile.teamRole}</div>
+            </div>
+          </div>
+          <p className="text-gray-300 mt-4">协作信号：{result.socialProfile.collaborationSignal}</p>
+          <p className="text-gray-500 text-sm mt-1">置信度：{Math.round(result.socialProfile.confidence * 100)}%</p>
+        </div>
+      )}
+
       {/* Strengths */}
       <div className="bg-white/5 border border-white/10 rounded-2xl p-8">
         <div className="flex items-center gap-2 mb-6">
