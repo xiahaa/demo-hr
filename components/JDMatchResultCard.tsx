@@ -1,6 +1,6 @@
 import React from 'react';
 import { JDMatchResult } from '../types';
-import { CheckCircle, XCircle, AlertCircle, TrendingUp } from 'lucide-react';
+import { CheckCircle, XCircle, TrendingUp } from 'lucide-react';
 
 interface JDMatchResultCardProps {
   result: JDMatchResult;
@@ -46,6 +46,48 @@ export const JDMatchResultCard: React.FC<JDMatchResultCardProps> = ({ result }) 
 
   return (
     <div className="space-y-8">
+
+      {result.personalProfile && (
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-8">
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
+            <div>
+              <h3 className="text-3xl font-bold text-white">{result.personalProfile.fullName}</h3>
+              <p className="text-[#9FB3FF] mt-1">{result.personalProfile.headline}</p>
+              <p className="text-gray-400 text-sm mt-2">{result.personalProfile.location}</p>
+            </div>
+            <div className="bg-[#2D5BFF]/10 border border-[#2D5BFF]/30 rounded-xl px-4 py-3">
+              <div className="text-xs text-gray-400">MBTI 推断</div>
+              <div className="text-2xl font-bold text-[#2D5BFF]">{result.personalProfile.mbtiInsight.type}</div>
+            </div>
+          </div>
+
+          <p className="text-gray-300 mb-4">{result.personalProfile.summary}</p>
+
+          <div className="flex flex-wrap gap-2 mb-5">
+            {result.personalProfile.skills.map((skill, idx) => (
+              <span key={`${skill}-${idx}`} className="px-3 py-1 rounded-full text-sm bg-[#2D5BFF]/15 text-[#C9D4FF] border border-[#2D5BFF]/30">
+                {skill}
+              </span>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+              <div className="text-sm text-gray-400 mb-2">核心优势</div>
+              <ul className="space-y-1 text-gray-200 text-sm">
+                {result.personalProfile.strengths.map((s, i) => <li key={i}>• {s}</li>)}
+              </ul>
+            </div>
+            <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+              <div className="text-sm text-gray-400 mb-2">潜在成长区</div>
+              <ul className="space-y-1 text-gray-200 text-sm">
+                {result.personalProfile.growthAreas.map((s, i) => <li key={i}>• {s}</li>)}
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Overall Score */}
       <div className="bg-white/5 border border-white/10 rounded-2xl p-8">
         <div className="flex items-center justify-between mb-6">

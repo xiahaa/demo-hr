@@ -103,6 +103,37 @@ export interface JDMatchResult {
     collaborationSignal: string;
     confidence: number; // 0-1
   };
+  personalProfile?: PersonalProfileCard;
+}
+
+export interface MBTIInsight {
+  type: string;
+  confidence: number; // 0-1
+  evidence: string[];
+  collaborationStyle: string;
+  complementaryTypes: string[];
+}
+
+export interface PersonalProfileCard {
+  fullName: string;
+  headline: string;
+  location: string;
+  summary: string;
+  skills: string[];
+  strengths: string[];
+  growthAreas: string[];
+  careerTrajectory: Array<{
+    stage: string;
+    probability: number;
+    note: string;
+  }>;
+  sourceSignals: {
+    linkedin?: string;
+    github?: string;
+    scholar?: string;
+    resume: 'url' | 'file' | 'text' | 'none';
+  };
+  mbtiInsight: MBTIInsight;
 }
 
 export type FeatureMode = 'github-analysis' | 'jd-match' | 'zhima-fit' | 'resume-polish';
