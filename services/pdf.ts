@@ -56,6 +56,11 @@ const EDUCATION_KEYWORDS = [
   'degree'
 ];
 
+// Pre-compile regex patterns for performance
+const SKILL_SECTION_REGEX = new RegExp(`(?:^|\\n)\\s*(?:${SKILLS_KEYWORDS.join('|')})(?:\\s*:|\\s*$)`, 'im');
+const EXPERIENCE_SECTION_REGEX = new RegExp(`(?:^|\\n)\\s*(?:${EXPERIENCE_KEYWORDS.join('|')})(?:\\s*:|\\s*$)`, 'im');
+const EDUCATION_SECTION_REGEX = new RegExp(`(?:^|\\n)\\s*(?:${EDUCATION_KEYWORDS.join('|')})(?:\\s*:|\\s*$)`, 'im');
+
 export interface PDFData {
   text: string;
   metadata?: {
@@ -371,8 +376,7 @@ export function extractCandidateInfoFromPDF(pdfData: PDFData): {
   // Extract skills - looks for common skill section headers
   // Matches variations like "SKILLS", "Technical Skills", "Competencies", etc.
   const skills: string[] = [];
-  const skillSectionRegex = new RegExp(`(?:^|\\n)\\s*(?:${SKILLS_KEYWORDS.join('|')})(?:\\s*:|\\s*$)`, 'im');
-  const skillSectionMatch = text.match(skillSectionRegex);
+  const skillSectionMatch = text.match(SKILL_SECTION_REGEX);
   
   if (skillSectionMatch) {
     const skillStartIndex = skillSectionMatch.index! + skillSectionMatch[0].length;
@@ -403,8 +407,7 @@ export function extractCandidateInfoFromPDF(pdfData: PDFData): {
   // Extract experience - looks for experience/employment section headers
   // Matches variations like "EXPERIENCE", "Work History", "Professional Experience", etc.
   const experience: string[] = [];
-  const expSectionRegex = new RegExp(`(?:^|\\n)\\s*(?:${EXPERIENCE_KEYWORDS.join('|')})(?:\\s*:|\\s*$)`, 'im');
-  const expSectionMatch = text.match(expSectionRegex);
+  const expSectionMatch = text.match(EXPERIENCE_SECTION_REGEX);
   
   if (expSectionMatch) {
     const expStartIndex = expSectionMatch.index! + expSectionMatch[0].length;
@@ -447,8 +450,7 @@ export function extractCandidateInfoFromPDF(pdfData: PDFData): {
   // Extract education - looks for education/academic section headers
   // Matches variations like "EDUCATION", "Academic Background", "Qualifications", etc.
   const education: string[] = [];
-  const eduSectionRegex = new RegExp(`(?:^|\\n)\\s*(?:${EDUCATION_KEYWORDS.join('|')})(?:\\s*:|\\s*$)`, 'im');
-  const eduSectionMatch = text.match(eduSectionRegex);
+  const eduSectionMatch = text.match(EDUCATION_SECTION_REGEX);
   
   if (eduSectionMatch) {
     const eduStartIndex = eduSectionMatch.index! + eduSectionMatch[0].length;
