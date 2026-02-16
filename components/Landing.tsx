@@ -32,6 +32,7 @@ export const Landing: React.FC<LandingProps> = ({ onAnalyze }) => {
     setError(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
+      fileInputRef.current.focus();
     }
   };
 
@@ -99,7 +100,7 @@ export const Landing: React.FC<LandingProps> = ({ onAnalyze }) => {
               type="text"
               required
               placeholder="GitHub URL（例如 github.com/torvalds）"
-              className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-5 focus:outline-none focus:ring-2 focus:ring-[#2D5BFF]/50 focus:border-[#2D5BFF] transition-all text-xl placeholder:text-gray-600"
+              className="w-full bg-white/5 border border-white/10 rounded-2xl pl-6 pr-32 py-5 focus:outline-none focus:ring-2 focus:ring-[#2D5BFF]/50 focus:border-[#2D5BFF] transition-all text-xl placeholder:text-gray-600"
               value={githubUrl}
               onChange={(e) => setGithubUrl(e.target.value)}
             />
@@ -166,6 +167,7 @@ export const Landing: React.FC<LandingProps> = ({ onAnalyze }) => {
               accept=".pdf"
               onChange={handleFileChange}
               className="sr-only peer"
+              aria-label={pdfFile ? `已选择文件: ${pdfFile.name}` : "上传简历 PDF"}
             />
             <div
               className={`relative flex items-center justify-center gap-2 w-full border-2 border-dashed rounded-xl px-4 py-8 transition-all

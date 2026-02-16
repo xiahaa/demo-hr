@@ -57,7 +57,10 @@ export const ZhimaFit: React.FC<ZhimaFitProps> = ({ onAnalyze }) => {
     e.preventDefault();
     e.stopPropagation();
     setResumeFile(null);
-    if (fileInputRef.current) fileInputRef.current.value = '';
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+      fileInputRef.current.focus();
+    }
   };
 
   return (
@@ -166,17 +169,16 @@ export const ZhimaFit: React.FC<ZhimaFitProps> = ({ onAnalyze }) => {
 
           {inputMode === 'file' && (
             <div>
-              <input type="file" ref={fileInputRef} accept=".txt,.pdf,.doc,.docx" onChange={handleFileChange} className="sr-only" />
+              <input
+                type="file"
+                ref={fileInputRef}
+                accept=".txt,.pdf,.doc,.docx"
+                onChange={handleFileChange}
+                className="sr-only peer"
+                aria-label={resumeFile ? `已选择文件: ${resumeFile.name}` : "上传简历文件"}
+              />
               <div
-                role="button"
-                tabIndex={0}
                 onClick={() => fileInputRef.current?.click()}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    fileInputRef.current?.click();
-                  }
-                }}
                 onDragOver={(e) => {
                   e.preventDefault();
                   setIsDragging(true);
@@ -196,7 +198,7 @@ export const ZhimaFit: React.FC<ZhimaFitProps> = ({ onAnalyze }) => {
                     setValidationError(null);
                   }
                 }}
-                className={`flex items-center justify-center gap-2 w-full border-2 border-dashed rounded-xl px-4 py-8 cursor-pointer transition-all ${isDragging ? 'bg-[#2D5BFF]/10 border-[#2D5BFF]' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}
+                className={`flex items-center justify-center gap-2 w-full border-2 border-dashed rounded-xl px-4 py-8 cursor-pointer transition-all peer-focus:ring-2 peer-focus:ring-[#2D5BFF] peer-focus:ring-offset-2 peer-focus:ring-offset-[#1A1A2E] ${isDragging ? 'bg-[#2D5BFF]/10 border-[#2D5BFF]' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}
               >
                 <Upload className="w-5 h-5 text-gray-300" />
                 <span className="text-gray-300">{resumeFile ? resumeFile.name : '点击或拖拽上传简历（可选）'}</span>
