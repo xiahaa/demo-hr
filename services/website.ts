@@ -431,22 +431,53 @@ export function isPrivateHostname(hostname: string): boolean {
 
       // 0.0.0.0/8 (Current network)
       if (a === 0) return true;
+
+      // If we reached here, it means the hostname was parsed as a valid IPv4 address
+      // and it did NOT match any private ranges. Thus, it is a public IP.
+      // We should return false immediately to avoid false positives in the embedded IP check
+      // (e.g. 8.8.8.8 contains "8.8" -> "8.0.0.8" -> contains "0.0" -> Private)
+      return false;
     }
   }
 
   // Check for embedded IPs in hostname (e.g., 10-0-0-1.mycompany.com)
   // This helps catch DNS rebinding attempts or internal hostnames
-  // We use a global regex to find ALL potential IP patterns
-  // Improved regex to capture hex/octal parts (alphanumeric) and longer sequences
-  const ipPattern = /([a-zA-Z0-9]+)[\.-]([a-zA-Z0-9]+)[\.-]([a-zA-Z0-9]+)[\.-]([a-zA-Z0-9]+)/g;
-  const matches = checkHostname.matchAll(ipPattern);
+  // We check sequences of parts that could form an IP address (2-4 parts)
+  {
+    // Split by common delimiters (dots and dashes) to isolate potential IP parts
+    const embeddedParts = checkHostname.split(/[\.-]/);
 
-  for (const match of matches) {
-    const ip = `${match[1]}.${match[2]}.${match[3]}.${match[4]}`;
-    // Recursively check the extracted IP
-    // Note: strict check to avoid infinite recursion if something weird happens
-    if (ip !== checkHostname && isPrivateHostname(ip)) {
-      return true;
+    // Iterate over all possible subsequences of length 2 to 4
+    // We skip single parts (length 1) to avoid false positives on simple numbers like "node-1"
+    // while catching short IP forms like "127.1"
+    for (let i = 0; i < embeddedParts.length; i++) {
+      for (let len = 2; len <= 4; len++) {
+        if (i + len > embeddedParts.length) break;
+
+        const subParts = embeddedParts.slice(i, i + len);
+        const ip = subParts.join('.');
+
+        // Recursively check the extracted candidate IP
+        // isPrivateHostname handles validation (must be numeric/hex/octal)
+        if (ip !== checkHostname) {
+          // Prevent infinite recursion due to URL normalization (e.g. 8.0 -> 8.0.0.0)
+          // If the candidate IP normalizes to the current checkHostname, we skip it
+          // because the main logic of the current function call already handles it.
+          let normalizedCandidate = ip;
+          try {
+            // Use URL parser to normalize potential IP
+            normalizedCandidate = new URL(`http://${ip}`).hostname;
+          } catch {
+            // If invalid URL, ignore normalization check
+          }
+
+          if (normalizedCandidate !== checkHostname) {
+            if (isPrivateHostname(ip)) {
+              return true;
+            }
+          }
+        }
+      }
     }
   }
 

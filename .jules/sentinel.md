@@ -55,3 +55,11 @@
 **Vulnerability:** The `isPrivateHostname` function used a strict regex `(\d{1,3})` to detect embedded IPs, which failed to capture 4-digit octal IPs (e.g., `0177`) or hexadecimal IPs (e.g., `0x7f`). This allowed attackers to bypass SSRF protection using domains like `0177.0.0.1.traefik.me`.
 **Learning:** Regex-based IP detection must account for all valid IP representations, including octal and hexadecimal formats, not just standard decimal notation.
 **Prevention:** Use a more inclusive regex for IP part detection (e.g., `[a-zA-Z0-9]+`) and rely on robust parsing logic to validate the extracted parts as private IPs.
+
+## 2026-05-27 - Infinite Recursion in SSRF Check & Short IP Bypass
+**Vulnerability:** `isPrivateHostname` relied on a strict 4-part regex for embedded IPs, missing short IPs (e.g., `127.1`). A proposed fix introduced infinite recursion because URL normalization expands short IPs (e.g., `8.0` -> `8.0.0.0`), which then re-trigger the check.
+**Learning:** Recursive validation logic must account for data normalization cycles. Also, valid Public IPs can sometimes contain substrings that look like Private IPs (e.g. `8.8.8.8` containing `0.0` after normalization), leading to false positives if not handled carefully.
+**Prevention:**
+1. Use a "split and scan" strategy for embedded IPs with support for short formats (2-4 parts).
+2. Explicitly prevent recursion if the normalized candidate matches the input.
+3. Exit early if the input is already confirmed as a valid Public IP to avoid scanning it for false-positive embedded patterns.
