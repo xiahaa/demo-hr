@@ -51,3 +51,10 @@
 ## 2025-05-18 - Set.has vs Regex.test Performance
 **Learning:** Found that `Set.has(tagName)` combined with string normalization (or mixed-case Set) was ~2-3x slower than a simple regex check `/(DIV|P|...)/.test(tagName)` in V8 for checking HTML tag names.
 **Action:** Don't assume `Set` lookup is always faster than optimized regex literals for small sets of strings. V8's regex engine is highly optimized for simple alternations. Always benchmark micro-optimizations.
+
+## 2025-05-19 - Optimizing JavaScript Array Operations
+**Learning:** `Array.prototype.shift()` is O(N), which can be costly in loops. Using an index pointer (O(1)) is a better pattern for processing queues in JavaScript when order matters.
+**Action:** When implementing concurrent queue processing or consuming arrays in order, prefer index pointers over `shift()` or `splice()` unless the array is guaranteed to be very small.
+
+**Learning:** Replacing multiple `filter()` + `spread` + `slice()` chains with a single-pass loop (with early exit) significantly reduces temporary array allocations and iteration count.
+**Action:** For filtering and prioritizing items from a list with a limit, use a single loop with a counter instead of functional chains, especially if the source list is large.
