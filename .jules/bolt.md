@@ -47,3 +47,7 @@
 ## 2025-02-27 - Optimized Text Scanning with matchAll
 **Learning:** `String.match()` with a global regex allocates an array of all matching strings, which can be memory-intensive for large texts and frequent scans. `String.matchAll()` returns an iterator, processing matches lazily.
 **Action:** Replaced `match(globalRegex)` with `matchAll(globalRegex)` in `extractTechnologies`. This reduces memory allocation during keyword extraction from large website content.
+
+## 2025-05-18 - Set.has vs Regex.test Performance
+**Learning:** Found that `Set.has(tagName)` combined with string normalization (or mixed-case Set) was ~2-3x slower than a simple regex check `/(DIV|P|...)/.test(tagName)` in V8 for checking HTML tag names.
+**Action:** Don't assume `Set` lookup is always faster than optimized regex literals for small sets of strings. V8's regex engine is highly optimized for simple alternations. Always benchmark micro-optimizations.
