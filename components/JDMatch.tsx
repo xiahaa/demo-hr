@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
-import { Upload, Link as LinkIcon, Briefcase, X } from 'lucide-react';
+import { Upload, Link as LinkIcon, Briefcase, X, FileText, Check, AlertCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface JDMatchProps {
   onAnalyze: (industry: string, companyName: string, jobDescription: string, resumeUrl?: string, resumeFile?: File) => void;
@@ -82,6 +83,8 @@ export const JDMatch: React.FC<JDMatchProps> = ({ onAnalyze }) => {
       }
     }
   };
+
+  const isFileError = validationError && (validationError.includes('文件') || validationError.includes('简历'));
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[90vh] px-4">
@@ -193,13 +196,19 @@ export const JDMatch: React.FC<JDMatchProps> = ({ onAnalyze }) => {
                 id="resumeUrl"
                 type="text"
                 placeholder="简历链接（GitHub、LinkedIn或其他在线简历）"
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#2D5BFF]/50 focus:border-[#2D5BFF] transition-all text-base placeholder:text-gray-600"
+                className={`w-full bg-white/5 border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 transition-all text-base placeholder:text-gray-600 ${
+                  isFileError
+                   ? 'border-red-500/50 focus:ring-red-500/50 focus:border-red-500'
+                   : 'border-white/10 focus:ring-[#2D5BFF]/50 focus:border-[#2D5BFF]'
+                }`}
                 value={resumeUrl}
                 onChange={(e) => {
                   setResumeUrl(e.target.value);
                   setResumeFile(null); // Clear file when URL is entered
                   setValidationError(null); // Clear validation error
                 }}
+                aria-invalid={!!isFileError}
+                aria-describedby={validationError ? "validation-error" : undefined}
               />
             </div>
           )}
@@ -216,38 +225,63 @@ export const JDMatch: React.FC<JDMatchProps> = ({ onAnalyze }) => {
                   onChange={handleFileChange}
                   className="sr-only peer"
                   aria-label={resumeFile ? `已选择文件: ${resumeFile.name}` : "上传简历文件"}
+                  aria-invalid={!!isFileError}
+                  aria-describedby={validationError ? "validation-error" : undefined}
                 />
-                <div
+                <motion.div
                   onClick={handleBoxClick}
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
-                  className={`flex items-center justify-center gap-2 w-full border-2 border-dashed rounded-xl px-4 py-8 cursor-pointer transition-all peer-focus:ring-2 peer-focus:ring-[#2D5BFF] peer-focus:ring-offset-2 peer-focus:ring-offset-[#1A1A2E] ${
-                    isDragging
-                      ? 'bg-[#2D5BFF]/10 border-[#2D5BFF] scale-[1.02]'
-                      : 'bg-white/5 border-white/10 hover:bg-white/10'
+                  animate={
+                    isFileError ? { x: [0, -10, 10, -10, 10, 0] } :
+                    isDragging ? { scale: 1.02 } :
+                    { scale: 1 }
+                  }
+                  transition={isFileError ? { duration: 0.4 } : { type: "spring", stiffness: 300, damping: 20 }}
+                  className={`flex items-center justify-center gap-2 w-full border-2 rounded-xl px-4 py-8 cursor-pointer transition-colors peer-focus:ring-2 peer-focus:ring-[#2D5BFF] peer-focus:ring-offset-2 peer-focus:ring-offset-[#1A1A2E] ${
+                    isFileError
+                      ? 'bg-red-500/10 border-red-500/50 border-dashed'
+                      : isDragging
+                        ? 'bg-[#2D5BFF]/10 border-[#2D5BFF] border-dashed'
+                        : resumeFile
+                          ? 'bg-[#2D5BFF]/5 border-[#2D5BFF] border-solid'
+                          : 'bg-white/5 border-white/10 hover:bg-white/10 border-dashed'
                   }`}
                 >
-                  <Upload className={`w-6 h-6 ${isDragging ? 'text-[#2D5BFF]' : 'text-gray-400'}`} />
-                  <span className={`${isDragging ? 'text-[#2D5BFF] font-medium' : 'text-gray-400'}`}>
+                  {isFileError ? (
+                    <AlertCircle className="w-6 h-6 text-red-400" />
+                  ) : resumeFile ? (
+                    <FileText className="w-6 h-6 text-[#2D5BFF]" />
+                  ) : (
+                    <Upload className={`w-6 h-6 ${isDragging ? 'text-[#2D5BFF]' : 'text-gray-400'}`} />
+                  )}
+
+                  <span className={`${
+                    isFileError ? 'text-red-400 font-medium' :
+                    isDragging || resumeFile ? 'text-[#2D5BFF] font-medium' : 'text-gray-400'
+                  }`}>
                     {isDragging
                       ? '释放文件以上传'
                       : resumeFile
                         ? resumeFile.name
-                        : '点击上传简历文件 (TXT, PDF)'
+                        : isFileError
+                          ? '上传失败'
+                          : '点击上传简历文件 (TXT, PDF)'
                     }
                   </span>
-                  {resumeFile && !isDragging && (
+
+                  {resumeFile && !isDragging && !isFileError && (
                     <button
                       type="button"
                       aria-label="移除文件"
                       onClick={clearFile}
-                      className="ml-2 p-1 hover:bg-white/20 rounded-full transition-colors text-gray-400 hover:text-white"
+                      className="ml-2 p-1 hover:bg-[#2D5BFF]/20 rounded-full transition-colors text-[#2D5BFF]"
                     >
                       <X className="w-4 h-4" />
                     </button>
                   )}
-                </div>
+                </motion.div>
               </div>
               <p className="text-xs text-gray-500 mt-2">
                 支持格式：TXT, PDF
@@ -258,9 +292,16 @@ export const JDMatch: React.FC<JDMatchProps> = ({ onAnalyze }) => {
 
         {/* Validation Error Message */}
         {validationError && (
-          <div role="alert" className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-red-400 text-sm">
+          <motion.div
+            id="validation-error"
+            role="alert"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-red-400 text-sm flex items-center gap-2"
+          >
+            <AlertCircle className="w-4 h-4 shrink-0" />
             {validationError}
-          </div>
+          </motion.div>
         )}
 
         {/* Submit Button */}
