@@ -63,3 +63,8 @@
 1. Use a "split and scan" strategy for embedded IPs with support for short formats (2-4 parts).
 2. Explicitly prevent recursion if the normalized candidate matches the input.
 3. Exit early if the input is already confirmed as a valid Public IP to avoid scanning it for false-positive embedded patterns.
+
+## 2026-06-15 - SSRF via Redirects in Personal Website Fetch
+**Vulnerability:** The `fetchPersonalWebsite` and `checkRobotsTxt` functions used `fetch` without `redirect: 'error'`, allowing attackers to bypass URL validation by redirecting from a public URL to a private IP (SSRF).
+**Learning:** URL validation at the application layer is insufficient for preventing SSRF if the HTTP client automatically follows redirects.
+**Prevention:** Always use `redirect: 'error'` in `fetch` calls when retrieving content from user-provided URLs to prevent the client from silently following redirects to restricted networks.
