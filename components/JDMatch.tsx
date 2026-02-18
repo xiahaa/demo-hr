@@ -50,10 +50,6 @@ export const JDMatch: React.FC<JDMatchProps> = ({ onAnalyze }) => {
     }
   };
 
-  const handleBoxClick = () => {
-    fileInputRef.current?.click();
-  };
-
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(true);
@@ -207,7 +203,7 @@ export const JDMatch: React.FC<JDMatchProps> = ({ onAnalyze }) => {
           {/* File Upload */}
           {inputMode === 'file' && (
             <div>
-              <div className="relative">
+              <div className="relative group">
                 <input
                   type="file"
                   id="resumeFile"
@@ -215,19 +211,26 @@ export const JDMatch: React.FC<JDMatchProps> = ({ onAnalyze }) => {
                   accept=".txt,.pdf,.doc,.docx"
                   onChange={handleFileChange}
                   className="sr-only peer"
+                  aria-invalid={!!validationError}
+                  aria-describedby={validationError ? "jd-match-error" : undefined}
                   aria-label={resumeFile ? `已选择文件: ${resumeFile.name}` : "上传简历文件"}
                 />
                 <div
-                  onClick={handleBoxClick}
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                  className={`flex items-center justify-center gap-2 w-full border-2 border-dashed rounded-xl px-4 py-8 cursor-pointer transition-all peer-focus:ring-2 peer-focus:ring-[#2D5BFF] peer-focus:ring-offset-2 peer-focus:ring-offset-[#1A1A2E] ${
+                  className={`relative flex items-center justify-center gap-2 w-full border-2 border-dashed rounded-xl px-4 py-8 transition-all peer-focus:ring-2 peer-focus:ring-[#2D5BFF] peer-focus:ring-offset-2 peer-focus:ring-offset-[#1A1A2E] ${
                     isDragging
                       ? 'bg-[#2D5BFF]/10 border-[#2D5BFF] scale-[1.02]'
                       : 'bg-white/5 border-white/10 hover:bg-white/10'
                   }`}
                 >
+                  <label
+                    htmlFor="resumeFile"
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                    className="absolute inset-0 w-full h-full cursor-pointer z-10"
+                    aria-label="点击或拖拽上传简历文件"
+                  ></label>
+
                   <Upload className={`w-6 h-6 ${isDragging ? 'text-[#2D5BFF]' : 'text-gray-400'}`} />
                   <span className={`${isDragging ? 'text-[#2D5BFF] font-medium' : 'text-gray-400'}`}>
                     {isDragging
@@ -242,7 +245,7 @@ export const JDMatch: React.FC<JDMatchProps> = ({ onAnalyze }) => {
                       type="button"
                       aria-label="移除文件"
                       onClick={clearFile}
-                      className="ml-2 p-1 hover:bg-white/20 rounded-full transition-colors text-gray-400 hover:text-white"
+                      className="z-20 ml-2 p-1 hover:bg-white/20 rounded-full transition-colors text-gray-400 hover:text-white relative"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -258,7 +261,7 @@ export const JDMatch: React.FC<JDMatchProps> = ({ onAnalyze }) => {
 
         {/* Validation Error Message */}
         {validationError && (
-          <div role="alert" className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-red-400 text-sm">
+          <div role="alert" id="jd-match-error" className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-red-400 text-sm">
             {validationError}
           </div>
         )}
