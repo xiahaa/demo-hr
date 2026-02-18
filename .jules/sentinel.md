@@ -63,3 +63,8 @@
 1. Use a "split and scan" strategy for embedded IPs with support for short formats (2-4 parts).
 2. Explicitly prevent recursion if the normalized candidate matches the input.
 3. Exit early if the input is already confirmed as a valid Public IP to avoid scanning it for false-positive embedded patterns.
+
+## 2026-05-27 - SSRF Bypass via Private IPv6 Ranges
+**Vulnerability:** The SSRF protection logic (`isPrivateHostname`) only blocked Loopback (`::1`) and IPv4-mapped IPv6 addresses, but failed to block other private IPv6 ranges like Link-Local (`fe80::/10`), Unique Local (`fc00::/7`), and Site-Local (`fec0::/10`).
+**Learning:** Security controls often focus on IPv4 and overlook IPv6, leaving a gap for attackers to access internal resources via IPv6.
+**Prevention:** Explicitly validate and block all IANA-reserved private IPv6 ranges (Link-Local, ULA, Site-Local, Multicast, etc.) in SSRF protection logic, in addition to IPv4 ranges.
