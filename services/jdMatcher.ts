@@ -8,6 +8,9 @@ const MIN_RESUME_LENGTH = 100; // Minimum characters for valid resume content
 const MAX_NON_PRINTABLE_RATIO = 0.05; // Maximum ratio of non-printable characters allowed (5%)
 const MAX_RESUME_LENGTH = 50000; // Maximum characters for resume content (security & cost limit)
 
+// Pre-compiled regex for block elements to avoid recompilation in recursive calls
+const BLOCK_TAGS_REGEX = /^(div|p|h[1-6]|li|tr|header|footer|section|article|blockquote)$/i;
+
 /**
  * Analyzes job description and resume/link for matching
  */
@@ -310,7 +313,7 @@ function extractTextFromNode(node: Node): string {
     if (tagName === 'br') return '\n';
 
     let text = '';
-    const isBlock = /^(div|p|h[1-6]|li|tr|header|footer|section|article|blockquote)$/.test(tagName);
+    const isBlock = BLOCK_TAGS_REGEX.test(tagName);
 
     // Add newline before block elements
     if (isBlock) text += '\n';
