@@ -337,6 +337,32 @@ export function isPrivateHostname(hostname: string, allowEmbeddedCheck: boolean 
     checkHostname = checkHostname.slice(1, -1);
   }
 
+  // IPv6 Checks
+  if (checkHostname.includes(':')) {
+    // Check for Link-Local Addresses (fe80::/10)
+    // Matches fe80:, fe90:, fea0:, feb0:
+    if (/^fe[89ab][0-9a-f]:/i.test(checkHostname)) {
+      return true;
+    }
+
+    // Check for Unique Local Addresses (fc00::/7)
+    // Matches fc00: through fdff:
+    if (/^f[cd][0-9a-f]{2}:/i.test(checkHostname)) {
+      return true;
+    }
+
+    // Check for Site-Local Addresses (fec0::/10) - Deprecated but should block
+    // Matches fec0:, fed0:, fee0:, fef0:
+    if (/^fe[cdef][0-9a-f]:/i.test(checkHostname)) {
+      return true;
+    }
+
+    // Check for Unspecified Address (::)
+    if (checkHostname === '::') {
+      return true;
+    }
+  }
+
   // OPTIMIZATION: Fast path - if no digits and no colons, it cannot be an IP address or contain an IP pattern.
   // This skips expensive regex matching and parsing for the majority of domains (e.g. google.com).
   // Note: 'localhost', '.local', and IPv6 '::1' are already handled above, so we don't need to worry about them here.
