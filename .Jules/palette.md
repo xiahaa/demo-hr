@@ -41,3 +41,7 @@
 ## 2026-05-20 - [Semantic File Input Structure]
 **Learning:** Nesting interactive elements (like a clear button) inside a `<label>` linked to a file input is invalid HTML and confuses screen readers. A robust pattern uses an absolute overlay label for the trigger and positions sibling buttons (e.g., Clear) above it with z-index.
 **Action:** Refactor custom file inputs to use a container `div` with a sibling `label` (overlay) and `button` (z-indexed), avoiding nested interactive controls.
+
+## 2026-05-22 - [Empty State Action Buttons]
+**Learning:** Empty input fields are prime real estate for "accelerator" actions. Replacing the "Clear" button (which is useless when empty) with a "Paste" button reduces friction significantly for URL inputs.
+**Action:** Implement context-aware action buttons inside inputs (e.g., Paste when empty, Clear when filled) to improve efficiency.
