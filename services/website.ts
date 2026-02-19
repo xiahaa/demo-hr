@@ -74,7 +74,8 @@ export async function checkRobotsTxt(url: string): Promise<boolean> {
         headers: {
           'User-Agent': 'ZhimaBot/1.0 (HR Analysis Tool; Respects robots.txt)'
         },
-        signal: controller.signal
+        signal: controller.signal,
+        redirect: 'error' // Security: Prevent following redirects to private networks
       });
     } finally {
       clearTimeout(timeoutId);
@@ -585,7 +586,8 @@ export async function fetchPersonalWebsite(url: string): Promise<WebsiteInfo | n
           'User-Agent': 'ZhimaBot/1.0 (HR Analysis Tool; Respects robots.txt)',
           'Accept': 'text/html,application/xhtml+xml'
         },
-        signal: controller.signal
+        signal: controller.signal,
+        redirect: 'error' // Security: Prevent following redirects to private networks
       });
     } finally {
       clearTimeout(timeoutId);
