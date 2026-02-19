@@ -361,6 +361,27 @@ export function isPrivateHostname(hostname: string, allowEmbeddedCheck: boolean 
     if (checkHostname === '::') {
       return true;
     }
+
+    // Check for expanded Loopback (e.g. 0:0:0:0:0:0:0:1) and Unspecified (e.g. 0:0:0:0:0:0:0:0)
+    // This catches variations like 0000:0000:0000:0000:0000:0000:0000:0001 which are not caught by strict string matching
+    const parts = checkHostname.split(':');
+    if (parts.length > 2) {
+      const isZero = (s: string) => !s || /^0+$/.test(s);
+
+      // Check if all parts are zero (Unspecified address ::)
+      if (parts.every(isZero)) {
+        return true;
+      }
+
+      // Check if it's a Loopback address (::1) where all but last part are zero, and last part is 1
+      const lastPart = parts[parts.length - 1];
+      const otherParts = parts.slice(0, -1);
+
+      // Check last part equals 1 (handling leading zeros e.g. 0001)
+      if (/^0*1$/.test(lastPart) && otherParts.every(isZero)) {
+        return true;
+      }
+    }
   }
 
   // OPTIMIZATION: Fast path - if no digits and no colons, it cannot be an IP address or contain an IP pattern.
