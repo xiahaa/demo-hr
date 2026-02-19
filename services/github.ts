@@ -115,16 +115,32 @@ export async function aggregateLanguageStats(username: string, repos: any[]) {
   const languageStats: Record<string, number> = {};
   const repoCount: Record<string, number> = {};
 
-  // Process top repositories to get language data
-  // Prioritize non-fork repos and limit to top 10 to speed up analysis
-  const sourceRepos = repos.filter((r: any) => !r.fork);
-  const forkRepos = repos.filter((r: any) => r.fork);
-
   // Adjust limit based on auth status
   const token = getGitHubToken();
   const limit = token ? 15 : 5; // More aggressive limit for unauthenticated users
 
-  const topRepos = [...sourceRepos, ...forkRepos].slice(0, limit);
+  // Process top repositories to get language data
+  // Prioritize non-fork repos and limit to top 10-15 to speed up analysis
+  // OPTIMIZATION: Use single-pass loop with early exit instead of multiple filters
+  const topRepos: any[] = [];
+
+  // 1. Add source repos (prioritized)
+  for (const repo of repos) {
+    if (topRepos.length >= limit) break;
+    if (!repo.fork) {
+      topRepos.push(repo);
+    }
+  }
+
+  // 2. Add fork repos (if needed)
+  if (topRepos.length < limit) {
+    for (const repo of repos) {
+      if (topRepos.length >= limit) break;
+      if (repo.fork) {
+        topRepos.push(repo);
+      }
+    }
+  }
 
   // Process repositories with concurrency limit to respect API rate limits
   // while avoiding the "wait for batch" inefficiency of sequential batches.
@@ -149,12 +165,13 @@ async function runConcurrently<T>(
   concurrency: number,
   task: (item: T) => Promise<void>
 ): Promise<void> {
-  const queue = [...items];
+  // OPTIMIZATION: Use index pointer instead of shift() to avoid O(N) array re-indexing
+  let index = 0;
   const workers = Array(Math.min(concurrency, items.length))
     .fill(null)
     .map(async () => {
-      while (queue.length > 0) {
-        const item = queue.shift();
+      while (index < items.length) {
+        const item = items[index++];
         if (item !== undefined) {
           try {
             await task(item);
@@ -193,6 +210,29 @@ export async function searchForEmail(username: string) {
   }
 }
 
+// Map common languages to more HR-friendly tech stack names
+const LANGUAGE_MAPPING: Record<string, string> = {
+  'TypeScript': 'TypeScript',
+  'JavaScript': 'JavaScript/Node.js',
+  'Python': 'Python',
+  'Java': 'Java',
+  'Go': 'Go',
+  'Rust': 'Rust',
+  'C++': 'C++',
+  'C': 'C',
+  'C#': 'C#/.NET',
+  'Ruby': 'Ruby',
+  'PHP': 'PHP',
+  'Swift': 'Swift/iOS',
+  'Kotlin': 'Kotlin/Android',
+  'Dart': 'Dart/Flutter',
+  'Shell': 'Shell/DevOps',
+  'HTML': 'HTML/CSS',
+  'CSS': 'HTML/CSS',
+  'Vue': 'Vue.js',
+  'Jupyter Notebook': 'Data Science/ML'
+};
+
 /**
  * Calculate tech stack scores from language statistics
  * Returns a baseline tech stack that can be enhanced by LLM analysis
@@ -205,33 +245,10 @@ export function calculateTechStackFromLanguages(
 
   if (totalBytes === 0) return [];
 
-  // Map common languages to more HR-friendly tech stack names
-  const languageMapping: Record<string, string> = {
-    'TypeScript': 'TypeScript',
-    'JavaScript': 'JavaScript/Node.js',
-    'Python': 'Python',
-    'Java': 'Java',
-    'Go': 'Go',
-    'Rust': 'Rust',
-    'C++': 'C++',
-    'C': 'C',
-    'C#': 'C#/.NET',
-    'Ruby': 'Ruby',
-    'PHP': 'PHP',
-    'Swift': 'Swift/iOS',
-    'Kotlin': 'Kotlin/Android',
-    'Dart': 'Dart/Flutter',
-    'Shell': 'Shell/DevOps',
-    'HTML': 'HTML/CSS',
-    'CSS': 'HTML/CSS',
-    'Vue': 'Vue.js',
-    'Jupyter Notebook': 'Data Science/ML'
-  };
-
   const techStack: Array<{ name: string; score: number; bytes: number; repos: number }> = [];
 
   for (const [lang, bytes] of Object.entries(languageStats)) {
-    const mappedName = languageMapping[lang] || lang;
+    const mappedName = LANGUAGE_MAPPING[lang] || lang;
     const bytesPercentage = (bytes / totalBytes) * 100;
     const repos = repoCount[lang] || 0;
 

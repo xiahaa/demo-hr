@@ -14,6 +14,7 @@ export const Landing: React.FC<LandingProps> = ({ onAnalyze }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const githubInputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,6 +24,11 @@ export const Landing: React.FC<LandingProps> = ({ onAnalyze }) => {
 
   const handleDemo = () => {
     onAnalyze('demo', '', '', '');
+  };
+
+  const handleClearGithubUrl = () => {
+    setGithubUrl('');
+    githubInputRef.current?.focus();
   };
 
   const handleClearFile = (e: React.MouseEvent) => {
@@ -96,14 +102,25 @@ export const Landing: React.FC<LandingProps> = ({ onAnalyze }) => {
           </label>
           <div className="relative group">
             <input
+              ref={githubInputRef}
               id="github-url"
               type="text"
               required
               placeholder="GitHub URL（例如 github.com/torvalds）"
-              className="w-full bg-white/5 border border-white/10 rounded-2xl pl-6 pr-32 py-5 focus:outline-none focus:ring-2 focus:ring-[#2D5BFF]/50 focus:border-[#2D5BFF] transition-all text-xl placeholder:text-gray-600"
+              className="w-full bg-white/5 border border-white/10 rounded-2xl pl-6 pr-48 py-5 focus:outline-none focus:ring-2 focus:ring-[#2D5BFF]/50 focus:border-[#2D5BFF] transition-all text-xl placeholder:text-gray-600"
               value={githubUrl}
               onChange={(e) => setGithubUrl(e.target.value)}
             />
+            {githubUrl && (
+              <button
+                type="button"
+                onClick={handleClearGithubUrl}
+                aria-label="清除 GitHub URL"
+                className="absolute right-36 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-white transition-colors rounded-full hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D5BFF]"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            )}
             <button
               type="submit"
               disabled={!githubUrl.trim()}
