@@ -292,7 +292,7 @@ export function extractSkills(textContent: string): string[] {
  * Check if a hostname is a private IP address or local domain
  * Prevents SSRF attacks on local networks
  */
-export function isPrivateHostname(hostname: string): boolean {
+export function isPrivateHostname(hostname: string, allowEmbeddedCheck: boolean = true): boolean {
   // Normalize hostname to handle short/hex/octal IP formats (e.g. 127.1 -> 127.0.0.1)
   let normalizedHostname = hostname;
   try {
@@ -444,7 +444,7 @@ export function isPrivateHostname(hostname: string): boolean {
   // Check for embedded IPs in hostname (e.g., 10-0-0-1.mycompany.com)
   // This helps catch DNS rebinding attempts or internal hostnames
   // We check sequences of parts that could form an IP address (2-4 parts)
-  {
+  if (allowEmbeddedCheck) {
     // Split by common delimiters (dots and dashes) to isolate potential IP parts
     const embeddedParts = checkHostname.split(/[\.-]/);
 
@@ -473,7 +473,8 @@ export function isPrivateHostname(hostname: string): boolean {
           }
 
           if (normalizedCandidate !== checkHostname) {
-            if (isPrivateHostname(ip)) {
+            // Pass false to prevent infinite recursion and redundant nested checks
+            if (isPrivateHostname(ip, false)) {
               return true;
             }
           }

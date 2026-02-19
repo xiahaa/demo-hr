@@ -52,6 +52,10 @@
 **Learning:** Found that `Set.has(tagName)` combined with string normalization (or mixed-case Set) was ~2-3x slower than a simple regex check `/(DIV|P|...)/.test(tagName)` in V8 for checking HTML tag names.
 **Action:** Don't assume `Set` lookup is always faster than optimized regex literals for small sets of strings. V8's regex engine is highly optimized for simple alternations. Always benchmark micro-optimizations.
 
+## 2025-05-19 - Recursive Object Creation and Redundant Checks
+**Learning:** In `isPrivateHostname`, a recursive function created a new `URL` object and re-checked embedded IPs at every level of recursion, leading to O(N^depth) complexity and excessive object allocation.
+**Action:** Added a control flag (`allowEmbeddedCheck`) to disable deep recursion and redundant checks for embedded IPs, reducing execution time by ~80% (from ~975ms to ~200ms for 16k checks).
+
 ## 2025-05-19 - Optimizing JavaScript Array Operations
 **Learning:** `Array.prototype.shift()` is O(N), which can be costly in loops. Using an index pointer (O(1)) is a better pattern for processing queues in JavaScript when order matters.
 **Action:** When implementing concurrent queue processing or consuming arrays in order, prefer index pointers over `shift()` or `splice()` unless the array is guaranteed to be very small.
