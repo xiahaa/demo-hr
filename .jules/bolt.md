@@ -55,3 +55,10 @@
 ## 2025-05-19 - Recursive Object Creation and Redundant Checks
 **Learning:** In `isPrivateHostname`, a recursive function created a new `URL` object and re-checked embedded IPs at every level of recursion, leading to O(N^depth) complexity and excessive object allocation.
 **Action:** Added a control flag (`allowEmbeddedCheck`) to disable deep recursion and redundant checks for embedded IPs, reducing execution time by ~80% (from ~975ms to ~200ms for 16k checks).
+
+## 2025-05-19 - Optimizing JavaScript Array Operations
+**Learning:** `Array.prototype.shift()` is O(N), which can be costly in loops. Using an index pointer (O(1)) is a better pattern for processing queues in JavaScript when order matters.
+**Action:** When implementing concurrent queue processing or consuming arrays in order, prefer index pointers over `shift()` or `splice()` unless the array is guaranteed to be very small.
+
+**Learning:** Replacing multiple `filter()` + `spread` + `slice()` chains with a single-pass loop (with early exit) significantly reduces temporary array allocations and iteration count.
+**Action:** For filtering and prioritizing items from a list with a limit, use a single loop with a counter instead of functional chains, especially if the source list is large.
