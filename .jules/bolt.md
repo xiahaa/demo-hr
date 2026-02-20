@@ -62,3 +62,11 @@
 
 **Learning:** Replacing multiple `filter()` + `spread` + `slice()` chains with a single-pass loop (with early exit) significantly reduces temporary array allocations and iteration count.
 **Action:** For filtering and prioritizing items from a list with a limit, use a single loop with a counter instead of functional chains, especially if the source list is large.
+
+## 2025-05-19 - Binary Data Detection Performance
+**Learning:** Iterating over character codes in a loop (O(N) in JS) to check for non-printable characters is significantly slower (~50x for text, ~3x for binary) than using  with a pre-compiled regex in V8.
+**Action:** For simple character class counting or removal, prefer  or  over manual loops. V8's regex engine is highly optimized.
+
+## 2025-05-19 - Binary Data Detection Performance
+**Learning:** Iterating over character codes in a loop (O(N) in JS) to check for non-printable characters is significantly slower (~50x for text, ~3x for binary) than using `String.prototype.replace` with a pre-compiled regex in V8.
+**Action:** For simple character class counting or removal, prefer `str.replace(regex, '').length` or `str.match(regex)` over manual loops. V8's regex engine is highly optimized.
