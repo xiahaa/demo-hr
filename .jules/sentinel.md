@@ -74,3 +74,7 @@
 **Learning:** URL validation at the application layer is insufficient for preventing SSRF if the HTTP client automatically follows redirects.
 **Prevention:** Always use `redirect: 'error'` in `fetch` calls when retrieving content from user-provided URLs to prevent the client from silently following redirects to restricted networks.
 
+## 2026-07-20 - SSRF Bypass via Expanded IPv6
+**Vulnerability:** The `isPrivateHostname` function failed to block expanded IPv6 loopback (`0:0:0:0:0:0:0:1`) and unspecified (`0:0:0:0:0:0:0:0`) addresses because it only checked for compressed forms like `::1` or `::`.
+**Learning:** IPv6 addresses have multiple valid string representations (compressed, fully expanded, leading zeros). Security checks must handle all variations.
+**Prevention:** Implement checks for expanded IPv6 forms by splitting segments and verifying if they are all zero (or all zero + last one 1), rather than relying on strict string matching.

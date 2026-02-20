@@ -21,6 +21,12 @@ describe('isPrivateHostname', () => {
     expect(isPrivateHostname('10.0.0.1')).toBe(true);
     expect(isPrivateHostname('169.254.1.1')).toBe(true);
     expect(isPrivateHostname('[::1]')).toBe(true);
+    expect(isPrivateHostname('::1')).toBe(true);
+    expect(isPrivateHostname('0:0:0:0:0:0:0:1')).toBe(true);
+    expect(isPrivateHostname('[0:0:0:0:0:0:0:1]')).toBe(true);
+    expect(isPrivateHostname('0000:0000:0000:0000:0000:0000:0000:0001')).toBe(true);
+    expect(isPrivateHostname('::')).toBe(true);
+    expect(isPrivateHostname('0:0:0:0:0:0:0:0')).toBe(true);
   });
 
   it('should identify alternative IPv4 formats as private', () => {
