@@ -308,6 +308,13 @@ export function isPrivateHostname(hostname: string, allowEmbeddedCheck: boolean 
     return true;
   }
 
+  // Block dotless domains (single-label domains like "intranet", "corp", "database")
+  // These are typically local network names and should not be accessed from the public internet context.
+  // Exception: IPv6 addresses contain colons, so we ensure it's not an IPv6 address before blocking.
+  if (!normalizedHostname.includes('.') && !normalizedHostname.includes(':')) {
+    return true;
+  }
+
   // Block known DNS rebinding / localhost wildcard services
   const localhostDomains = [
     'localtest.me',
