@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Upload, X } from 'lucide-react';
+import { Upload, X, Clipboard } from 'lucide-react';
 
 interface LandingProps {
   onAnalyze: (githubUrl: string, scholarUrl?: string, linkedinText?: string, personalWebsiteUrl?: string, pdfFile?: File) => void;
@@ -29,6 +29,18 @@ export const Landing: React.FC<LandingProps> = ({ onAnalyze }) => {
   const handleClearGithubUrl = () => {
     setGithubUrl('');
     githubInputRef.current?.focus();
+  };
+
+  const handlePaste = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (text) {
+        setGithubUrl(text);
+        githubInputRef.current?.focus();
+      }
+    } catch (err) {
+      console.error('Failed to read clipboard:', err);
+    }
   };
 
   const handleClearFile = (e: React.MouseEvent) => {
@@ -106,11 +118,23 @@ export const Landing: React.FC<LandingProps> = ({ onAnalyze }) => {
               id="github-url"
               type="text"
               required
+              autoFocus
               placeholder="GitHub URL（例如 github.com/torvalds）"
               className="w-full bg-white/5 border border-white/10 rounded-2xl pl-6 pr-48 py-5 focus:outline-none focus:ring-2 focus:ring-[#2D5BFF]/50 focus:border-[#2D5BFF] transition-all text-xl placeholder:text-gray-600"
               value={githubUrl}
               onChange={(e) => setGithubUrl(e.target.value)}
             />
+            {!githubUrl && (
+              <button
+                type="button"
+                onClick={handlePaste}
+                aria-label="粘贴 GitHub URL"
+                title="从剪贴板粘贴"
+                className="absolute right-36 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-white transition-colors rounded-full hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D5BFF]"
+              >
+                <Clipboard className="w-5 h-5" />
+              </button>
+            )}
             {githubUrl && (
               <button
                 type="button"
