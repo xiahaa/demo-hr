@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import DOMPurify from 'dompurify';
 import { CandidateProfile } from '../types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { motion } from 'framer-motion';
@@ -34,11 +35,16 @@ const itemVariants = {
   }
 };
 
+// Helper function to sanitize user input
+const sanitize = (dirty: string): string => {
+  return DOMPurify.sanitize(dirty, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
+};
+
 export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
   const [sortKey, setSortKey] = useState<SortKey>('stars');
 
   const barData = profile.techStack.map(item => ({
-    name: item.name,
+    name: sanitize(item.name),
     score: item.score,
   }));
   const hasTechStack = barData.length > 0;
@@ -70,6 +76,29 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
     }
   }, [profile.topRepositories, sortKey]);
 
+  // Sanitize profile data
+  const sanitizedProfile = useMemo(() => ({
+    ...profile,
+    name: sanitize(profile.name),
+    username: sanitize(profile.username),
+    oneLiner: sanitize(profile.oneLiner),
+    location: sanitize(profile.location),
+    email: profile.email ? sanitize(profile.email) : null,
+    website: profile.website ? sanitize(profile.website) : null,
+    strengths: profile.strengths.map(s => sanitize(s)),
+    weaknesses: profile.weaknesses.map(w => sanitize(w)),
+    suggestedQuestions: profile.suggestedQuestions.map(q => sanitize(q)),
+    recommendedPositions: profile.recommendedPositions?.map(p => sanitize(p)) || [],
+    personalWebsiteData: profile.personalWebsiteData ? {
+      ...profile.personalWebsiteData,
+      url: sanitize(profile.personalWebsiteData.url),
+      title: profile.personalWebsiteData.title ? sanitize(profile.personalWebsiteData.title) : undefined,
+      description: profile.personalWebsiteData.description ? sanitize(profile.personalWebsiteData.description) : undefined,
+      technologies: profile.personalWebsiteData.technologies?.map(t => sanitize(t)) || [],
+      skills: profile.personalWebsiteData.skills?.map(s => sanitize(s)) || [],
+    } : null,
+  }), [profile]);
+
   return (
     <motion.div
       className="grid grid-cols-1 md:grid-cols-4 grid-rows-auto gap-4 md:gap-6"
@@ -84,47 +113,47 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
         className="md:col-span-3 bg-white/5 border border-white/10 rounded-3xl p-8 flex flex-col md:flex-row gap-8 items-start glass bento-card"
       >
         <img
-          src={profile.avatarUrl}
-          alt={profile.username}
+          src={sanitizedProfile.avatarUrl}
+          alt={sanitizedProfile.username}
           className="w-24 h-24 md:w-32 md:h-32 rounded-2xl object-cover ring-4 ring-[#2D5BFF]/20 shadow-xl shadow-black/50"
         />
         <div className="flex-1 w-full">
           <div className="flex flex-wrap items-center gap-3 mb-2">
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-white">{profile.name}</h1>
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-white">{sanitizedProfile.name}</h1>
             <span className="px-3 py-1 rounded-full bg-[#2D5BFF]/20 border border-[#2D5BFF]/30 text-[#2D5BFF] text-xs font-bold uppercase tracking-widest">
-              {profile.experienceLevel}
+              {sanitizedProfile.experienceLevel}
             </span>
           </div>
           <p className="text-gray-300 text-lg mb-6 font-medium leading-relaxed max-w-xl">
-            {profile.oneLiner}
+            {sanitizedProfile.oneLiner}
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
             <div className="flex items-center gap-2 px-3 py-2 bg-white/5 rounded-lg border border-white/10">
               <MapPin className="w-5 h-5 text-[#2D5BFF] shrink-0" />
-              <span className="text-gray-200 font-medium">{profile.location}</span>
+              <span className="text-gray-200 font-medium">{sanitizedProfile.location}</span>
             </div>
             <div className="flex items-center gap-2 px-3 py-2 bg-white/5 rounded-lg border border-white/10">
               <Mail className="w-5 h-5 text-[#2D5BFF] shrink-0" />
-              <span className="text-gray-200 font-medium truncate">{profile.email || '邮箱私密'}</span>
+              <span className="text-gray-200 font-medium truncate">{sanitizedProfile.email || '邮箱私密'}</span>
             </div>
             <a
-              href={`https://github.com/${profile.username}`}
+              href={`https://github.com/${encodeURIComponent(sanitizedProfile.username)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 px-3 py-2 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 hover:border-[#2D5BFF]/30 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D5BFF]"
             >
               <Github className="w-5 h-5 text-[#2D5BFF] shrink-0" />
-              <span className="text-gray-200 font-medium truncate">github.com/{profile.username}</span>
+              <span className="text-gray-200 font-medium truncate">github.com/{sanitizedProfile.username}</span>
             </a>
-            {profile.website && (
+            {sanitizedProfile.website && (
               <a
-                href={profile.website}
+                href={sanitizedProfile.website}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 px-3 py-2 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 hover:border-[#2D5BFF]/30 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D5BFF]"
               >
                 <Globe className="w-5 h-5 text-[#2D5BFF] shrink-0" />
-                <span className="text-gray-200 font-medium truncate">{profile.website.replace(/^https?:\/\//, '')}</span>
+                <span className="text-gray-200 font-medium truncate">{sanitizedProfile.website.replace(/^https?:\/\//, '')}</span>
               </a>
             )}
           </div>
@@ -140,10 +169,10 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
         <div className="relative">
           <svg className="w-32 h-32 transform -rotate-90">
             <circle cx="64" cy="64" r="58" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-white/20"/>
-            <circle cx="64" cy="64" r="58" stroke="currentColor" strokeWidth="8" fill="transparent" strokeDasharray={2 * Math.PI * 58} strokeDashoffset={2 * Math.PI * 58 * (1 - profile.engineeringScore / 100)} strokeLinecap="round" className="text-white"/>
+            <circle cx="64" cy="64" r="58" stroke="currentColor" strokeWidth="8" fill="transparent" strokeDasharray={2 * Math.PI * 58} strokeDashoffset={2 * Math.PI * 58 * (1 - sanitizedProfile.engineeringScore / 100)} strokeLinecap="round" className="text-white"/>
           </svg>
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-4xl font-black text-white">{profile.engineeringScore}</span>
+            <span className="text-4xl font-black text-white">{sanitizedProfile.engineeringScore}</span>
           </div>
         </div>
         <p className="mt-6 text-white/70 text-sm font-medium px-4 leading-relaxed">
@@ -199,7 +228,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
           关键优势
         </h4>
         <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {profile.strengths.map((s, i) => (
+          {sanitizedProfile.strengths.map((s, i) => (
             <li key={i} className="text-sm text-gray-300 flex items-start gap-2 leading-relaxed">
               <span className="text-[#00C896]/50 mt-0.5">●</span> {s}
             </li>
@@ -289,7 +318,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
       </motion.div>
 
       {/* 5. Academic Stats */}
-      {profile.academicStats ? (
+      {sanitizedProfile.academicStats ? (
         <motion.div
           variants={itemVariants}
           className="md:col-span-1 bg-white/5 border border-white/10 rounded-3xl p-6 glass bento-card flex flex-col justify-center"
@@ -297,11 +326,11 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
           <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-6">学术足迹</h3>
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-white/5 rounded-xl p-3 border border-white/5">
-              <div className="text-2xl font-bold text-white mb-1">{profile.academicStats.citations}</div>
+              <div className="text-2xl font-bold text-white mb-1">{sanitizedProfile.academicStats.citations}</div>
               <div className="text-xs text-gray-500 font-bold uppercase tracking-wider">引用</div>
             </div>
             <div className="bg-white/5 rounded-xl p-3 border border-white/5">
-              <div className="text-2xl font-bold text-white mb-1">{profile.academicStats.hIndex}</div>
+              <div className="text-2xl font-bold text-white mb-1">{sanitizedProfile.academicStats.hIndex}</div>
               <div className="text-xs text-gray-500 font-bold uppercase tracking-wider">H指数</div>
             </div>
           </div>
@@ -318,7 +347,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
           需探索领域
         </h4>
         <ul className="space-y-3">
-          {profile.weaknesses.map((w, i) => (
+          {sanitizedProfile.weaknesses.map((w, i) => (
             <li key={i} className="text-sm text-gray-300 flex items-start gap-2 leading-relaxed">
               <span className="text-[#FF6B35]/50 mt-0.5">●</span> {w}
             </li>
@@ -327,7 +356,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
       </motion.div>
 
       {/* 8. Personal Website Data (if available) */}
-      {profile.personalWebsiteData && profile.personalWebsiteData.canScrape && (
+      {sanitizedProfile.personalWebsiteData && sanitizedProfile.personalWebsiteData.canScrape && (
         <motion.div
           variants={itemVariants}
           className="md:col-span-2 bg-white/5 border border-white/10 rounded-3xl p-8 glass bento-card"
@@ -337,23 +366,23 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
             个人网站信息
           </h4>
           <div className="space-y-4">
-            {profile.personalWebsiteData.title && (
+            {sanitizedProfile.personalWebsiteData.title && (
               <div>
                 <span className="text-xs text-gray-500 font-semibold uppercase tracking-wide">网站标题</span>
-                <p className="text-sm text-gray-300 mt-1">{profile.personalWebsiteData.title}</p>
+                <p className="text-sm text-gray-300 mt-1">{sanitizedProfile.personalWebsiteData.title}</p>
               </div>
             )}
-            {profile.personalWebsiteData.description && (
+            {sanitizedProfile.personalWebsiteData.description && (
               <div>
                 <span className="text-xs text-gray-500 font-semibold uppercase tracking-wide">网站描述</span>
-                <p className="text-sm text-gray-300 mt-1">{profile.personalWebsiteData.description}</p>
+                <p className="text-sm text-gray-300 mt-1">{sanitizedProfile.personalWebsiteData.description}</p>
               </div>
             )}
-            {profile.personalWebsiteData.technologies && profile.personalWebsiteData.technologies.length > 0 && (
+            {sanitizedProfile.personalWebsiteData.technologies && sanitizedProfile.personalWebsiteData.technologies.length > 0 && (
               <div>
                 <span className="text-xs text-gray-500 font-semibold uppercase tracking-wide">提到的技术</span>
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {profile.personalWebsiteData.technologies.map((tech, i) => (
+                  {sanitizedProfile.personalWebsiteData.technologies.map((tech, i) => (
                     <span 
                       key={i}
                       className="px-3 py-1 rounded-lg bg-[#2D5BFF]/20 border border-[#2D5BFF]/30 text-gray-200 text-xs font-medium"
@@ -364,11 +393,11 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
                 </div>
               </div>
             )}
-            {profile.personalWebsiteData.skills && profile.personalWebsiteData.skills.length > 0 && (
+            {sanitizedProfile.personalWebsiteData.skills && sanitizedProfile.personalWebsiteData.skills.length > 0 && (
               <div>
                 <span className="text-xs text-gray-500 font-semibold uppercase tracking-wide">技能关键词</span>
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {profile.personalWebsiteData.skills.slice(0, 8).map((skill, i) => (
+                  {sanitizedProfile.personalWebsiteData.skills.slice(0, 8).map((skill, i) => (
                     <span 
                       key={i}
                       className="px-3 py-1 rounded-lg bg-[#00C896]/20 border border-[#00C896]/30 text-gray-200 text-xs"
@@ -380,7 +409,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
               </div>
             )}
             <a
-              href={profile.personalWebsiteData.url}
+              href={sanitizedProfile.personalWebsiteData.url}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 text-xs text-[#2D5BFF] hover:text-[#00C896] transition-colors rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D5BFF]"
@@ -392,7 +421,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
         </motion.div>
       )}
       
-      {profile.personalWebsiteData && profile.personalWebsiteData.scrapingDisallowed && (
+      {sanitizedProfile.personalWebsiteData && sanitizedProfile.personalWebsiteData.scrapingDisallowed && (
         <motion.div
           variants={itemVariants}
           className="md:col-span-2 bg-yellow-500/10 border border-yellow-500/20 rounded-3xl p-6 glass bento-card"
@@ -403,12 +432,12 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
           </h4>
           <p className="text-sm text-gray-400">
             网站 <a 
-              href={profile.personalWebsiteData.url} 
+              href={sanitizedProfile.personalWebsiteData.url} 
               target="_blank" 
               rel="noopener noreferrer" 
               className="text-yellow-400 hover:underline"
             >
-              {profile.personalWebsiteData.url}
+              {sanitizedProfile.personalWebsiteData.url}
               <span className="sr-only">（在新窗口中打开）</span>
             </a> 的 robots.txt 不允许爬取内容。
           </p>
@@ -424,9 +453,9 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
           <span className="w-1.5 h-1.5 rounded-full bg-[#2D5BFF]" />
           招聘面试官建议面试问题
         </h4>
-        {profile.suggestedQuestions.length > 0 ? (
+        {sanitizedProfile.suggestedQuestions.length > 0 ? (
           <ul className="space-y-3">
-            {profile.suggestedQuestions.map((q, i) => (
+            {sanitizedProfile.suggestedQuestions.map((q, i) => (
               <li key={i} className="text-sm text-gray-300 flex items-start gap-2 leading-relaxed">
                 <span className="text-[#2D5BFF]/60 mt-0.5">●</span> {q}
               </li>
@@ -446,9 +475,9 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
           <span className="w-1.5 h-1.5 rounded-full bg-[#00C896]" />
           推荐岗位
         </h4>
-        {profile.recommendedPositions && profile.recommendedPositions.length > 0 ? (
+        {sanitizedProfile.recommendedPositions && sanitizedProfile.recommendedPositions.length > 0 ? (
           <div className="flex flex-wrap gap-3">
-            {profile.recommendedPositions.map((position, i) => (
+            {sanitizedProfile.recommendedPositions.map((position, i) => (
               <span 
                 key={i} 
                 className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#00C896]/20 to-[#2D5BFF]/20 border border-[#00C896]/30 text-gray-200 text-sm font-medium hover:from-[#00C896]/30 hover:to-[#2D5BFF]/30 transition-all"
