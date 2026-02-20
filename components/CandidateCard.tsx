@@ -3,6 +3,7 @@ import { CandidateProfile } from '../types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { motion } from 'framer-motion';
 import { MapPin, Mail, Github, Star, ExternalLink, Calendar, Code, Globe } from 'lucide-react';
+import DOMPurify from 'dompurify';
 
 interface CandidateCardProps {
   profile: CandidateProfile;
@@ -32,6 +33,23 @@ const itemVariants = {
       damping: 10
     }
   }
+};
+
+// Helper function to sanitize user input
+const sanitizeHtml = (dirty: string | undefined): string => {
+  if (!dirty) return '';
+  return DOMPurify.sanitize(dirty);
+};
+
+// Helper function to sanitize URL
+const sanitizeUrl = (url: string | undefined): string => {
+  if (!url) return '';
+  const sanitized = DOMPurify.sanitize(url, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
+  // Only allow http/https protocols
+  if (sanitized.match(/^https?:\/\//i)) {
+    return sanitized;
+  }
+  return '';
 };
 
 export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
@@ -70,6 +88,13 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
     }
   }, [profile.topRepositories, sortKey]);
 
+  // Sanitize user-provided data
+  const sanitizedName = sanitizeHtml(profile.name);
+  const sanitizedOneLiner = sanitizeHtml(profile.oneLiner);
+  const sanitizedLocation = sanitizeHtml(profile.location);
+  const sanitizedUsername = sanitizeHtml(profile.username);
+  const sanitizedWebsite = sanitizeUrl(profile.website);
+
   return (
     <motion.div
       className="grid grid-cols-1 md:grid-cols-4 grid-rows-auto gap-4 md:gap-6"
@@ -85,46 +110,46 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
       >
         <img
           src={profile.avatarUrl}
-          alt={profile.username}
+          alt={sanitizedUsername}
           className="w-24 h-24 md:w-32 md:h-32 rounded-2xl object-cover ring-4 ring-[#2D5BFF]/20 shadow-xl shadow-black/50"
         />
         <div className="flex-1 w-full">
           <div className="flex flex-wrap items-center gap-3 mb-2">
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-white">{profile.name}</h1>
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-white">{sanitizedName}</h1>
             <span className="px-3 py-1 rounded-full bg-[#2D5BFF]/20 border border-[#2D5BFF]/30 text-[#2D5BFF] text-xs font-bold uppercase tracking-widest">
               {profile.experienceLevel}
             </span>
           </div>
           <p className="text-gray-300 text-lg mb-6 font-medium leading-relaxed max-w-xl">
-            {profile.oneLiner}
+            {sanitizedOneLiner}
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
             <div className="flex items-center gap-2 px-3 py-2 bg-white/5 rounded-lg border border-white/10">
               <MapPin className="w-5 h-5 text-[#2D5BFF] shrink-0" />
-              <span className="text-gray-200 font-medium">{profile.location}</span>
+              <span className="text-gray-200 font-medium">{sanitizedLocation}</span>
             </div>
             <div className="flex items-center gap-2 px-3 py-2 bg-white/5 rounded-lg border border-white/10">
               <Mail className="w-5 h-5 text-[#2D5BFF] shrink-0" />
               <span className="text-gray-200 font-medium truncate">{profile.email || '邮箱私密'}</span>
             </div>
             <a
-              href={`https://github.com/${profile.username}`}
+              href={`https://github.com/${encodeURIComponent(sanitizedUsername)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 px-3 py-2 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 hover:border-[#2D5BFF]/30 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D5BFF]"
             >
               <Github className="w-5 h-5 text-[#2D5BFF] shrink-0" />
-              <span className="text-gray-200 font-medium truncate">github.com/{profile.username}</span>
+              <span className="text-gray-200 font-medium truncate">github.com/{sanitizedUsername}</span>
             </a>
-            {profile.website && (
+            {sanitizedWebsite && (
               <a
-                href={profile.website}
+                href={sanitizedWebsite}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 px-3 py-2 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 hover:border-[#2D5BFF]/30 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D5BFF]"
               >
                 <Globe className="w-5 h-5 text-[#2D5BFF] shrink-0" />
-                <span className="text-gray-200 font-medium truncate">{profile.website.replace(/^https?:\/\//, '')}</span>
+                <span className="text-gray-200 font-medium truncate">{sanitizedWebsite.replace(/^https?:\/\//, '')}</span>
               </a>
             )}
           </div>
@@ -201,7 +226,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
         <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {profile.strengths.map((s, i) => (
             <li key={i} className="text-sm text-gray-300 flex items-start gap-2 leading-relaxed">
-              <span className="text-[#00C896]/50 mt-0.5">●</span> {s}
+              <span className="text-[#00C896]/50 mt-0.5">●</span> {sanitizeHtml(s)}
             </li>
           ))}
         </ul>
@@ -256,25 +281,25 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
             >
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2 overflow-hidden">
-                  <span className="font-bold text-[#2D5BFF] truncate group-hover:text-[#00C896] transition-colors">{repo.name}</span>
+                  <span className="font-bold text-[#2D5BFF] truncate group-hover:text-[#00C896] transition-colors">{sanitizeHtml(repo.name)}</span>
                   <ExternalLink className="w-3 h-3 text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
-                  <span className="text-xs font-mono text-gray-500 uppercase px-2 py-0.5 rounded bg-white/5">{repo.language}</span>
+                  <span className="text-xs font-mono text-gray-500 uppercase px-2 py-0.5 rounded bg-white/5">{sanitizeHtml(repo.language)}</span>
                   <span className="flex items-center gap-1 text-xs font-bold text-[#FF6B35]">
                     <Star className="w-3 h-3 fill-current" /> {repo.stars}
                   </span>
                 </div>
               </div>
               {repo.summary && (
-                <p className="text-sm text-white font-medium mb-2 leading-relaxed">{repo.summary}</p>
+                <p className="text-sm text-white font-medium mb-2 leading-relaxed">{sanitizeHtml(repo.summary)}</p>
               )}
-              <p className="text-sm text-gray-400 line-clamp-1 leading-relaxed mb-3">{repo.description || "未提供描述。"}</p>
+              <p className="text-sm text-gray-400 line-clamp-1 leading-relaxed mb-3">{sanitizeHtml(repo.description) || "未提供描述。"}</p>
               {repo.useCases && repo.useCases.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-3">
                   {repo.useCases.map((useCase, idx) => (
                     <span key={idx} className="text-xs px-2 py-1 rounded-md bg-[#2D5BFF]/10 text-[#2D5BFF] border border-[#2D5BFF]/20">
-                      {useCase}
+                      {sanitizeHtml(useCase)}
                     </span>
                   ))}
                 </div>
@@ -320,7 +345,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
         <ul className="space-y-3">
           {profile.weaknesses.map((w, i) => (
             <li key={i} className="text-sm text-gray-300 flex items-start gap-2 leading-relaxed">
-              <span className="text-[#FF6B35]/50 mt-0.5">●</span> {w}
+              <span className="text-[#FF6B35]/50 mt-0.5">●</span> {sanitizeHtml(w)}
             </li>
           ))}
         </ul>
@@ -340,13 +365,13 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
             {profile.personalWebsiteData.title && (
               <div>
                 <span className="text-xs text-gray-500 font-semibold uppercase tracking-wide">网站标题</span>
-                <p className="text-sm text-gray-300 mt-1">{profile.personalWebsiteData.title}</p>
+                <p className="text-sm text-gray-300 mt-1">{sanitizeHtml(profile.personalWebsiteData.title)}</p>
               </div>
             )}
             {profile.personalWebsiteData.description && (
               <div>
                 <span className="text-xs text-gray-500 font-semibold uppercase tracking-wide">网站描述</span>
-                <p className="text-sm text-gray-300 mt-1">{profile.personalWebsiteData.description}</p>
+                <p className="text-sm text-gray-300 mt-1">{sanitizeHtml(profile.personalWebsiteData.description)}</p>
               </div>
             )}
             {profile.personalWebsiteData.technologies && profile.personalWebsiteData.technologies.length > 0 && (
@@ -358,7 +383,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
                       key={i}
                       className="px-3 py-1 rounded-lg bg-[#2D5BFF]/20 border border-[#2D5BFF]/30 text-gray-200 text-xs font-medium"
                     >
-                      {tech}
+                      {sanitizeHtml(tech)}
                     </span>
                   ))}
                 </div>
@@ -373,14 +398,14 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
                       key={i}
                       className="px-3 py-1 rounded-lg bg-[#00C896]/20 border border-[#00C896]/30 text-gray-200 text-xs"
                     >
-                      {skill}
+                      {sanitizeHtml(skill)}
                     </span>
                   ))}
                 </div>
               </div>
             )}
             <a
-              href={profile.personalWebsiteData.url}
+              href={sanitizeUrl(profile.personalWebsiteData.url)}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 text-xs text-[#2D5BFF] hover:text-[#00C896] transition-colors rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D5BFF]"
@@ -403,12 +428,12 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
           </h4>
           <p className="text-sm text-gray-400">
             网站 <a 
-              href={profile.personalWebsiteData.url} 
+              href={sanitizeUrl(profile.personalWebsiteData.url)} 
               target="_blank" 
               rel="noopener noreferrer" 
               className="text-yellow-400 hover:underline"
             >
-              {profile.personalWebsiteData.url}
+              {sanitizeUrl(profile.personalWebsiteData.url)}
               <span className="sr-only">（在新窗口中打开）</span>
             </a> 的 robots.txt 不允许爬取内容。
           </p>
@@ -428,7 +453,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
           <ul className="space-y-3">
             {profile.suggestedQuestions.map((q, i) => (
               <li key={i} className="text-sm text-gray-300 flex items-start gap-2 leading-relaxed">
-                <span className="text-[#2D5BFF]/60 mt-0.5">●</span> {q}
+                <span className="text-[#2D5BFF]/60 mt-0.5">●</span> {sanitizeHtml(q)}
               </li>
             ))}
           </ul>
@@ -453,7 +478,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({ profile }) => {
                 key={i} 
                 className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#00C896]/20 to-[#2D5BFF]/20 border border-[#00C896]/30 text-gray-200 text-sm font-medium hover:from-[#00C896]/30 hover:to-[#2D5BFF]/30 transition-all"
               >
-                {position}
+                {sanitizeHtml(position)}
               </span>
             ))}
           </div>
