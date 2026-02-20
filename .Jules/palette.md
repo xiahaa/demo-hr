@@ -45,3 +45,7 @@
 ## 2026-05-22 - [Empty State Action Buttons]
 **Learning:** Empty input fields are prime real estate for "accelerator" actions. Replacing the "Clear" button (which is useless when empty) with a "Paste" button reduces friction significantly for URL inputs.
 **Action:** Implement context-aware action buttons inside inputs (e.g., Paste when empty, Clear when filled) to improve efficiency.
+
+## 2026-05-23 - [Animated Feedback for File Uploads]
+**Learning:** Static error messages for file uploads are often missed or feel impersonal. Adding a "shake" animation on error and clear success/active states (changing border color/icon) provides immediate, visceral feedback that guides the user effectively.
+**Action:** Use `framer-motion` to animate file upload containers on error (shake) and drag (scale), and use distinct icons/colors for success vs. error states.

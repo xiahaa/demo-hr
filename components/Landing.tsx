@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
-import { Upload, X, Clipboard } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Upload, X, Clipboard, AlertCircle, FileText } from 'lucide-react';
 
 interface LandingProps {
   onAnalyze: (githubUrl: string, scholarUrl?: string, linkedinText?: string, personalWebsiteUrl?: string, pdfFile?: File) => void;
@@ -210,11 +211,21 @@ export const Landing: React.FC<LandingProps> = ({ onAnalyze }) => {
               className="sr-only peer"
               aria-label={pdfFile ? `已选择文件: ${pdfFile.name}` : "上传简历 PDF"}
             />
-            <div
-              className={`relative flex items-center justify-center gap-2 w-full border-2 border-dashed rounded-xl px-4 py-8 transition-all
-                ${isDragging
-                  ? 'bg-[#2D5BFF]/10 border-[#2D5BFF] scale-[1.02]'
-                  : 'bg-white/5 border-white/10 hover:bg-white/10'
+            <motion.div
+              animate={
+                error ? { x: [0, -10, 10, -10, 10, 0] } :
+                isDragging ? { scale: 1.02 } :
+                { scale: 1 }
+              }
+              transition={error ? { duration: 0.4 } : { type: "spring", stiffness: 300, damping: 20 }}
+              className={`relative flex items-center justify-center gap-2 w-full border-2 rounded-xl px-4 py-8 transition-colors
+                ${error
+                  ? 'bg-red-500/10 border-red-500/50 border-dashed'
+                  : isDragging
+                    ? 'bg-[#2D5BFF]/10 border-[#2D5BFF] border-dashed'
+                    : pdfFile
+                      ? 'bg-[#2D5BFF]/5 border-[#2D5BFF] border-solid'
+                      : 'bg-white/5 border-white/10 hover:bg-white/10 border-dashed'
                 }
                 peer-focus:ring-2 peer-focus:ring-[#2D5BFF] peer-focus:ring-offset-2 peer-focus:ring-offset-[#1A1A2E]`}
             >
@@ -227,31 +238,54 @@ export const Landing: React.FC<LandingProps> = ({ onAnalyze }) => {
                 aria-label="上传简历 PDF"
               ></label>
 
-              <Upload className={`w-6 h-6 ${isDragging ? 'text-[#2D5BFF]' : 'text-gray-400'}`} />
-              <span className={`${isDragging ? 'text-[#2D5BFF] font-medium' : 'text-gray-400'}`}>
+              {error ? (
+                <AlertCircle className="w-6 h-6 text-red-400" />
+              ) : pdfFile ? (
+                <FileText className="w-6 h-6 text-[#2D5BFF]" />
+              ) : (
+                <Upload className={`w-6 h-6 ${isDragging ? 'text-[#2D5BFF]' : 'text-gray-400'}`} />
+              )}
+
+              <span className={`${
+                error ? 'text-red-400 font-medium' :
+                isDragging || pdfFile ? 'text-[#2D5BFF] font-medium' : 'text-gray-400'
+              }`}>
                 {isDragging
                   ? '释放文件以上传'
                   : pdfFile
                     ? pdfFile.name
-                    : '点击上传简历 PDF'}
+                    : error
+                      ? '上传失败'
+                      : '点击上传简历 PDF'}
               </span>
 
-              {pdfFile && !isDragging && (
+              {pdfFile && !isDragging && !error && (
                 <button
                   type="button"
                   aria-label="移除文件"
                   onClick={handleClearFile}
-                  className="z-20 ml-2 p-1 hover:bg-white/20 rounded-full transition-colors text-gray-400 hover:text-white"
+                  className="z-20 ml-2 p-1 hover:bg-[#2D5BFF]/20 rounded-full transition-colors text-[#2D5BFF]"
                 >
                   <X className="w-4 h-4" />
                 </button>
               )}
-            </div>
-            {error && (
-              <div role="alert" className="mt-2 text-red-400 text-sm px-2">
-                {error}
-              </div>
-            )}
+            </motion.div>
+
+            <AnimatePresence mode="wait">
+              {error && (
+                <motion.div
+                  key="error"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  role="alert"
+                  className="mt-2 text-red-400 text-sm px-2 flex items-center gap-2"
+                >
+                  <AlertCircle className="w-4 h-4" />
+                  {error}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
           <p className="text-xs text-gray-500 mt-2 px-2">
             PDF 将被解析以提取技能、经验和教育背景信息
