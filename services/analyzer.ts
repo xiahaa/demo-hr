@@ -1,5 +1,6 @@
 
 import { CandidateProfile, TechStackItem, PersonalWebsiteData, PDFResumeData } from "../types";
+import type { GitHubRepository } from "./github.types";
 import {
   fetchGitHubProfile,
   fetchGitHubRepos,
@@ -355,7 +356,7 @@ export async function analyzeCandidate(
 
   // 3. Prepare enhanced context for LLM
   const sortedRepos = (reposData || [])
-    .sort((a: any, b: any) => b.stargazers_count - a.stargazers_count)
+    .sort((a: GitHubRepository, b: GitHubRepository) => b.stargazers_count - a.stargazers_count)
     .slice(0, 20); // Top 20 by stars for quality signal
 
   const context = {
@@ -367,7 +368,7 @@ export async function analyzeCandidate(
     followers: profileData.followers || 0,
     following: profileData.following || 0,
     publicRepos: profileData.public_repos || 0,
-    repos: sortedRepos.map((r: any) => ({
+    repos: sortedRepos.map((r: GitHubRepository) => ({
       name: r.name,
       description: r.description,
       language: r.language,
@@ -443,7 +444,7 @@ export async function analyzeCandidate(
       },
       numPages: pdfResult.rawData.numPages
     } : null,
-    topRepositories: sortedRepos.slice(0, 6).map((r: any) => ({
+    topRepositories: sortedRepos.slice(0, 6).map((r: GitHubRepository) => ({
       name: r.name,
       description: r.description,
       stars: r.stargazers_count,

@@ -1,4 +1,6 @@
 
+import type { GitHubRepository, AggregatedLanguageStats, TechStackItem } from './github.types';
+
 const CACHE_TTL = 3600 * 1000; // 1 hour
 
 function getGitHubToken() {
@@ -65,7 +67,7 @@ async function fetchWithCache(url: string, options: RequestInit = {}) {
         json: async () => data,
         text: async () => JSON.stringify(data)
       })
-    } as any;
+    } as Response;
   }
 
   return response;
@@ -111,7 +113,7 @@ export async function fetchRepoLanguages(username: string, repoName: string) {
 /**
  * Aggregates language usage across all repositories to calculate tech proficiency
  */
-export async function aggregateLanguageStats(username: string, repos: any[]) {
+export async function aggregateLanguageStats(username: string, repos: GitHubRepository[]): Promise<AggregatedLanguageStats> {
   const languageStats: Record<string, number> = {};
   const repoCount: Record<string, number> = {};
 
@@ -122,7 +124,7 @@ export async function aggregateLanguageStats(username: string, repos: any[]) {
   // Process top repositories to get language data
   // Prioritize non-fork repos and limit to top 10-15 to speed up analysis
   // OPTIMIZATION: Use single-pass loop with early exit instead of multiple filters
-  const topRepos: any[] = [];
+  const topRepos: GitHubRepository[] = [];
 
   // 1. Add source repos (prioritized)
   for (const repo of repos) {
